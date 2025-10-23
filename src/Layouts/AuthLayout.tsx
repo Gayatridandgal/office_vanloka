@@ -8,10 +8,10 @@ import CreatePage from "../Pages/RolesPermissions/CreatePage";
 import GpsIndexPage from "../Pages/GpsDevice/GpsIndex";
 import GpsCreatePage from "../Pages/GpsDevice/GpsCreate";
 import GpsEditPage from "../Pages/GpsDevice/GpsEdit";
-import BeaconIndexPage from "../Pages/GpsDevice copy/BeaconIndex";
-import BeaconCreatePage from "../Pages/GpsDevice copy/BeaconCreate";
-import BeaconEditPage from "../Pages/GpsDevice copy/BeaconEdit";
 import MobileHeader from "../Components/MobileHeader";
+import BeaconIndexPage from "../Pages/BeaconDevices/BeaconIndex";
+import BeaconCreatePage from "../Pages/BeaconDevices/BeaconCreate";
+import BeaconEditPage from "../Pages/BeaconDevices/BeaconEdit";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
