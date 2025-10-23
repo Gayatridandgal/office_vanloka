@@ -23,3 +23,10 @@ export interface Role {
   name: string;
   description: string;
 }
+
+export interface Gps {
+  id: string; // A unique identifier for the record
+  title: string;
+  gps_id: string; // The actual ID of the device hardware
+  remark: string;
+}

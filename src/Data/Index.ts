@@ -1,3 +1,5 @@
+import type { Gps } from "../Types/Index";
+
 // src/data/index.ts
 export const app_features = [
   "VIEW_DASHBOARD",
@@ -73,5 +75,26 @@ export const rolesData = [
     name: "Support Agent",
     description: "Manage user feedbacks and tickets",
     permissions: [],
+  },
+];
+
+export const gpsDevicesData: Gps[] = [
+  {
+    id: "1",
+    title: "Bus 01 Tracker",
+    gps_id: "GPS-A001",
+    remark: "Primary tracker for the main fleet.",
+  },
+  {
+    id: "2",
+    title: "Service Van",
+    gps_id: "GPS-B002",
+    remark: "Secondary vehicle, needs battery check.",
+  },
+  {
+    id: "3",
+    title: "Delivery Truck",
+    gps_id: "GPS-D004",
+    remark: "Currently active on Route 66.",
   },
 ];

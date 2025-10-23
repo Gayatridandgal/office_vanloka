@@ -32,14 +32,14 @@ const sidebarLinks: SidebarLinkType[] = [
 
   {
     name: "GPS Management",
-    path: "/devices",
+    path: "/gps_devices",
     icon: <MdOutlineGpsFixed size={22} />,
     feature: "MANAGE_GPS",
   },
 
   {
     name: "Beacon Management",
-    path: "/devices",
+    path: "/beacon_devices",
     icon: <GrBeacon size={22} />,
     feature: "MANAGE_BEACON",
   },

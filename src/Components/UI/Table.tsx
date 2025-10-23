@@ -72,7 +72,7 @@ const Table = <T extends { id: number | string }>({
                           to={`${editUrl}/${item.id}`}
                           className="text-blue-600"
                         >
-                          <FaRegEdit size={20} />
+                          <FaRegEdit size={24} />
                         </Link>
                       )}
                       {onDelete && (
@@ -80,7 +80,7 @@ const Table = <T extends { id: number | string }>({
                           className="text-red-600"
                           onClick={() => onDelete(item)}
                         >
-                          <RiDeleteBin6Line size={20} />
+                          <RiDeleteBin6Line size={24} />
                         </button>
                       )}
                     </div>

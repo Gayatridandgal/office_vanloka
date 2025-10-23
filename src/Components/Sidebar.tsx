@@ -11,7 +11,7 @@ const Sidebar = ({ isOpen }: any) => {
     >
       <div className="p-5">
         <h3 className="text-3xl font-extrabold uppercase tracking-wide text-purple-950 overflow-hidden">
-          balaloka
+          vanloka
         </h3>
         <p className="text-sm font-bold tracking-widest uppercase text-black">
           technologies

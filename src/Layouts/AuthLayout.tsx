@@ -6,6 +6,9 @@ import Dashboard from "../Pages/DashboardPage";
 import IndexPage from "../Pages/RolesPermissions/Index";
 import EditPage from "../Pages/RolesPermissions/EditPage";
 import CreatePage from "../Pages/RolesPermissions/CreatePage";
+import GpsIndexPage from "../Pages/GpsDevice/GpsIndex";
+import GpsCreatePage from "../Pages/GpsDevice/GpsCreate";
+import GpsEditPage from "../Pages/GpsDevice/GpsEdit";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -15,12 +18,12 @@ const AuthLayout = () => {
   };
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="flex h-screen relative overflow-hidden">
       {/* Sidebar Component */}
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
       {/* Main content area */}
-      <main className="flex-grow flex flex-col overflow-y-auto transition-all duration-300">
+      <main className="flex-grow flex flex-col transition-all duration-300">
         {/* Mobile Header with Toggle Button */}
         <div className="xxl:hidden flex items-center justify-between py-2 mb-4 bg-purple-100 shadow-md">
           <h1 className="text-lg font-bold text-purple-950 p-3 uppercase">
@@ -33,13 +36,21 @@ const AuthLayout = () => {
             <FaBars size={24} />
           </button>
         </div>
-        <Routes>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="roles_permissions" element={<IndexPage />} />
-          <Route path="roles_permissions/edit/:id" element={<EditPage />} />
-          <Route path="roles_permissions/create" element={<CreatePage />} />
-          {/* Add other nested routes here */}
-        </Routes>
+        <div className="p-2">
+          <Routes>
+            <Route path="dashboard" element={<Dashboard />} />
+
+            {/* Roles and Permissions Pages*/}
+            <Route path="roles_permissions" element={<IndexPage />} />
+            <Route path="roles_permissions/create" element={<CreatePage />} />
+            <Route path="roles_permissions/edit/:id" element={<EditPage />} />
+
+            {/* GPS Device Pages */}
+            <Route path="gps_devices" element={<GpsIndexPage />} />
+            <Route path="gps_devices/create" element={<GpsCreatePage />} />
+            <Route path="gps_devices/edit/:id" element={<GpsEditPage />} />
+          </Routes>
+        </div>
       </main>
     </div>
   );
