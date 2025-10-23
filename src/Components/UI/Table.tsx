@@ -1,0 +1,107 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { FaRegEdit } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
+
+interface TableColumn<T> {
+  key: keyof T | string;
+  label: string;
+  align?: "left" | "center" | "right";
+  render?: (item: T, index: number) => React.ReactNode; // optional custom renderer
+}
+
+interface DynamicTableProps<T> {
+  list: T[];
+  columns: TableColumn<T>[];
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
+  editUrl?: string; // optional: "/roles/edit"
+}
+
+const Table = <T extends { id: number | string }>({
+  list,
+  columns,
+  onEdit,
+  onDelete,
+  editUrl,
+}: DynamicTableProps<T>) => {
+  return (
+    <div className="overflow-x-auto rounded-t-lg shadow-sm">
+      <table className="min-w-full">
+        <thead className="bg-purple-100">
+          <tr>
+            {columns.map((col) => (
+              <th
+                key={col.key.toString()}
+                className={`px-6 py-3 text-${
+                  col.align || "left"
+                } text-sm font-bold text-purple-950 uppercase tracking-wider`}
+              >
+                {col.label}
+              </th>
+            ))}
+            {(onEdit || onDelete) && (
+              <th className="px-6 py-3 text-center text-sm font-bold text-purple-950 uppercase tracking-wider">
+                Actions
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {list.length > 0 ? (
+            list.map((item, index) => (
+              <tr key={item.id} className="border-b border-gray-200">
+                {columns.map((col) => (
+                  <td
+                    key={col.key.toString()}
+                    className={`px-6 py-4 text-sm text-gray-900 uppercase text-${
+                      col.align || "left"
+                    }`}
+                  >
+                    {col.render
+                      ? col.render(item, index)
+                      : (item[col.key as keyof T] as React.ReactNode)}
+                  </td>
+                ))}
+
+                {(onEdit || onDelete) && (
+                  <td className="px-6 py-4 text-sm">
+                    <div className="flex justify-center gap-2">
+                      {editUrl && (
+                        <Link
+                          to={`${editUrl}/${item.id}`}
+                          className="text-blue-600"
+                        >
+                          <FaRegEdit size={20} />
+                        </Link>
+                      )}
+                      {onDelete && (
+                        <button
+                          className="text-red-600"
+                          onClick={() => onDelete(item)}
+                        >
+                          <RiDeleteBin6Line size={20} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan={columns.length + 1}
+                className="px-6 py-4 text-center text-gray-500"
+              >
+                No records found.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default Table;
