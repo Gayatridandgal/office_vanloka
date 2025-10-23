@@ -6,7 +6,6 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 interface TableColumn<T> {
   key: keyof T | string;
   label: string;
-  align?: "left" | "center" | "right";
   render?: (item: T, index: number) => React.ReactNode; // optional custom renderer
 }
 
@@ -30,20 +29,18 @@ const Table = <T extends { id: number | string }>({
   return (
     <div className="overflow-x-auto rounded-t-lg shadow-sm">
       <table className="min-w-full">
-        <thead className="bg-purple-100">
+        <thead className="bg-purple-100 text-left">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key.toString()}
-                className={`px-6 py-3 text-${
-                  col.align || "left"
-                } text-sm font-bold text-purple-950 uppercase tracking-wider`}
+                className={`px-6 py-3 text-sm font-bold text-purple-950 uppercase `}
               >
                 {col.label}
               </th>
             ))}
             {(onEdit || onDelete) && (
-              <th className="px-6 py-3 text-center text-sm font-bold text-purple-950 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-sm font-bold text-purple-950 uppercase ">
                 Actions
               </th>
             )}
@@ -56,9 +53,7 @@ const Table = <T extends { id: number | string }>({
                 {columns.map((col) => (
                   <td
                     key={col.key.toString()}
-                    className={`px-6 py-4 text-sm text-gray-900 uppercase text-${
-                      col.align || "left"
-                    }`}
+                    className={`px-6 py-4 text-sm text-gray-900 uppercase`}
                   >
                     {col.render
                       ? col.render(item, index)
@@ -72,7 +67,7 @@ const Table = <T extends { id: number | string }>({
                       {editUrl && (
                         <Link
                           to={`${editUrl}/${item.id}`}
-                          className="text-amber-950"
+                          className="text-green-700"
                         >
                           <FaRegEdit size={24} />
                         </Link>
