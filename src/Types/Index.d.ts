@@ -47,3 +47,16 @@ export interface Vehicle {
   gps_code: string;
   status: "Active" | "Inactive" | "Maintenance"; // Use a specific type for status
 }
+
+export interface Driver {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email: string;
+  driving_license: file;
+  aadhaar_card?: file;
+  pan_card?: file;
+  beacon_code: string;
+  status: "Active" | "Inactive"; // Use a specific type for status
+}

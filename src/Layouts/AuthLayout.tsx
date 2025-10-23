@@ -16,6 +16,10 @@ import VehicleIndexPage from "../Pages/Vehicles/VehicleIndexPage";
 import VehicleShowPage from "../Pages/Vehicles/VehicleShowPage";
 import VehicleCreatePage from "../Pages/Vehicles/VehicleCreatePage";
 import VehicleEditPage from "../Pages/Vehicles/VehicleEditPage";
+import DriverIndexPage from "../Pages/Drivers/DriverIndexPage";
+import DriverShowPage from "../Pages/Drivers/DriverShowPage";
+import DriverEditPage from "../Pages/Drivers/DriverEditPage";
+import DriverCreatePage from "../Pages/Drivers/DriverCreatePage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -63,6 +67,12 @@ const AuthLayout = () => {
             <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
             <Route path="vehicles/create" element={<VehicleCreatePage />} />
             <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
+
+            {/* Driver Pages */}
+            <Route path="drivers" element={<DriverIndexPage />} />
+            <Route path="drivers/create" element={<DriverCreatePage />} />
+            <Route path="drivers/show/:id" element={<DriverShowPage />} />
+            <Route path="drivers/edit/:id" element={<DriverEditPage />} />
           </Routes>
         </div>
       </main>

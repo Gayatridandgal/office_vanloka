@@ -1,4 +1,4 @@
-import type { Gps, Vehicle } from "../Types/Index";
+import type { Driver, Gps, Vehicle } from "../Types/Index";
 
 //  Dummy features data for demonstration
 export const app_features = [
@@ -152,6 +152,48 @@ export const vehiclesData: Vehicle[] = [
     insurance_certificate: "insurance.png",
     puc_certificate: "puc.png",
     gps_code: "GPS-A001",
+    status: "Active",
+  },
+];
+
+// Dummy vehicle data for demostration
+export const driverData: Driver[] = [
+  {
+    id: "1",
+    first_name: "Arun",
+    last_name: "Kumar",
+    phone: "9898787676",
+    email: "arunkumar98@gmail.com",
+    driving_license: "driving_license.jpeg",
+    aadhaar_card: "aadhaar_card.jpeg",
+    pan_card: "pan_card.jpg",
+    beacon_code: "GPS-A001",
+    status: "Active",
+  },
+
+  {
+    id: "2",
+    first_name: "Kishor",
+    last_name: "Harje",
+    phone: "9891187676",
+    email: "kishorharje89@gmail.com",
+    driving_license: "driving_license.jpeg",
+    aadhaar_card: "aadhaar_card.jpeg",
+    pan_card: "pan_card.jpg",
+    beacon_code: "GPS-A001",
+    status: "Active",
+  },
+
+  {
+    id: "3",
+    first_name: "Pratik",
+    last_name: "Desai",
+    phone: "9890087676",
+    email: "pratikdesai009@gmail.com",
+    driving_license: "driving_license.jpeg",
+    aadhaar_card: "",
+    pan_card: "",
+    beacon_code: "GPS-A001",
     status: "Active",
   },
 ];
