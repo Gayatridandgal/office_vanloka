@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaRegEdit } from "react-icons/fa";
+import { FaEye, FaRegEdit } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
 interface TableColumn<T> {
@@ -16,6 +16,7 @@ interface DynamicTableProps<T> {
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   editUrl?: string; // optional: "/roles/edit"
+  viewUrl?: string; // optional: "/roles/edit"
 }
 
 const Table = <T extends { id: number | string }>({
@@ -24,6 +25,7 @@ const Table = <T extends { id: number | string }>({
   onEdit,
   onDelete,
   editUrl,
+  viewUrl,
 }: DynamicTableProps<T>) => {
   return (
     <div className="overflow-x-auto rounded-t-lg shadow-sm">
@@ -66,11 +68,11 @@ const Table = <T extends { id: number | string }>({
 
                 {(onEdit || onDelete) && (
                   <td className="px-6 py-4 text-sm">
-                    <div className="flex justify-center gap-2">
+                    <div className="flex justify-center items-center gap-2">
                       {editUrl && (
                         <Link
                           to={`${editUrl}/${item.id}`}
-                          className="text-blue-600"
+                          className="text-amber-950"
                         >
                           <FaRegEdit size={24} />
                         </Link>
@@ -82,6 +84,14 @@ const Table = <T extends { id: number | string }>({
                         >
                           <RiDeleteBin6Line size={24} />
                         </button>
+                      )}
+                      {viewUrl && (
+                        <Link
+                          to={`${viewUrl}/${item.id}`}
+                          className="text-blue-600"
+                        >
+                          <FaEye size={24} />
+                        </Link>
                       )}
                     </div>
                   </td>

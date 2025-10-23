@@ -30,3 +30,20 @@ export interface Gps {
   gps_id: string; // The actual ID of the device hardware
   remark: string;
 }
+
+export interface Beacon {
+  id: string; // A unique identifier for the record
+  title: string;
+  beacon_id: string;
+}
+
+export interface Vehicle {
+  id: string;
+  model: string;
+  name: string;
+  registration_number: string;
+  insurance_certificate: file;
+  puc_certificate: file;
+  gps_code: string;
+  status: "Active" | "Inactive" | "Maintenance"; // Use a specific type for status
+}

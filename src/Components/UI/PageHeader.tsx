@@ -12,10 +12,10 @@ const PageHeader: React.FC<HeaderProps> = ({
   title,
   buttonText = "",
   buttonLink = "#",
-  buttonColor = "green",
+  buttonColor = "purple",
 }) => {
-  const bgColor = `bg-${buttonColor}-300`;
-  const hoverColor = `hover:bg-${buttonColor}-400`;
+  const bgColor = `bg-${buttonColor}-200`;
+  const hoverColor = `hover:bg-${buttonColor}-300`;
   const textColor = `text-${buttonColor}-950`;
 
   return (

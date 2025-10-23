@@ -1,4 +1,4 @@
-import type { Gps } from "../Types/Index";
+import type { Gps, Vehicle } from "../Types/Index";
 
 //  Dummy features data for demonstration
 export const app_features = [
@@ -118,5 +118,40 @@ export const beaconDevicesData = [
     id: "3",
     title: "Beacon",
     beacon_id: "BEACON-D003",
+  },
+];
+
+// Dummy vehicle data for demostration
+export const vehiclesData: Vehicle[] = [
+  {
+    id: "1",
+    model: "TAT A406",
+    name: "North-Bus",
+    registration_number: "KA-01-AB-1234",
+    insurance_certificate: "insurance.png",
+    puc_certificate: "puc.png",
+    gps_code: "GPS-A001",
+    status: "Active",
+  },
+  {
+    id: "2",
+    model: "TATA A890",
+    name: "Bus-8",
+    registration_number: "KA-01-AB-1234",
+    insurance_certificate: "",
+    puc_certificate: "",
+    gps_code: "GPS-A001",
+    status: "Active",
+  },
+
+  {
+    id: "3",
+    model: "TATA A897",
+    name: "BUS-5",
+    registration_number: "KA-01-AB-1234",
+    insurance_certificate: "insurance.png",
+    puc_certificate: "puc.png",
+    gps_code: "GPS-A001",
+    status: "Active",
   },
 ];

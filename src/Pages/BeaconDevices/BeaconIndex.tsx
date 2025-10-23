@@ -24,7 +24,11 @@ const handleDelete = (device: Beacon) => {
 const BeaconIndexPage = () => {
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeader title="Beacon Devices" buttonText="Add" buttonLink="create" />
+      <PageHeader
+        title="Beacon Devices"
+        buttonText="Add Beacon"
+        buttonLink="create"
+      />
 
       <Table<Beacon>
         list={beaconDevicesData}

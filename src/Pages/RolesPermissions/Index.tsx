@@ -19,7 +19,7 @@ const handleDelete = (role: Role) => {
 const IndexPage = () => {
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeader title="Roles" buttonText="Create" buttonLink="create" />
+      <PageHeader title="Roles" buttonText="Add Role" buttonLink="create" />
 
       <Table<Role>
         list={rolesData}

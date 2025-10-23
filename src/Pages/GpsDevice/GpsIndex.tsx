@@ -24,7 +24,11 @@ const handleDelete = (device: Gps) => {
 const GpsIndexPage = () => {
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeader title="GPS Devices" buttonText="Add" buttonLink="create" />
+      <PageHeader
+        title="GPS Devices"
+        buttonText="Add GPS"
+        buttonLink="create"
+      />
 
       <Table<Gps>
         list={gpsDevicesData}

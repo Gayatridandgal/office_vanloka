@@ -12,6 +12,10 @@ import MobileHeader from "../Components/MobileHeader";
 import BeaconIndexPage from "../Pages/BeaconDevices/BeaconIndex";
 import BeaconCreatePage from "../Pages/BeaconDevices/BeaconCreate";
 import BeaconEditPage from "../Pages/BeaconDevices/BeaconEdit";
+import VehicleIndexPage from "../Pages/Vehicles/VehicleIndexPage";
+import VehicleShowPage from "../Pages/Vehicles/VehicleShowPage";
+import VehicleCreatePage from "../Pages/Vehicles/VehicleCreatePage";
+import VehicleEditPage from "../Pages/Vehicles/VehicleEditPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -53,6 +57,12 @@ const AuthLayout = () => {
               path="beacon_devices/edit/:id"
               element={<BeaconEditPage />}
             />
+
+            {/* Vehicles Pages */}
+            <Route path="vehicles" element={<VehicleIndexPage />} />
+            <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
+            <Route path="vehicles/create" element={<VehicleCreatePage />} />
+            <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
           </Routes>
         </div>
       </main>
