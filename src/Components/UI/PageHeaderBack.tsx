@@ -24,7 +24,7 @@ const PageHeaderBack: React.FC<HeaderProps> = ({
           <FaArrowLeft size={25} /> {buttonText}
         </Link>
       )}
-      <h1 className="text-xl font-bold text-purple-950 uppercase">{title}</h1>
+      <h1 className="text-lg font-bold text-purple-950 uppercase">{title}</h1>
     </div>
   );
 };

@@ -2,11 +2,11 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useParams, useNavigate } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import { gpsDevicesData } from "../../Data/Index";
-import type { Gps } from "../../Types/Index";
+import type { Beacon } from "../../Types/Index";
 import { useEffect } from "react";
+import { beaconDevicesData } from "../../Data/Index";
 
-const GpsEditPage = () => {
+const BeaconEditPage = () => {
   const { id } = useParams<{ id: string }>(); // This is the 'uid' from the data
   const navigate = useNavigate();
   const {
@@ -14,31 +14,30 @@ const GpsEditPage = () => {
     handleSubmit,
     reset, // The 'reset' function is used to populate the form
     formState: { errors },
-  } = useForm<Gps>();
+  } = useForm<Beacon>();
 
   // Find the device and populate the form on component load
   useEffect(() => {
-    const device = gpsDevicesData.find((d) => d.id === id);
+    const device = beaconDevicesData.find((d) => d.id === id);
     if (device) {
       // The keys in this object must match the form input names
       reset({
         title: device.title,
-        gps_id: device.gps_id,
-        remark: device.remark,
+        beacon_id: device.beacon_id,
       });
     }
   }, [id, reset]);
 
   // Handle form submission
-  const onSubmit: SubmitHandler<Gps> = (data) => {
+  const onSubmit: SubmitHandler<Beacon> = (data) => {
     console.log("Updated Data:", data);
     alert(`Device "${data.title}" updated successfully!`);
-    navigate("/gps_devices");
+    navigate("/beacon_devices");
   };
 
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Edit GPS Device" buttonLink="/gps_devices" />
+      <PageHeaderBack title="Edit GPS Device" buttonLink="/beacon_devices" />
 
       <div className="p-8 max-w-2xl mx-auto rounded-lg shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -74,28 +73,12 @@ const GpsEditPage = () => {
             <input
               type="text"
               id="id"
-              {...register("id", { required: "Device ID is required." })}
+              {...register("beacon_id", { required: "Device ID is required." })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
             />
             {errors.id && (
               <p className="text-red-500 text-sm mt-1">{errors.id.message}</p>
             )}
-          </div>
-
-          {/* Remark Field */}
-          <div className="mb-6">
-            <label
-              htmlFor="remark"
-              className="block text-purple-950 uppercase font-bold mb-2"
-            >
-              Remark
-            </label>
-            <textarea
-              id="remark"
-              {...register("remark")}
-              rows={4}
-              className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-            />
           </div>
 
           <button
@@ -110,4 +93,4 @@ const GpsEditPage = () => {
   );
 };
 
-export default GpsEditPage;
+export default BeaconEditPage;

@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 
 interface HeaderProps {
   title: string;
-  buttonText?: string;
+  buttonText: string;
   buttonLink?: string;
   buttonColor?: string; // optional Tailwind color class
 }
 
 const PageHeader: React.FC<HeaderProps> = ({
   title,
-  buttonText = "Create",
+  buttonText = "",
   buttonLink = "#",
   buttonColor = "green",
 }) => {
@@ -20,7 +20,7 @@ const PageHeader: React.FC<HeaderProps> = ({
 
   return (
     <div className="flex justify-between items-center mb-4">
-      <h1 className="text-xl font-bold text-purple-950 uppercase">{title}</h1>
+      <h1 className="text-lg font-bold text-purple-950 uppercase">{title}</h1>
       {buttonLink && (
         <Link
           to={buttonLink}

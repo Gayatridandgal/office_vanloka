@@ -1,46 +1,32 @@
-// src/Pages/GpsDevices/EditPage.tsx
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { useParams, useNavigate } from "react-router-dom";
-import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import { gpsDevicesData } from "../../Data/Index";
-import type { Gps } from "../../Types/Index";
-import { useEffect } from "react";
+// src/Pages/GpsDevices/CreatePage.tsx
 
-const GpsEditPage = () => {
-  const { id } = useParams<{ id: string }>(); // This is the 'uid' from the data
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import PageHeaderBack from "../../Components/UI/PageHeaderBack";
+import type { Beacon } from "../../Types/Index";
+
+const BeaconCreatePage = () => {
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
-    reset, // The 'reset' function is used to populate the form
     formState: { errors },
-  } = useForm<Gps>();
+  } = useForm<Beacon>();
 
-  // Find the device and populate the form on component load
-  useEffect(() => {
-    const device = gpsDevicesData.find((d) => d.id === id);
-    if (device) {
-      // The keys in this object must match the form input names
-      reset({
-        title: device.title,
-        gps_id: device.gps_id,
-        remark: device.remark,
-      });
-    }
-  }, [id, reset]);
-
-  // Handle form submission
-  const onSubmit: SubmitHandler<Gps> = (data) => {
-    console.log("Updated Data:", data);
-    alert(`Device "${data.title}" updated successfully!`);
-    navigate("/gps_devices");
+  // This function is called when the form is successfully validated
+  const onSubmit: SubmitHandler<Beacon> = (data: Beacon) => {
+    console.log("Form Data:", data);
+    // In a real app, you would make an API call here.
+    alert(`Device "${data.title}" created successfully!`);
+    navigate("/beacon_devices"); // Redirect after submission
   };
 
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Edit GPS Device" buttonLink="/gps_devices" />
+      <PageHeaderBack title="Add Beacon Device" buttonLink="/gps_devices" />
 
       <div className="p-8 max-w-2xl mx-auto rounded-lg shadow-sm">
+        {/* Pass the onSubmit handler to react-hook-form's handleSubmit */}
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Title Field */}
           <div className="mb-6">
@@ -55,6 +41,7 @@ const GpsEditPage = () => {
               id="title"
               {...register("title", { required: "Title is required." })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="Main Tracker"
             />
             {errors.title && (
               <p className="text-red-500 text-sm mt-1">
@@ -73,36 +60,20 @@ const GpsEditPage = () => {
             </label>
             <input
               type="text"
-              id="id"
-              {...register("id", { required: "Device ID is required." })}
+              id="beacon_id"
+              {...register("beacon_id", { required: "Device ID is required." })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="BEACON-A001"
             />
             {errors.id && (
               <p className="text-red-500 text-sm mt-1">{errors.id.message}</p>
             )}
           </div>
-
-          {/* Remark Field */}
-          <div className="mb-6">
-            <label
-              htmlFor="remark"
-              className="block text-purple-950 uppercase font-bold mb-2"
-            >
-              Remark
-            </label>
-            <textarea
-              id="remark"
-              {...register("remark")}
-              rows={4}
-              className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-            />
-          </div>
-
           <button
             type="submit"
             className="bg-purple-200 text-purple-900 font-bold py-2 px-6 rounded-lg hover:bg-purple-300 uppercase transition-colors"
           >
-            SAVE
+            Save
           </button>
         </form>
       </div>
@@ -110,4 +81,4 @@ const GpsEditPage = () => {
   );
 };
 
-export default GpsEditPage;
+export default BeaconCreatePage;

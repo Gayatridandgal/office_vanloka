@@ -14,7 +14,7 @@ const Sidebar = ({ isOpen }: any) => {
           vanloka
         </h3>
         <p className="text-sm font-bold tracking-widest uppercase text-black">
-          technologies
+          Fleet Tracking System
         </p>
       </div>
 

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import { FaBars } from "react-icons/fa";
 import Sidebar from "../Components/Sidebar";
 import Dashboard from "../Pages/DashboardPage";
 import IndexPage from "../Pages/RolesPermissions/Index";
@@ -9,10 +8,13 @@ import CreatePage from "../Pages/RolesPermissions/CreatePage";
 import GpsIndexPage from "../Pages/GpsDevice/GpsIndex";
 import GpsCreatePage from "../Pages/GpsDevice/GpsCreate";
 import GpsEditPage from "../Pages/GpsDevice/GpsEdit";
+import BeaconIndexPage from "../Pages/GpsDevice copy/BeaconIndex";
+import BeaconCreatePage from "../Pages/GpsDevice copy/BeaconCreate";
+import BeaconEditPage from "../Pages/GpsDevice copy/BeaconEdit";
+import MobileHeader from "../Components/MobileHeader";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -25,17 +27,8 @@ const AuthLayout = () => {
       {/* Main content area */}
       <main className="flex-grow flex flex-col transition-all duration-300">
         {/* Mobile Header with Toggle Button */}
-        <div className="xxl:hidden flex items-center justify-between py-2 mb-4 bg-purple-100 shadow-md">
-          <h1 className="text-lg font-bold text-purple-950 p-3 uppercase">
-            Institute Panel
-          </h1>
-          <button
-            onClick={toggleSidebar}
-            className="md:hidden text-purple-800 focus:outline-none ring-2 focus:ring-purple-500 rounded-md p-2 mx-5"
-          >
-            <FaBars size={24} />
-          </button>
-        </div>
+        <MobileHeader title="Institute Panel" toggleSidebar={toggleSidebar} />
+
         <div className="p-2">
           <Routes>
             <Route path="dashboard" element={<Dashboard />} />
@@ -49,6 +42,17 @@ const AuthLayout = () => {
             <Route path="gps_devices" element={<GpsIndexPage />} />
             <Route path="gps_devices/create" element={<GpsCreatePage />} />
             <Route path="gps_devices/edit/:id" element={<GpsEditPage />} />
+
+            {/* Beacon Device Pages */}
+            <Route path="beacon_devices" element={<BeaconIndexPage />} />
+            <Route
+              path="beacon_devices/create"
+              element={<BeaconCreatePage />}
+            />
+            <Route
+              path="beacon_devices/edit/:id"
+              element={<BeaconEditPage />}
+            />
           </Routes>
         </div>
       </main>

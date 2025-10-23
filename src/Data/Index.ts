@@ -1,6 +1,6 @@
 import type { Gps } from "../Types/Index";
 
-// src/data/index.ts
+//  Dummy features data for demonstration
 export const app_features = [
   "VIEW_DASHBOARD",
   "MANAGE_VEHICLES",
@@ -14,6 +14,8 @@ export const app_features = [
   "DEFAULT",
   "MANAGE_SUPPORT_TICKETS",
 ];
+
+//  Dummy permissions data for demonstration
 export const allPermissions = [
   "view users",
   "create users",
@@ -46,7 +48,7 @@ export const allPermissions = [
   "delete bookings",
 ];
 
-// Dummy data for demonstration
+// Dummy roles data for demonstration
 export const rolesData = [
   {
     id: 1,
@@ -78,6 +80,7 @@ export const rolesData = [
   },
 ];
 
+//  Dummy gps data for demonstration
 export const gpsDevicesData: Gps[] = [
   {
     id: "1",
@@ -96,5 +99,24 @@ export const gpsDevicesData: Gps[] = [
     title: "Delivery Truck",
     gps_id: "GPS-D004",
     remark: "Currently active on Route 66.",
+  },
+];
+
+//  Dummy beacon data for demonstration
+export const beaconDevicesData = [
+  {
+    id: "1",
+    title: "Beacon",
+    beacon_id: "BEACON-A001",
+  },
+  {
+    id: "2",
+    title: "Beacon",
+    beacon_id: "BEACON-B002",
+  },
+  {
+    id: "3",
+    title: "Beacon",
+    beacon_id: "BEACON-D003",
   },
 ];
