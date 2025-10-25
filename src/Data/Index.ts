@@ -1,4 +1,4 @@
-import type { Driver, Gps, Vehicle } from "../Types/Index";
+import type { Driver, Vehicle } from "../Types/Index";
 
 //  Dummy features data for demonstration
 export const app_features = [
@@ -77,47 +77,6 @@ export const rolesData = [
     name: "Support Agent",
     description: "Manage user feedbacks and tickets",
     permissions: [],
-  },
-];
-
-//  Dummy gps data for demonstration
-export const gpsDevicesData: Gps[] = [
-  {
-    id: "1",
-    title: "Bus 01 Tracker",
-    gps_id: "GPS-A001",
-    remark: "Primary tracker for the main fleet.",
-  },
-  {
-    id: "2",
-    title: "Service Van",
-    gps_id: "GPS-B002",
-    remark: "Secondary vehicle, needs battery check.",
-  },
-  {
-    id: "3",
-    title: "Delivery Truck",
-    gps_id: "GPS-D004",
-    remark: "Currently active on Route 66.",
-  },
-];
-
-//  Dummy beacon data for demonstration
-export const beaconDevicesData = [
-  {
-    id: "1",
-    title: "Beacon",
-    beacon_id: "BEACON-A001",
-  },
-  {
-    id: "2",
-    title: "Beacon",
-    beacon_id: "BEACON-B002",
-  },
-  {
-    id: "3",
-    title: "Beacon",
-    beacon_id: "BEACON-D003",
   },
 ];
 

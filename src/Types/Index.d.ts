@@ -27,15 +27,16 @@ export interface Role {
 
 export interface Gps {
   id: string; // A unique identifier for the record
-  title: string;
-  gps_id: string; // The actual ID of the device hardware
-  remark: string;
+  name: string;
+  imei_number: string; // The actual ID of the device hardware
+  remark?: string;
 }
 
 export interface Beacon {
   id: string; // A unique identifier for the record
-  title: string;
-  beacon_id: string;
+  name: string;
+  imei_number: string; // The actual ID of the device hardware
+  remark?: string;
 }
 
 export interface Vehicle {

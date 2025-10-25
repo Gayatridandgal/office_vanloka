@@ -1,8 +1,8 @@
 // src/Pages/GpsDevice/IndexPage.tsx
 
-import PageHeader from "../../Components/UI/PageHeader";
+import PageTitle from "../../Components/UI/PageTitle";
 import Table from "../../Components/UI/Table";
-import { beaconDevicesData } from "../../Data/Index";
+import { assignedBeacons } from "../../Data/Index";
 import type { Beacon } from "../../Types/Index";
 
 const columns = [
@@ -11,31 +11,22 @@ const columns = [
     label: "SNo",
     render: (_: Beacon, index: number) => index + 1,
   },
-  { key: "title", label: "Title" },
-  { key: "beacon_id", label: "Device ID" },
+  { key: "name", label: "Title" },
+  { key: "imei_number", label: "Device ID" },
 ];
 
 // Placeholder for the delete action
 const handleDelete = (device: Beacon) => {
   console.log("Delete device:", device);
-  alert(`Deleting ${device.title}`);
+  alert(`Deleting ${device.name}`);
 };
 
 const BeaconIndexPage = () => {
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeader
-        title="Beacon Devices"
-        buttonText="Add Beacon"
-        buttonLink="create"
-      />
+      <PageTitle title="Beacon Devices" />
 
-      <Table<Beacon>
-        list={beaconDevicesData}
-        columns={columns}
-        editUrl="/beacon_devices/edit" // The base URL for editing
-        onDelete={handleDelete}
-      />
+      <Table<Beacon> list={assignedBeacons} columns={columns} />
     </div>
   );
 };

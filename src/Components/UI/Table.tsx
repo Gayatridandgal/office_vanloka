@@ -40,9 +40,11 @@ const Table = <T extends { id: number | string }>({
               </th>
             ))}
 
-            <th className="px-6 py-3 text-center text-sm font-bold text-purple-950 uppercase tracking-wider">
-              Actions
-            </th>
+            {(viewUrl || editUrl || onDelete) && (
+              <th className="px-6 py-3 text-sm font-bold text-purple-950 uppercase tracking-wider text-center">
+                Actions
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -60,34 +62,36 @@ const Table = <T extends { id: number | string }>({
                   </td>
                 ))}
 
-                <td className="px-6 py-4 text-sm">
-                  <div className="flex justify-center items-center gap-2">
-                    {editUrl && (
-                      <Link
-                        to={`${editUrl}/${item.id}`}
-                        className="text-green-900"
-                      >
-                        <FaRegEdit size={24} />
-                      </Link>
-                    )}
-                    {onDelete && (
-                      <button
-                        className="text-red-600"
-                        onClick={() => onDelete(item)}
-                      >
-                        <RiDeleteBin6Line size={24} />
-                      </button>
-                    )}
-                    {viewUrl && (
-                      <Link
-                        to={`${viewUrl}/${item.id}`}
-                        className="text-blue-600"
-                      >
-                        <FaEye size={24} />
-                      </Link>
-                    )}
-                  </div>
-                </td>
+                {(viewUrl || editUrl || onDelete) && (
+                  <td className="px-6 py-4 text-sm">
+                    <div className="flex justify-center items-center gap-2">
+                      {editUrl && (
+                        <Link
+                          to={`${editUrl}/${item.id}`}
+                          className="text-green-900"
+                        >
+                          <FaRegEdit size={24} />
+                        </Link>
+                      )}
+                      {onDelete && (
+                        <button
+                          className="text-red-600"
+                          onClick={() => onDelete(item)}
+                        >
+                          <RiDeleteBin6Line size={24} />
+                        </button>
+                      )}
+                      {viewUrl && (
+                        <Link
+                          to={`${viewUrl}/${item.id}`}
+                          className="text-blue-600"
+                        >
+                          <FaEye size={24} />
+                        </Link>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))
           ) : (
