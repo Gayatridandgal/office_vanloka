@@ -1,6 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
-import { FaAngleDown } from "react-icons/fa";
 import { MdDashboard, MdOutlineGpsFixed } from "react-icons/md";
 import { BsBusFrontFill } from "react-icons/bs";
 import { FaUserShield } from "react-icons/fa6";
@@ -131,81 +129,81 @@ export default function Sidebar() {
     });
 
   // Find the active parent link to determine which dropdown should be open on page load
-  const activeParent = accessibleLinks.find((link) =>
-    link.subLinks?.some((sub) => location.pathname.startsWith(sub.path))
-  );
+  // const activeParent = accessibleLinks.find((link) =>
+  //   link.subLinks?.some((sub) => location.pathname.startsWith(sub.path))
+  // );
 
   // State to track which dropdown is currently open
-  const [openDropdown, setOpenDropdown] = useState<string | null>(
-    activeParent?.name || null
-  );
+  // const [openDropdown, setOpenDropdown] = useState<string | null>(
+  //   activeParent?.name || null
+  // );
 
-  const handleDropdownToggle = (name: string) => {
-    setOpenDropdown((current) => (current === name ? null : name)); // Toggle logic
-  };
+  // const handleDropdownToggle = (name: string) => {
+  //   setOpenDropdown((current) => (current === name ? null : name)); // Toggle logic
+  // };
 
   return (
     <nav className="flex-grow px-2">
       <ul className="space-y-2">
         {accessibleLinks.map((link) => {
-          const isDropdown = link.subLinks && link.subLinks.length > 0;
+          // const isDropdown = link.subLinks && link.subLinks.length > 0;
 
           // --- RENDER A DROPDOWN MENU ---
-          if (isDropdown) {
-            const isParentActive = activeParent?.name === link.name;
-            return (
-              <li key={link.name}>
-                <button
-                  onClick={() => handleDropdownToggle(link.name)}
-                  className={`flex w-full items-center justify-between py-2 px-4 rounded transition-all duration-80 ${
-                    isParentActive
-                      ? "bg-purple-400 text-white shadow-lg border-l-2 border-r-2 border-white font-bold"
-                      : "text-purple-950 hover:bg-purple-300 hover:shadow-lg"
-                  }`}
-                >
-                  <div className="flex items-center space-x-4">
-                    {link.icon}
-                    <span className="font-bold text-sm uppercase">
-                      {link.name}
-                    </span>
-                  </div>
-                  <FaAngleDown
-                    className={`transition-transform duration-300 ${
-                      openDropdown === link.name ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-                {openDropdown === link.name && (
-                  <ul className="pt-2 pl-8 space-y-1">
-                    {link.subLinks!.map((subLink) => (
-                      <li key={subLink.path}>
-                        <Link
-                          to={subLink.path}
-                          className={`block py-1 px-3 rounded-full text-sm font-semibold uppercase transition-all duration-300 ${
-                            location.pathname === subLink.path
-                              ? "text-purple-950 bg-purple-300"
-                              : "text-purple-950"
-                          }`}
-                        >
-                          {subLink.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          }
+          // if (isDropdown) {
+          //   const isParentActive = activeParent?.name === link.name;
+          //   return (
+          //     <li key={link.name}>
+          //       <button
+          //         onClick={() => handleDropdownToggle(link.name)}
+          //         className={`flex w-full items-center justify-between py-2 px-4 rounded transition-all duration-80 ${
+          //           isParentActive
+          //             ? "bg-purple-400 text-white shadow-lg border-l-2 border-r-2 border-white font-bold"
+          //             : "text-purple-950 hover:bg-purple-300 hover:shadow-lg"
+          //         }`}
+          //       >
+          //         <div className="flex items-center space-x-4">
+          //           {link.icon}
+          //           <span className="font-bold text-sm uppercase">
+          //             {link.name}
+          //           </span>
+          //         </div>
+          //         <FaAngleDown
+          //           className={`transition-transform duration-300 ${
+          //             openDropdown === link.name ? "rotate-180" : ""
+          //           }`}
+          //         />
+          //       </button>
+          //       {openDropdown === link.name && (
+          //         <ul className="pt-2 pl-8 space-y-1">
+          //           {link.subLinks!.map((subLink) => (
+          //             <li key={subLink.path}>
+          //               <Link
+          //                 to={subLink.path}
+          //                 className={`block py-1 px-3 rounded-full text-sm font-semibold uppercase transition-all duration-300 ${
+          //                   location.pathname === subLink.path
+          //                     ? "text-purple-950 bg-purple-300"
+          //                     : "text-purple-950"
+          //                 }`}
+          //               >
+          //                 {subLink.name}
+          //               </Link>
+          //             </li>
+          //           ))}
+          //         </ul>
+          //       )}
+          //     </li>
+          //   );
+          // }
 
           // --- RENDER A STANDARD, SINGLE LINK ---
           return (
             <li key={link.name}>
               <Link
                 to={link.path!}
-                className={`flex items-center space-x-4 py-2 px-4 rounded-full transition-all duration-80 ${
+                className={`flex items-center space-x-4 py-2 px-4 rounded-lg transition-all duration-80 ${
                   link.path && location.pathname.startsWith(link.path)
-                    ? "bg-purple-400 text-white shadow-lg border-l-5 border-r-5 border-white font-bold"
-                    : "text-purple-950 hover:bg-purple-300 hover:shadow-lg"
+                    ? "bg-purple-200 text-purple-950 shadow-xl font-bold"
+                    : "text-purple-950 hover:bg-purple-200 hover:shadow-lg border border-gray-300"
                 }`}
               >
                 {link.icon}

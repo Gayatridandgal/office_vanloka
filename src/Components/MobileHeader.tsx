@@ -11,7 +11,7 @@ interface PanelHeaderProps {
 const MobileHeader: React.FC<PanelHeaderProps> = ({
   title,
   toggleSidebar,
-  bgColor = "bg-purple-100",
+  bgColor = "bg-purple-50",
   textColor = "text-purple-950",
 }) => {
   return (

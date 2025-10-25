@@ -5,7 +5,7 @@ const Sidebar = ({ isOpen }: any) => {
   return (
     // The sidebar container is a flex column with full height.
     <div
-      className={`fixed inset-y-0 left-0 w-72 bg-purple-200 text-white shadow-2xl z-50  transform md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col ${
+      className={`fixed inset-y-0 left-0 w-72 bg-purple-50 text-white shadow-2xl z-50  transform md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
