@@ -115,8 +115,24 @@ export interface Organisation {
   gps_devices?: { name: string; imei_number: string }[];
   beacon_devices?: { name: string; imei_number: string }[];
 
+  address?: string;
+
   // Admin credentials
   username: string;
   password: string;
   status: "Active" | "Inactive";
+}
+
+export interface Booking {
+  id: string;
+  user_id: string;
+  traveler_id: string;
+  organisation_id: string;
+  booking_date: string;
+  start_date: string;
+  end_date: string;
+  pickup_location: string; // This will be a checkpoint name
+  drop_location: string; // This will be the organisation's address
+  pickup_time: string;
+  status: "Active" | "Inactive" | "Completed" | "Cancelled";
 }

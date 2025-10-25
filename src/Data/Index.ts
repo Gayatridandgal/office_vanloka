@@ -1,11 +1,11 @@
 import type {
   AppUser,
   Beacon,
+  Booking,
   Driver,
   Gps,
   Organisation,
   Traveler,
-  User,
   Vehicle,
 } from "../Types/Index";
 
@@ -206,7 +206,7 @@ export const travelersData: Traveler[] = [
 export const usersData: AppUser[] = [
   {
     id: "USER-001",
-    organisation_id: "ORG-001A", // Alpha Logistics
+    organisation_id: "ORG-001A",
     photo: "https://randomuser.me/api/portraits/men/32.jpg",
     first_name: "Rohan",
     last_name: "Verma",
@@ -217,32 +217,10 @@ export const usersData: AppUser[] = [
     city: "Mumbai",
     state: "Maharashtra",
     pin: "400001",
-    travelers: [
-      {
-        id: "TRV-001",
-        user_id: "USER-001",
-        photo: "https://randomuser.me/api/portraits/women/33.jpg",
-        first_name: "Priya",
-        last_name: "Verma",
-        dob: "1988-11-15",
-        gender: "Female",
-        relationship: "Spouse",
-      },
-      {
-        id: "TRV-002",
-        user_id: "USER-001",
-        photo: "https://randomuser.me/api/portraits/men/34.jpg",
-        first_name: "Aarav",
-        last_name: "Verma",
-        dob: "2015-02-10",
-        gender: "Male",
-        relationship: "Child",
-      },
-    ],
   },
   {
     id: "USER-002",
-    organisation_id: "ORG-001A", // Public user
+    organisation_id: "ORG-001A",
     photo: "https://randomuser.me/api/portraits/women/40.jpg",
     first_name: "Sunita",
     last_name: "Patel",
@@ -253,7 +231,6 @@ export const usersData: AppUser[] = [
     city: "Kolkata",
     state: "West Bengal",
     pin: "700016",
-    travelers: [], // No travelers
   },
 ];
 
@@ -271,6 +248,7 @@ export const organisationData: Organisation[] = [
     contact_person_phone: "+919876543210",
     contact_person_designation: "Operations Head",
     emergency_contact_number: "+912240123000",
+    address: "AlphaLogi HQ, 100 Logistics Way, Mumbai, MH",
     employees: "450",
     vehicles: "120",
     gps_required: "120",
@@ -299,6 +277,7 @@ export const organisationData: Organisation[] = [
     contact_person_phone: "+917009988770",
     contact_person_designation: "Farm Manager",
     emergency_contact_number: "+911602450123",
+    address: "Green Acres Farm, 15 Farm Lane, Punjab, PB",
     employees: "150",
     vehicles: "25",
     gps_required: "10",
@@ -310,6 +289,63 @@ export const organisationData: Organisation[] = [
     ],
     username: "baljeet.manager@greenacres.com",
     password: "hashed_password_greenfarm456",
+    status: "Active",
+  },
+];
+
+export const bookingsData: Booking[] = [
+  {
+    id: "BOOK-001",
+    user_id: "USER-001",
+    traveler_id: "TRV-001",
+    organisation_id: "ORG-001A",
+    booking_date: "2025-10-20",
+    start_date: "2025-11-01",
+    end_date: "2025-12-01",
+    pickup_location: "Channamma", // This is now a checkpoint
+    drop_location: "AlphaLogi HQ, 100 Logistics Way, Mumbai, MH", // This is the org's address
+    pickup_time: "08:00 AM",
+    status: "Active",
+  },
+
+  {
+    id: "BOOK-001",
+    user_id: "USER-001",
+    traveler_id: "TRV-001",
+    organisation_id: "ORG-001A",
+    booking_date: "2025-10-20",
+    start_date: "2025-11-01",
+    end_date: "2025-12-01",
+    pickup_location: "Channamma", // This is now a checkpoint
+    drop_location: "AlphaLogi HQ, 100 Logistics Way, Mumbai, MH", // This is the org's address
+    pickup_time: "08:00 AM",
+    status: "Completed",
+  },
+
+  {
+    id: "BOOK-001",
+    user_id: "USER-001",
+    traveler_id: "TRV-001",
+    organisation_id: "ORG-001A",
+    booking_date: "2025-10-20",
+    start_date: "2025-11-01",
+    end_date: "2025-12-01",
+    pickup_location: "Channamma", // This is now a checkpoint
+    drop_location: "AlphaLogi HQ, 100 Logistics Way, Mumbai, MH", // This is the org's address
+    pickup_time: "08:00 AM",
+    status: "Completed",
+  },
+  {
+    id: "BOOK-002",
+    user_id: "USER-001",
+    traveler_id: "TRV-002",
+    organisation_id: "ORG-001A",
+    booking_date: "2025-09-15",
+    start_date: "2025-10-01",
+    end_date: "2025-11-01",
+    pickup_location: "CBT", // A checkpoint
+    drop_location: "AlphaLogi HQ, 100 Logistics Way, Mumbai, MH", // Org's address
+    pickup_time: "07:00 AM",
     status: "Active",
   },
 ];

@@ -24,6 +24,11 @@ import UserIndexPage from "../Pages/AppUser/UserIndexPage";
 import UserCreatePage from "../Pages/AppUser/UserCreatePage";
 import UserShowPage from "../Pages/AppUser/UserShowPage";
 import UserEditPage from "../Pages/AppUser/UserEditPage";
+import BookingIndexPage from "../Pages/Booking/BookingIndexPage";
+import BookingShowPage from "../Pages/Booking/BookingShowPage";
+import TravelerIndexPage from "../Pages/Traveler/TravelerIndexPage";
+import TravelerShowPage from "../Pages/Traveler/TravelerShowPage";
+import BookingCreatePage from "../Pages/Booking/BookingCreatePage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -83,6 +88,15 @@ const AuthLayout = () => {
             <Route path="users/create" element={<UserCreatePage />} />
             <Route path="users/show/:id" element={<UserShowPage />} />
             <Route path="users/edit/:id" element={<UserEditPage />} />
+
+            {/* Booking Pages */}
+            <Route path="bookings" element={<BookingIndexPage />} />
+            <Route path="bookings/show/:id" element={<BookingShowPage />} />
+            <Route path="bookings/create" element={<BookingCreatePage />} />
+
+            {/* Traveler Pages */}
+            <Route path="travelers" element={<TravelerIndexPage />} />
+            <Route path="travelers/show/:id" element={<TravelerShowPage />} />
           </Routes>
         </div>
       </main>

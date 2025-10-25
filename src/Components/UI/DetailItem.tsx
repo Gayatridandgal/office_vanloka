@@ -9,10 +9,10 @@ interface DetailItemProps {
 const DetailItem: React.FC<DetailItemProps> = ({ label, value }) => {
   return (
     <div>
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+      <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
         {label}
       </p>
-      <p className="text-base font-semibold text-gray-900">
+      <p className="text-sm uppercase font-semibold text-gray-900">
         {value || <span className="text-gray-400">N/A</span>}
       </p>
     </div>

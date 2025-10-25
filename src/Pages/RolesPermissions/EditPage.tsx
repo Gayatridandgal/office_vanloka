@@ -31,7 +31,7 @@ const EditPage = () => {
     event.preventDefault();
     console.log("Updated Role Name:", roleName);
     console.log("Updated Permissions:", selectedPermissions);
-    navigate("/roles"); // Redirect after submission
+    navigate("/roles_permissions"); // Redirect after submission
   };
 
   return (

@@ -68,12 +68,12 @@ const sidebarLinks: SidebarLinkType[] = [
     feature: "MANAGE_TRAVELERS",
   },
 
-  {
-    name: "Bookings Management",
-    path: "/bookings",
-    icon: <FaRegAddressBook size={22} />,
-    feature: "MANAGE_BOOKINGS",
-  },
+  // {
+  //   name: "Bookings Management",
+  //   path: "/bookings",
+  //   icon: <FaRegAddressBook size={22} />,
+  //   feature: "MANAGE_BOOKINGS",
+  // },
 
   // {
   //   name: "Training Management",

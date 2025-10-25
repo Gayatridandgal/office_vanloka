@@ -21,7 +21,7 @@ const CreatePage = () => {
     event.preventDefault();
     console.log("Role Name:", roleName);
     console.log("Permissions:", selectedPermissions);
-    navigate("/roles"); // Redirect after submission
+    navigate("/roles_permissions"); // Redirect after submission
   };
 
   return (
