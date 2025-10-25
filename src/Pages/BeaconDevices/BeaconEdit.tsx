@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import type { Beacon } from "../../Types/Index";
 import { useEffect } from "react";
-import { beaconDevicesData } from "../../Data/Index";
+import { assignedBeacons } from "../../Data/Index";
 
 const BeaconEditPage = () => {
   const { id } = useParams<{ id: string }>(); // This is the 'uid' from the data
@@ -18,12 +18,12 @@ const BeaconEditPage = () => {
 
   // Find the device and populate the form on component load
   useEffect(() => {
-    const device = beaconDevicesData.find((d) => d.id === id);
+    const device = assignedBeacons.find((d) => d.id === id);
     if (device) {
       // The keys in this object must match the form input names
       reset({
-        title: device.title,
-        beacon_id: device.beacon_id,
+        name: device.name,
+        imei_number: device.imei_number,
       });
     }
   }, [id, reset]);
@@ -31,7 +31,7 @@ const BeaconEditPage = () => {
   // Handle form submission
   const onSubmit: SubmitHandler<Beacon> = (data) => {
     console.log("Updated Data:", data);
-    alert(`Device "${data.title}" updated successfully!`);
+    alert(`Device "${data.name}" updated successfully!`);
     navigate("/beacon_devices");
   };
 
@@ -44,21 +44,19 @@ const BeaconEditPage = () => {
           {/* Title Field */}
           <div className="mb-6">
             <label
-              htmlFor="title"
+              htmlFor="name"
               className="block text-purple-950 uppercase font-bold mb-2"
             >
               Title
             </label>
             <input
               type="text"
-              id="title"
-              {...register("title", { required: "Title is required." })}
+              id="name"
+              {...register("name", { required: "Title is required." })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
             />
-            {errors.title && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.title.message}
-              </p>
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
 
@@ -73,7 +71,9 @@ const BeaconEditPage = () => {
             <input
               type="text"
               id="id"
-              {...register("beacon_id", { required: "Device ID is required." })}
+              {...register("imei_number", {
+                required: "Device ID is required.",
+              })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
             />
             {errors.id && (

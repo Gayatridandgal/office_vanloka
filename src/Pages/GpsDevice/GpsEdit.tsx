@@ -2,7 +2,7 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useParams, useNavigate } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import { gpsDevicesData } from "../../Data/Index";
+import { assignedGps } from "../../Data/Index";
 import type { Gps } from "../../Types/Index";
 import { useEffect } from "react";
 
@@ -18,12 +18,12 @@ const GpsEditPage = () => {
 
   // Find the device and populate the form on component load
   useEffect(() => {
-    const device = gpsDevicesData.find((d) => d.id === id);
+    const device = assignedGps.find((d) => d.id === id);
     if (device) {
       // The keys in this object must match the form input names
       reset({
-        title: device.title,
-        gps_id: device.gps_id,
+        name: device.name,
+        imei_number: device.imei_number,
         remark: device.remark,
       });
     }
@@ -32,7 +32,7 @@ const GpsEditPage = () => {
   // Handle form submission
   const onSubmit: SubmitHandler<Gps> = (data) => {
     console.log("Updated Data:", data);
-    alert(`Device "${data.title}" updated successfully!`);
+    alert(`Device "${data.name}" updated successfully!`);
     navigate("/gps_devices");
   };
 
@@ -45,21 +45,19 @@ const GpsEditPage = () => {
           {/* Title Field */}
           <div className="mb-6">
             <label
-              htmlFor="title"
+              htmlFor="name"
               className="block text-purple-950 uppercase font-bold mb-2"
             >
               Title
             </label>
             <input
               type="text"
-              id="title"
-              {...register("title", { required: "Title is required." })}
+              id="name"
+              {...register("name", { required: "Title is required." })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
             />
-            {errors.title && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.title.message}
-              </p>
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
 

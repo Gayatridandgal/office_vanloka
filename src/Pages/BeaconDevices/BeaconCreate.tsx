@@ -17,7 +17,7 @@ const BeaconCreatePage = () => {
   const onSubmit: SubmitHandler<Beacon> = (data: Beacon) => {
     console.log("Form Data:", data);
     // In a real app, you would make an API call here.
-    alert(`Device "${data.title}" created successfully!`);
+    alert(`Device "${data.name}" created successfully!`);
     navigate("/beacon_devices"); // Redirect after submission
   };
 
@@ -31,22 +31,20 @@ const BeaconCreatePage = () => {
           {/* Title Field */}
           <div className="mb-6">
             <label
-              htmlFor="title"
+              htmlFor="name"
               className="block text-purple-950 uppercase font-bold mb-2"
             >
               Title
             </label>
             <input
               type="text"
-              id="title"
-              {...register("title", { required: "Title is required." })}
+              id="name"
+              {...register("name", { required: "Title is required." })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
               placeholder="Main Tracker"
             />
-            {errors.title && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.title.message}
-              </p>
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
 
@@ -60,8 +58,10 @@ const BeaconCreatePage = () => {
             </label>
             <input
               type="text"
-              id="beacon_id"
-              {...register("beacon_id", { required: "Device ID is required." })}
+              id="imei_number"
+              {...register("imei_number", {
+                required: "Device ID is required.",
+              })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
               placeholder="BEACON-A001"
             />

@@ -1,4 +1,4 @@
-import type { Driver, Vehicle } from "../Types/Index";
+import type { Beacon, Driver, Gps, Vehicle } from "../Types/Index";
 
 //  Dummy features data for demonstration
 export const app_features = [
@@ -157,14 +157,14 @@ export const driverData: Driver[] = [
   },
 ];
 
-export const assignedGps = [
+export const assignedGps: Gps[] = [
   { id: "GPS-001", name: "GPS-989", imei_number: "8989871523" },
   { id: "GPS-002", name: "GPS-787", imei_number: "4565544344" },
   { id: "GPS-003", name: "GPS-898", imei_number: "0091212398" },
   { id: "GPS-004", name: "GPS-121", imei_number: "8675309444" },
 ];
 
-export const assignedBeacons = [
+export const assignedBeacons: Beacon[] = [
   { id: "BEACON-001", name: "BEACON-909", imei_number: "8675309111" },
   { id: "BEACON-002", name: "BEACON-187", imei_number: "8675309222" },
   { id: "BEACON-003", name: "BEACON-098", imei_number: "8675309333" },
