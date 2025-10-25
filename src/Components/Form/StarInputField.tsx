@@ -8,7 +8,7 @@ type StarInputFieldProps = {
   register: UseFormRegister<any>;
   errors: FieldErrors;
   required?: boolean | string;
-  type?: "text" | "email" | "number" | "password" | "tel";
+  type?: "text" | "email" | "number" | "password" | "tel" | "date";
   className?: string;
   placeholder?: string;
 };

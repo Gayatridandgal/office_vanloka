@@ -20,6 +20,10 @@ import DriverIndexPage from "../Pages/Drivers/DriverIndexPage";
 import DriverShowPage from "../Pages/Drivers/DriverShowPage";
 import DriverEditPage from "../Pages/Drivers/DriverEditPage";
 import DriverCreatePage from "../Pages/Drivers/DriverCreatePage";
+import UserIndexPage from "../Pages/AppUser/UserIndexPage";
+import UserCreatePage from "../Pages/AppUser/UserCreatePage";
+import UserShowPage from "../Pages/AppUser/UserShowPage";
+import UserEditPage from "../Pages/AppUser/UserEditPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,7 +41,7 @@ const AuthLayout = () => {
         {/* Mobile Header with Toggle Button */}
         <MobileHeader title="Institute Panel" toggleSidebar={toggleSidebar} />
 
-        <div className="p-2">
+        <div className="p-2 overflow-y-auto">
           <Routes>
             <Route path="dashboard" element={<Dashboard />} />
 
@@ -62,7 +66,7 @@ const AuthLayout = () => {
               element={<BeaconEditPage />}
             />
 
-            {/* Vehicles Pages */}
+            {/* Vehicle Pages */}
             <Route path="vehicles" element={<VehicleIndexPage />} />
             <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
             <Route path="vehicles/create" element={<VehicleCreatePage />} />
@@ -73,6 +77,12 @@ const AuthLayout = () => {
             <Route path="drivers/create" element={<DriverCreatePage />} />
             <Route path="drivers/show/:id" element={<DriverShowPage />} />
             <Route path="drivers/edit/:id" element={<DriverEditPage />} />
+
+            {/* User Pages */}
+            <Route path="users" element={<UserIndexPage />} />
+            <Route path="users/create" element={<UserCreatePage />} />
+            <Route path="users/show/:id" element={<UserShowPage />} />
+            <Route path="users/edit/:id" element={<UserEditPage />} />
           </Routes>
         </div>
       </main>

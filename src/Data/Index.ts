@@ -1,4 +1,13 @@
-import type { Beacon, Driver, Gps, Vehicle } from "../Types/Index";
+import type {
+  AppUser,
+  Beacon,
+  Driver,
+  Gps,
+  Organisation,
+  Traveler,
+  User,
+  Vehicle,
+} from "../Types/Index";
 
 //  Dummy features data for demonstration
 export const app_features = [
@@ -169,4 +178,138 @@ export const assignedBeacons: Beacon[] = [
   { id: "BEACON-002", name: "BEACON-187", imei_number: "8675309222" },
   { id: "BEACON-003", name: "BEACON-098", imei_number: "8675309333" },
   { id: "BEACON-004", name: "BEACON-101", imei_number: "3432212321" },
+];
+
+export const travelersData: Traveler[] = [
+  {
+    id: "TRV-001",
+    user_id: "USER-001",
+    photo: "https://randomuser.me/api/portraits/women/33.jpg",
+    first_name: "Priya",
+    last_name: "Verma",
+    dob: "1988-11-15",
+    gender: "Female",
+    relationship: "Spouse",
+  },
+  {
+    id: "TRV-002",
+    user_id: "USER-001",
+    photo: "https://randomuser.me/api/portraits/men/34.jpg",
+    first_name: "Aarav",
+    last_name: "Verma",
+    dob: "2015-02-10",
+    gender: "Male",
+    relationship: "Child",
+  },
+];
+
+export const usersData: AppUser[] = [
+  {
+    id: "USER-001",
+    organisation_id: "ORG-001A", // Alpha Logistics
+    photo: "https://randomuser.me/api/portraits/men/32.jpg",
+    first_name: "Rohan",
+    last_name: "Verma",
+    dob: "1985-05-20",
+    email: "rohan.verma@example.com",
+    phone: "9876543210",
+    address_line1: "123, MG Road",
+    city: "Mumbai",
+    state: "Maharashtra",
+    pin: "400001",
+    travelers: [
+      {
+        id: "TRV-001",
+        user_id: "USER-001",
+        photo: "https://randomuser.me/api/portraits/women/33.jpg",
+        first_name: "Priya",
+        last_name: "Verma",
+        dob: "1988-11-15",
+        gender: "Female",
+        relationship: "Spouse",
+      },
+      {
+        id: "TRV-002",
+        user_id: "USER-001",
+        photo: "https://randomuser.me/api/portraits/men/34.jpg",
+        first_name: "Aarav",
+        last_name: "Verma",
+        dob: "2015-02-10",
+        gender: "Male",
+        relationship: "Child",
+      },
+    ],
+  },
+  {
+    id: "USER-002",
+    organisation_id: "ORG-001A", // Public user
+    photo: "https://randomuser.me/api/portraits/women/40.jpg",
+    first_name: "Sunita",
+    last_name: "Patel",
+    dob: "1992-08-30",
+    email: "sunita.patel@example.com",
+    phone: "9123456789",
+    address_line1: "45, Park Street",
+    city: "Kolkata",
+    state: "West Bengal",
+    pin: "700016",
+    travelers: [], // No travelers
+  },
+];
+
+export const organisationData: Organisation[] = [
+  {
+    id: "ORG-001A",
+    plan_id: "PREMIUM-01",
+    name: "Alpha Logistics Solutions",
+    registred_business_name: "AlphaLogi Pvt. Ltd.",
+    udyam_number: "UDYAM-MH-01-0012345",
+    gst_number: "27AABCT1234A1Z5",
+    sector: "Transportation & Supply Chain",
+    contact_person_name: "Aman Sharma",
+    contact_person_email: "aman.sharma@alphalogi.com",
+    contact_person_phone: "+919876543210",
+    contact_person_designation: "Operations Head",
+    emergency_contact_number: "+912240123000",
+    employees: "450",
+    vehicles: "120",
+    gps_required: "120",
+    beacon_required: "50",
+    checkpoints: [{ name: "CBT" }, { name: "Channamma" }, { name: "Goa Ves" }],
+    gps_devices: [{ name: "GPS-918", imei_number: "889777" }],
+    beacon_devices: [
+      { name: "Beacon-918", imei_number: "56455" },
+      { name: "Beacon-987", imei_number: "85463" },
+    ],
+    username: "aman.admin@gmail.com",
+    password: "hashed_password_alpha123",
+    status: "Active",
+  },
+
+  {
+    id: "ORG-003C",
+    plan_id: "STANDARD-01",
+    name: "Green Acres Farms",
+    registred_business_name: "Green Acres Agricultural Co.",
+    udyam_number: "UDYAM-PB-03-0098765",
+    gst_number: "03AAGCT9876C1Z8",
+    sector: "Agriculture & Farming",
+    contact_person_name: "Baljeet Kaur",
+    contact_person_email: "baljeet.kaur@greenacres.co",
+    contact_person_phone: "+917009988770",
+    contact_person_designation: "Farm Manager",
+    emergency_contact_number: "+911602450123",
+    employees: "150",
+    vehicles: "25",
+    gps_required: "10",
+    beacon_required: "0",
+    checkpoints: [
+      { name: "Tilakwadi" },
+      { name: "3rd Gate" },
+      { name: "Piranwadi" },
+    ],
+    username: "baljeet.manager@greenacres.com",
+    password: "hashed_password_greenfarm456",
+    status: "Active",
+  },
 ];
