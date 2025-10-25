@@ -14,10 +14,10 @@ const columns = [
 ];
 
 // Placeholder for the delete action
-const handleDelete = (device: Gps) => {
-  console.log("Delete device:", device);
-  alert(`Deleting ${device.name}`);
-};
+// const handleDelete = (device: Gps) => {
+//   console.log("Delete device:", device);
+//   alert(`Deleting ${device.name}`);
+// };
 
 const GpsIndexPage = () => {
   return (

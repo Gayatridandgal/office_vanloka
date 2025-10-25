@@ -5,13 +5,11 @@ import { FaUserShield } from "react-icons/fa6";
 import { FaUsers } from "react-icons/fa";
 import { FaBusinessTime } from "react-icons/fa6";
 import { FaRegAddressBook } from "react-icons/fa6";
-import { GiTrail } from "react-icons/gi";
-import { FiMessageCircle } from "react-icons/fi";
-import { MdOutlineSupportAgent } from "react-icons/md";
 import { FaUsersCog } from "react-icons/fa";
 import type { SidebarLinkType } from "../Types/Index";
 import { GrBeacon } from "react-icons/gr";
 import { app_features as userFeatures } from "../Data/Index";
+import { FiMessageCircle } from "react-icons/fi";
 
 const sidebarLinks: SidebarLinkType[] = [
   {

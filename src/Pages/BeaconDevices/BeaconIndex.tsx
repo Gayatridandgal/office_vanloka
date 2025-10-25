@@ -16,10 +16,10 @@ const columns = [
 ];
 
 // Placeholder for the delete action
-const handleDelete = (device: Beacon) => {
-  console.log("Delete device:", device);
-  alert(`Deleting ${device.name}`);
-};
+// const handleDelete = (device: Beacon) => {
+//   console.log("Delete device:", device);
+//   alert(`Deleting ${device.name}`);
+// };
 
 const BeaconIndexPage = () => {
   return (
