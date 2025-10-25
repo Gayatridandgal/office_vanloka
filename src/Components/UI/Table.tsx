@@ -21,7 +21,7 @@ interface DynamicTableProps<T> {
 const Table = <T extends { id: number | string }>({
   list,
   columns,
-  onEdit,
+  // onEdit,
   onDelete,
   editUrl,
   viewUrl,
@@ -34,16 +34,15 @@ const Table = <T extends { id: number | string }>({
             {columns.map((col) => (
               <th
                 key={col.key.toString()}
-                className={`px-6 py-3 text-sm font-bold text-purple-950 uppercase `}
+                className={`px-6 py-3 text-sm font-bold text-purple-950 uppercase tracking-wider`}
               >
                 {col.label}
               </th>
             ))}
-            {(onEdit || onDelete) && (
-              <th className="px-6 py-3 text-center text-sm font-bold text-purple-950 uppercase ">
-                Actions
-              </th>
-            )}
+
+            <th className="px-6 py-3 text-center text-sm font-bold text-purple-950 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -61,36 +60,34 @@ const Table = <T extends { id: number | string }>({
                   </td>
                 ))}
 
-                {(onEdit || onDelete) && (
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex justify-center items-center gap-2">
-                      {editUrl && (
-                        <Link
-                          to={`${editUrl}/${item.id}`}
-                          className="text-green-700"
-                        >
-                          <FaRegEdit size={24} />
-                        </Link>
-                      )}
-                      {onDelete && (
-                        <button
-                          className="text-red-600"
-                          onClick={() => onDelete(item)}
-                        >
-                          <RiDeleteBin6Line size={24} />
-                        </button>
-                      )}
-                      {viewUrl && (
-                        <Link
-                          to={`${viewUrl}/${item.id}`}
-                          className="text-blue-600"
-                        >
-                          <FaEye size={24} />
-                        </Link>
-                      )}
-                    </div>
-                  </td>
-                )}
+                <td className="px-6 py-4 text-sm">
+                  <div className="flex justify-center items-center gap-2">
+                    {editUrl && (
+                      <Link
+                        to={`${editUrl}/${item.id}`}
+                        className="text-green-900"
+                      >
+                        <FaRegEdit size={24} />
+                      </Link>
+                    )}
+                    {onDelete && (
+                      <button
+                        className="text-red-600"
+                        onClick={() => onDelete(item)}
+                      >
+                        <RiDeleteBin6Line size={24} />
+                      </button>
+                    )}
+                    {viewUrl && (
+                      <Link
+                        to={`${viewUrl}/${item.id}`}
+                        className="text-blue-600"
+                      >
+                        <FaEye size={24} />
+                      </Link>
+                    )}
+                  </div>
+                </td>
               </tr>
             ))
           ) : (

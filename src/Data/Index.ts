@@ -197,3 +197,17 @@ export const driverData: Driver[] = [
     status: "Active",
   },
 ];
+
+export const assignedGps = [
+  { id: "GPS-001", name: "GPS-989", imei_number: "8989871523" },
+  { id: "GPS-002", name: "GPS-787", imei_number: "4565544344" },
+  { id: "GPS-003", name: "GPS-898", imei_number: "0091212398" },
+  { id: "GPS-004", name: "GPS-121", imei_number: "8675309444" },
+];
+
+export const assignedBeacons = [
+  { id: "BEACON-001", name: "BEACON-909", imei_number: "8675309111" },
+  { id: "BEACON-002", name: "BEACON-187", imei_number: "8675309222" },
+  { id: "BEACON-003", name: "BEACON-098", imei_number: "8675309333" },
+  { id: "BEACON-004", name: "BEACON-101", imei_number: "3432212321" },
+];
