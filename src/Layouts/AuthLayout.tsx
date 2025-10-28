@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Sidebar from "../Components/Sidebar";
-import Dashboard from "../Pages/DashboardPage";
 import IndexPage from "../Pages/RolesPermissions/Index";
 import EditPage from "../Pages/RolesPermissions/EditPage";
 import CreatePage from "../Pages/RolesPermissions/CreatePage";
@@ -25,6 +24,7 @@ import BookingShowPage from "../Pages/Booking/BookingShowPage";
 import TravelerIndexPage from "../Pages/Traveler/TravelerIndexPage";
 import TravelerShowPage from "../Pages/Traveler/TravelerShowPage";
 import BookingCreatePage from "../Pages/Booking/BookingCreatePage";
+import DashboardPage from "../Pages/DashBoard";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -44,7 +44,8 @@ const AuthLayout = () => {
 
         <div className="p-2 overflow-y-auto">
           <Routes>
-            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            {/* <Route path="dashboard" element={<Dashboard />} /> */}
 
             {/* Roles and Permissions Pages*/}
             <Route path="roles_permissions" element={<IndexPage />} />
