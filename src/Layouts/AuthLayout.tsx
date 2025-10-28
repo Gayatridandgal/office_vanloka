@@ -20,10 +20,6 @@ import DriverIndexPage from "../Pages/Drivers/DriverIndexPage";
 import DriverShowPage from "../Pages/Drivers/DriverShowPage";
 import DriverEditPage from "../Pages/Drivers/DriverEditPage";
 import DriverCreatePage from "../Pages/Drivers/DriverCreatePage";
-import UserIndexPage from "../Pages/AppUser/UserIndexPage";
-import UserCreatePage from "../Pages/AppUser/UserCreatePage";
-import UserShowPage from "../Pages/AppUser/UserShowPage";
-import UserEditPage from "../Pages/AppUser/UserEditPage";
 import BookingIndexPage from "../Pages/Booking/BookingIndexPage";
 import BookingShowPage from "../Pages/Booking/BookingShowPage";
 import TravelerIndexPage from "../Pages/Traveler/TravelerIndexPage";
@@ -84,10 +80,10 @@ const AuthLayout = () => {
             <Route path="drivers/edit/:id" element={<DriverEditPage />} />
 
             {/* User Pages */}
-            <Route path="users" element={<UserIndexPage />} />
+            {/* <Route path="users" element={<UserIndexPage />} />
             <Route path="users/create" element={<UserCreatePage />} />
             <Route path="users/show/:id" element={<UserShowPage />} />
-            <Route path="users/edit/:id" element={<UserEditPage />} />
+            <Route path="users/edit/:id" element={<UserEditPage />} /> */}
 
             {/* Booking Pages */}
             <Route path="bookings" element={<BookingIndexPage />} />

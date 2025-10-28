@@ -19,7 +19,7 @@ const PageHeaderBack: React.FC<HeaderProps> = ({
       {buttonLink && (
         <Link
           to={buttonLink}
-          className={`flex items-center font-bold rounded-lg text-lg transition-colors uppercase`}
+          className={`flex items-center font-bold rounded-lg text-md transition-colors uppercase`}
         >
           <FaArrowLeft size={25} /> {buttonText}
         </Link>

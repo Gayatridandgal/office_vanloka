@@ -4,17 +4,18 @@ import {
   MdOutlineGpsFixed,
   MdOutlineSupportAgent,
 } from "react-icons/md";
-import { BsBusFrontFill } from "react-icons/bs";
+import { BsBusFront, BsBusFrontFill } from "react-icons/bs";
 import { FaUserShield } from "react-icons/fa6";
 import { FaUsers } from "react-icons/fa";
 import { FaBusinessTime } from "react-icons/fa6";
 import { FaRegAddressBook } from "react-icons/fa6";
 import { FaUsersCog } from "react-icons/fa";
 import type { SidebarLinkType } from "../Types/Index";
-import { GrBeacon } from "react-icons/gr";
+import { GrBeacon, GrOrganization } from "react-icons/gr";
 import { app_features as userFeatures } from "../Data/Index";
 import { FiMessageCircle } from "react-icons/fi";
-import { GiTrail } from "react-icons/gi";
+import { HiUsers } from "react-icons/hi";
+import { RiGpsFill } from "react-icons/ri";
 
 const sidebarLinks: SidebarLinkType[] = [
   {
@@ -32,23 +33,30 @@ const sidebarLinks: SidebarLinkType[] = [
   },
 
   {
+    name: "Staff/Emp Management",
+    path: "/staff",
+    icon: <FaUserShield size={22} />,
+    feature: "MANAGE_VEHICLES",
+  },
+
+  {
     name: "Vehicle Management",
     path: "/vehicles",
-    icon: <BsBusFrontFill size={22} />,
+    icon: <BsBusFront size={22} />,
     feature: "MANAGE_VEHICLES",
   },
 
   {
     name: "Driver Management",
     path: "/drivers",
-    icon: <FaUserShield size={22} />,
+    icon: <HiUsers size={22} />,
     feature: "MANAGE_DRIVERS",
   },
 
   {
     name: "GPS Devices",
     path: "/gps_devices",
-    icon: <MdOutlineGpsFixed size={22} />,
+    icon: <RiGpsFill size={22} />,
     feature: "MANAGE_GPS",
   },
 
@@ -59,12 +67,12 @@ const sidebarLinks: SidebarLinkType[] = [
     feature: "MANAGE_BEACON",
   },
 
-  {
-    name: "Users Management",
-    path: "/users",
-    icon: <FaUsers size={22} />,
-    feature: "MANAGE_USERS",
-  },
+  // {
+  //   name: "Users Management",
+  //   path: "/users",
+  //   icon: <FaUsers size={22} />,
+  //   feature: "MANAGE_USERS",
+  // },
 
   {
     name: "Travelers Management",
@@ -80,19 +88,19 @@ const sidebarLinks: SidebarLinkType[] = [
     feature: "MANAGE_BOOKINGS",
   },
 
+  {
+    name: "Vendor Management",
+    path: "/vendors",
+    icon: <GrOrganization size={22} />,
+    feature: "MANAGE_TRAVELERS",
+  },
+
   // {
   //   name: "Training Management",
   //   path: "/trainings",
   //   icon: <GiTrail size={22} />,
   //   feature: "MANAGE_TRAININGS",
   // },
-
-  {
-    name: "Give Feedback",
-    path: "/feedbacks",
-    icon: <FiMessageCircle size={22} />,
-    feature: "DEFAULT",
-  },
 
   {
     name: "Rase Support Ticket",

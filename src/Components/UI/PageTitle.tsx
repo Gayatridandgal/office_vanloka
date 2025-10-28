@@ -7,7 +7,7 @@ interface PageTitleProps {
 const PageTitle: React.FC<PageTitleProps> = ({ title }) => {
   return (
     <div className="flex justify-between items-center mb-4">
-      <h1 className="text-lg font-bold text-purple-950 uppercase">{title}</h1>
+      <h1 className="text-md font-bold text-purple-950 uppercase">{title}</h1>
     </div>
   );
 };
