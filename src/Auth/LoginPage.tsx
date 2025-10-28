@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../Services/AuthService";
+import logo from "../../public/logo.avif";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -21,17 +22,21 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-purple-50 animate-gradient-slow text-white font-sans">
       <div className="bg-opacity-10 bg-white backdrop-filter backdrop-blur-sm rounded-xl p-8 sm:p-12 shadow-2xl max-w-lg w-full transform transition-transform duration-300">
-        <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-shadow-lg text-center text-purple-600">
+        <div className="flex justify-center">
+          <img
+            src={logo}
+            alt="Company Logo"
+            className="rounded-lg w-1/2 h-13 shadow-xl"
+          />
+        </div>
+        <h2 className="text-4xl mt-5 font-bold mb-4 text-shadow-lg text-center text-purple-600">
           Login
         </h2>
-        <p className="text-lg sm:text-xl mb-8 opacity-80 text-center text-black">
-          Login to Your Account.
-        </p>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm text-black font-medium mb-1">
-              Email Address
+              Email<span className="text-red-600">*</span>
             </label>
             <input
               type="email"
@@ -44,7 +49,7 @@ const LoginPage = () => {
           </div>
           <div>
             <label className="block text-sm text-black font-medium  mb-1">
-              Password
+              Password<span className="text-red-600">*</span>
             </label>
             <input
               type="password"
@@ -60,7 +65,7 @@ const LoginPage = () => {
           )}
           <button
             type="submit"
-            className="w-full px-8 py-3 mt-5 mb-5 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg shadow-lg"
+            className="w-full px-8 py-3 mt-5 mb-5 bg-purple-900 hover:bg-purple-950 text-white font-semibold rounded-lg shadow-lg"
           >
             Login
           </button>

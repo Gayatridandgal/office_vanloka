@@ -37,7 +37,7 @@ const AuthLayout = () => {
   };
 
   return (
-    <div className="flex h-screen relative overflow-hidden">
+    <div className="flex h-screen relative overflow-hidden text-sm">
       {/* Sidebar Component */}
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 

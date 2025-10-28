@@ -1,5 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { MdDashboard, MdOutlineGpsFixed } from "react-icons/md";
+import {
+  MdDashboard,
+  MdOutlineGpsFixed,
+  MdOutlineSupportAgent,
+} from "react-icons/md";
 import { BsBusFrontFill } from "react-icons/bs";
 import { FaUserShield } from "react-icons/fa6";
 import { FaUsers } from "react-icons/fa";
@@ -10,6 +14,7 @@ import type { SidebarLinkType } from "../Types/Index";
 import { GrBeacon } from "react-icons/gr";
 import { app_features as userFeatures } from "../Data/Index";
 import { FiMessageCircle } from "react-icons/fi";
+import { GiTrail } from "react-icons/gi";
 
 const sidebarLinks: SidebarLinkType[] = [
   {
@@ -68,12 +73,12 @@ const sidebarLinks: SidebarLinkType[] = [
     feature: "MANAGE_TRAVELERS",
   },
 
-  // {
-  //   name: "Bookings Management",
-  //   path: "/bookings",
-  //   icon: <FaRegAddressBook size={22} />,
-  //   feature: "MANAGE_BOOKINGS",
-  // },
+  {
+    name: "Bookings Management",
+    path: "/bookings",
+    icon: <FaRegAddressBook size={22} />,
+    feature: "MANAGE_BOOKINGS",
+  },
 
   // {
   //   name: "Training Management",
@@ -89,12 +94,12 @@ const sidebarLinks: SidebarLinkType[] = [
     feature: "DEFAULT",
   },
 
-  // {
-  //   name: "Rase Support Ticket",
-  //   path: "/support-tickets",
-  //   icon: <MdOutlineSupportAgent size={22} />,
-  //   feature: "MANAGE_SUPPORT_TICKETS",
-  // },
+  {
+    name: "Rase Support Ticket",
+    path: "/support-tickets",
+    icon: <MdOutlineSupportAgent size={22} />,
+    feature: "MANAGE_SUPPORT_TICKETS",
+  },
 
   // Dropdown link example
   // {
@@ -200,8 +205,8 @@ export default function Sidebar() {
                 to={link.path!}
                 className={`flex items-center space-x-4 py-2 px-4 rounded-lg transition-all duration-80 ${
                   link.path && location.pathname.startsWith(link.path)
-                    ? "bg-purple-200 text-purple-950 shadow-xl font-bold"
-                    : "text-purple-950 hover:bg-purple-200  border border-gray-300"
+                    ? "bg-purple-200 text-purple-950 shadow-xl font-bold border border-gray-300"
+                    : "text-purple-950 hover:bg-purple-100  "
                 }`}
               >
                 {link.icon}
