@@ -67,11 +67,13 @@ export interface Driver {
 export interface Traveler {
   id: string; // A unique ID for the traveler, useful for mapping keys
   user_id: string; // Reference to the parent user
+  organisation_id: string;
   photo: FileList | string; // Can be a FileList on create, or a string (URL) when fetched
   first_name: string;
   last_name: string;
   dob: string;
   gender: "Male" | "Female" | "Other";
+  beacon?: string;
   relationship: "Spouse" | "Child" | "Parent" | "Sibling" | "Other";
 }
 
@@ -129,13 +131,14 @@ export interface Booking {
   user_id: string;
   traveler_id: string;
   organisation_id: string;
+  beacon?: string;
   booking_date: string;
   start_date: string;
   end_date: string;
   pickup_location: string; // This will be a checkpoint name
   drop_location: string; // This will be the organisation's address
   pickup_time: string;
-  status: "Active" | "Inactive" | "Completed" | "Cancelled";
+  status: "Active" | "Completed" | "Cancelled" | "New";
 }
 
 export interface LiveVehicle {

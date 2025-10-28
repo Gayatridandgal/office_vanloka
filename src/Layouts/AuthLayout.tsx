@@ -26,6 +26,7 @@ import TravelerShowPage from "../Pages/Traveler/TravelerShowPage";
 import BookingCreatePage from "../Pages/Booking/BookingCreatePage";
 import DashboardPage from "../Pages/DashBoard";
 import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
+import TravelerEditPage from "../Pages/Traveler/TravelerEditPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -96,6 +97,7 @@ const AuthLayout = () => {
             {/* Traveler Pages */}
             <Route path="travelers" element={<TravelerIndexPage />} />
             <Route path="travelers/show/:id" element={<TravelerShowPage />} />
+            <Route path="travelers/Edit/:id" element={<TravelerEditPage />} />
           </Routes>
         </div>
       </main>
