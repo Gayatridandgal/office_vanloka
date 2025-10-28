@@ -6,11 +6,11 @@ import type {
   Gps,
   LiveVehicle,
   Organisation,
+  Staff,
   Traveler,
   Vehicle,
 } from "../Types/Index";
 
-//  Dummy features data for demonstration
 export const app_features = [
   "VIEW_DASHBOARD",
   "MANAGE_VEHICLES",
@@ -25,7 +25,6 @@ export const app_features = [
   "MANAGE_SUPPORT_TICKETS",
 ];
 
-//  Dummy permissions data for demonstration
 export const allPermissions = [
   "view users",
   "create users",
@@ -58,7 +57,6 @@ export const allPermissions = [
   "delete bookings",
 ];
 
-// Dummy roles data for demonstration
 export const rolesData = [
   {
     id: 1,
@@ -90,7 +88,36 @@ export const rolesData = [
   },
 ];
 
-// Dummy vehicle data for demostration
+export const staffData: Staff[] = [
+  {
+    id: "STAFF-001",
+    photo:
+      "https://img.freepik.com/premium-vector/icono-perfil-simple-color-blanco-icon_1076610-50204.jpg",
+    first_name: "Sanjay",
+    last_name: "Kumar",
+    email: "sanjay.k@example.com",
+    phone: "9988776655",
+    designation: "Senior Manager",
+    role: [
+      { id: 1, name: "Administrator" },
+      { id: 2, name: "Accountant" },
+    ],
+    status: "Active",
+  },
+  {
+    id: "STAFF-002",
+    photo:
+      "https://img.freepik.com/premium-vector/icono-perfil-simple-color-blanco-icon_1076610-50204.jpg",
+    first_name: "Anita",
+    last_name: "Desai",
+    email: "anita.d@example.com",
+    phone: "9112233445",
+    designation: "Support Executive",
+    role: [{ id: 1, name: "Administrator" }],
+    status: "Active",
+  },
+];
+
 export const vehiclesData: Vehicle[] = [
   {
     id: "1",
@@ -125,7 +152,6 @@ export const vehiclesData: Vehicle[] = [
   },
 ];
 
-// Dummy vehicle data for demostration
 export const driverData: Driver[] = [
   {
     id: "1",

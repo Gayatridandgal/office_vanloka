@@ -27,6 +27,9 @@ import BookingCreatePage from "../Pages/Booking/BookingCreatePage";
 import DashboardPage from "../Pages/DashBoard";
 import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
 import TravelerEditPage from "../Pages/Traveler/TravelerEditPage";
+import StaffIndexPage from "../Pages/Staff/StaffIndexPage";
+import StaffCreatePage from "../Pages/Staff/StaffCreatePage";
+import StaffEditPage from "../Pages/Staff/StaffEditPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -53,6 +56,11 @@ const AuthLayout = () => {
             <Route path="roles_permissions" element={<IndexPage />} />
             <Route path="roles_permissions/create" element={<CreatePage />} />
             <Route path="roles_permissions/edit/:id" element={<EditPage />} />
+
+            {/* Staff Management */}
+            <Route path="staff" element={<StaffIndexPage />} />
+            <Route path="staff/create" element={<StaffCreatePage />} />
+            <Route path="staff/edit/:id" element={<StaffEditPage />} />
 
             {/* GPS Device Pages */}
             <Route path="gps_devices" element={<GpsIndexPage />} />

@@ -39,7 +39,7 @@ const FileInputField: React.FC<FileInputFieldProps> = ({
         id={name}
         type="file"
         {...register(name, validationRules)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full px-4 py-2 uppercase  text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
       {errorMessage && (
         <p className="text-red-500 text-sm mt-1">{String(errorMessage)}</p>

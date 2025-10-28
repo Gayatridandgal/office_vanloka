@@ -54,18 +54,18 @@ const VehicleTrackPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 bg-white min-h-screen">
+    <div className="px-4 bg-white min-h-screen">
       <PageHeaderBack
         title={
           vehicleToTrack
-            ? `Tracking: ${vehicleToTrack.vehicleName}`
+            ? `Tracking ${vehicleToTrack.vehicleName}`
             : "Tracking Vehicle"
         }
         buttonLink="/vehicles"
       />
 
       {vehicleToTrack ? (
-        <div className="mt-6 space-y-4">
+        <div className="space-y-4">
           {/* Map Card (no changes) */}
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
             <div className="h-[60vh] w-full rounded-lg overflow-hidden">
@@ -85,15 +85,18 @@ const VehicleTrackPage = () => {
               Live Data
             </h2>
             {/* The grid is now 3 columns for a cleaner look */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2">
               {/* The new, combined location/address field */}
-              <div className="md:col-span-1">
-                <DetailItem label="Last Known Location" value={address} />
+              <DetailItem label="Vehicle" value={vehicleToTrack.vehicleName} />
+
+              <div className="space-y-2">
+                <DetailItem label="Last Seen" value={address} />
+
+                <DetailItem
+                  label="Speed"
+                  value={`${vehicleToTrack.gps.speed} km/h`}
+                />
               </div>
-              <DetailItem
-                label="Speed"
-                value={`${vehicleToTrack.gps.speed} km/h`}
-              />
             </div>
           </div>
 

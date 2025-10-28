@@ -51,7 +51,7 @@ const StarInputField: React.FC<StarInputFieldProps> = ({
         type={type}
         disabled={disabled}
         {...register(name, validationRules)}
-        className={`w-full px-4 py-2 border text-sm border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${className}`}
+        className={`w-full px-4 py-2 border text-sm border-gray-300 uppercase rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${className}`}
         {...props} // Spread other props like placeholder
       />
       {errorMessage && (

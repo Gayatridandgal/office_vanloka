@@ -21,8 +21,25 @@ export interface SidebarLinkType {
 export interface Role {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   permissions?: string[];
+}
+
+export interface Staff {
+  id: string;
+  photo?: FileList | string;
+  first_name: string;
+  last_name: string;
+  dob?: string;
+  gender?: "Male" | "Female" | "Other";
+  address?: string;
+  joining_date?: string;
+  leaving_date?: string;
+  email: string;
+  phone: string;
+  designation: string;
+  role: Role[];
+  status: "Active" | "Inactive";
 }
 
 export interface Gps {

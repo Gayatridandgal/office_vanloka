@@ -63,19 +63,20 @@ const GoogleMapDisplay: React.FC<GoogleMapProps> = ({
             onVehicleSelect(vehicle.vehicleId);
           }}
         >
-          {vehicle.vehicleId === selectedVehicleId && (
+          {/* {vehicle.vehicleId === selectedVehicleId && (
             <InfoWindowF
+            
               position={vehicle.gps}
               onCloseClick={() => {
                 onVehicleSelect(vehicle.vehicleId);
               }}
             >
-              <div className="p-2">
+              <div className="">
                 <h4 className="font-bold uppercase">{vehicle.vehicleName}</h4>
                 <p className="uppercase">{vehicle.gps.speed} km/h</p>
               </div>
             </InfoWindowF>
-          )}
+          )} */}
         </MarkerF>
       ))}
     </GoogleMap>

@@ -25,30 +25,12 @@ const columns = [
   },
   {
     key: "traveler",
-    label: "Traveler",
+    label: "Full Name",
     render: (row: Booking) => (
       <div className="font-medium">{findTravelerName(row.traveler_id)}</div>
     ),
   },
-  {
-    key: "organisation",
-    label: "Organisation",
-    render: (row: Booking) => findOrgName(row.organisation_id),
-  },
-  {
-    key: "duration",
-    label: "Period",
-    render: (row: Booking) => (
-      <div>
-        <p>
-          <b>Start:</b> {new Date(row.start_date).toLocaleDateString()}
-        </p>
-        <p>
-          <b>End:</b> {new Date(row.end_date).toLocaleDateString()}
-        </p>
-      </div>
-    ),
-  },
+
   {
     key: "pickup",
     label: "Pickup Time",
