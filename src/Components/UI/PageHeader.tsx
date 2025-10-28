@@ -20,7 +20,7 @@ const PageHeader: React.FC<HeaderProps> = ({
 
   return (
     <div className="flex justify-between items-center mb-4">
-      <h1 className="text-md font-bold text-purple-950 uppercase">{title}</h1>
+      <h1 className="font-bold text-md text-purple-950 uppercase">{title}</h1>
       {buttonLink && buttonText && (
         <Link
           to={buttonLink}

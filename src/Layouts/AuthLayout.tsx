@@ -25,6 +25,7 @@ import TravelerIndexPage from "../Pages/Traveler/TravelerIndexPage";
 import TravelerShowPage from "../Pages/Traveler/TravelerShowPage";
 import BookingCreatePage from "../Pages/Booking/BookingCreatePage";
 import DashboardPage from "../Pages/DashBoard";
+import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -33,7 +34,7 @@ const AuthLayout = () => {
   };
 
   return (
-    <div className="flex h-screen relative overflow-hidden text-sm">
+    <div className="flex h-screen relative overflow-hidden">
       {/* Sidebar Component */}
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
@@ -73,6 +74,7 @@ const AuthLayout = () => {
             <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
             <Route path="vehicles/create" element={<VehicleCreatePage />} />
             <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
+            <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} />
 
             {/* Driver Pages */}
             <Route path="drivers" element={<DriverIndexPage />} />

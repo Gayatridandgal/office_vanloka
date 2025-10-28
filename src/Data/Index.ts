@@ -354,7 +354,7 @@ export const bookingsData: Booking[] = [
 // Data for map
 export const liveVehicleData: LiveVehicle[] = [
   {
-    vehicleId: "VEH-101",
+    vehicleId: "1",
     vehicleName: "Bus 101",
     orgId: "ORG-001A", // Alpha Logistics
     gps: {
@@ -369,7 +369,7 @@ export const liveVehicleData: LiveVehicle[] = [
     ],
   },
   {
-    vehicleId: "VEH-202",
+    vehicleId: "2",
     vehicleName: "Bus 202",
     orgId: "ORG-003C", // Green Acres
     gps: {
@@ -383,7 +383,7 @@ export const liveVehicleData: LiveVehicle[] = [
     ],
   },
   {
-    vehicleId: "VEH-303",
+    vehicleId: "3",
     vehicleName: "ST-101",
     orgId: "ORG-001A", // Alpha Logistics
     gps: {

@@ -14,7 +14,7 @@ const BeaconDisplay: React.FC<BeaconDisplayProps> = ({
     // The entire component is now a self-contained card
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
       <h3 className="text-md font-bold text-purple-950 uppercase mb-4">
-        {vehicleName ? `Travelers in ${vehicleName}` : ""}
+        Travelers
       </h3>
 
       {/* Handle the initial state before a vehicle is clicked */}

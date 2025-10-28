@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import PageHeader from "../../Components/UI/PageHeader";
 import Table from "../../Components/UI/Table";
 import { vehiclesData } from "../../Data/Index";
@@ -31,6 +32,22 @@ const columns = [
       );
     },
   },
+
+  {
+    key: "actions",
+    label: "",
+    render: (row: Vehicle) => (
+      <div className="flex items-center gap-4">
+        {/* The new "Track" button */}
+        <Link
+          to={`/vehicles/track/${row.id}`}
+          className="text-purple-950 bg-amber-200 p-1 text-xs rounded-full font-semibold"
+        >
+          Track
+        </Link>
+      </div>
+    ),
+  },
 ];
 
 const handleDelete = (vehicle: Vehicle) => {
@@ -49,8 +66,8 @@ const VehicleIndexPage = () => {
       <Table<Vehicle>
         list={vehiclesData}
         columns={columns}
-        viewUrl="/vehicles/show" // <-- Add this prop for the Show page
-        editUrl="/vehicles/edit" // <-- Keep this for the Edit page
+        viewUrl="/vehicles/show"
+        editUrl="/vehicles/edit"
         onDelete={handleDelete}
       />
     </div>

@@ -30,7 +30,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+    <div className="px-4 bg-white min-h-screen">
       <div className="space-y-8">
         {/* Card for the Map */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
