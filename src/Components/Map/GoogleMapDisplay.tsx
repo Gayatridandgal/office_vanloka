@@ -1,5 +1,5 @@
 import React from "react";
-import { GoogleMap, MarkerF, InfoWindowF } from "@react-google-maps/api";
+import { GoogleMap, MarkerF } from "@react-google-maps/api";
 import type { LiveVehicle } from "../../Types/Index";
 
 // NOTE: The icon definitions have been moved from here...
