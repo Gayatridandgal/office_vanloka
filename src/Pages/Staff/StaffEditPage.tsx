@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import StarInputField from "../../Components/Form/StarInputField";
 import FileInputField from "../../Components/Form/FileInputField";
-import type { Staff, Role } from "../../Types/Index";
+import type { Staff } from "../../Types/Index";
 import { staffData, rolesData } from "../../Data/Index";
 import SaveButton from "../../Components/Form/SaveButton";
 

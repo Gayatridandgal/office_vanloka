@@ -1,19 +1,15 @@
-import PageHeader from "../../Components/UI/PageHeader";
 import PageTitle from "../../Components/UI/PageTitle";
 import Table from "../../Components/UI/Table";
-import {
-  bookingsData,
-  organisationData,
-  travelersData,
-} from "../../Data/Index";
+import { bookingsData, travelersData } from "../../Data/Index";
 import type { Booking } from "../../Types/Index";
 
 const findTravelerName = (id: string) => {
   const traveler = travelersData.find((t) => t.id === id);
   return traveler ? `${traveler.first_name} ${traveler.last_name}` : "N/A";
 };
-const findOrgName = (id: string) =>
-  organisationData.find((o) => o.id === id)?.name || "N/A";
+
+// const findOrgName = (id: string) =>
+//   organisationData.find((o) => o.id === id)?.name || "N/A";
 
 const columns = [
   {
