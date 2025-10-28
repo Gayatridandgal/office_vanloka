@@ -4,6 +4,7 @@ import type {
   Booking,
   Driver,
   Gps,
+  LiveVehicle,
   Organisation,
   Traveler,
   Vehicle,
@@ -347,5 +348,53 @@ export const bookingsData: Booking[] = [
     drop_location: "AlphaLogi HQ, 100 Logistics Way, Mumbai, MH", // Org's address
     pickup_time: "07:00 AM",
     status: "Active",
+  },
+];
+
+// Data for map
+export const liveVehicleData: LiveVehicle[] = [
+  {
+    vehicleId: "VEH-101",
+    vehicleName: "Bus 101",
+    orgId: "ORG-001A", // Alpha Logistics
+    gps: {
+      lat: 15.8597, // Belagavi Area
+      lng: 74.5077,
+      speed: 45,
+      timestamp: new Date().toISOString(),
+    },
+    beacons: [
+      { id: "Beacon-918", name: "Viresh", lastSeen: new Date().toISOString() },
+      { id: "Beacon-188", name: "Maya", lastSeen: new Date().toISOString() },
+    ],
+  },
+  {
+    vehicleId: "VEH-202",
+    vehicleName: "Bus 202",
+    orgId: "ORG-003C", // Green Acres
+    gps: {
+      lat: 15.84,
+      lng: 74.52,
+      speed: 15,
+      timestamp: new Date().toISOString(),
+    },
+    beacons: [
+      { id: "Beacon-118", name: "Kumar", lastSeen: new Date().toISOString() },
+    ],
+  },
+  {
+    vehicleId: "VEH-303",
+    vehicleName: "ST-101",
+    orgId: "ORG-001A", // Alpha Logistics
+    gps: {
+      lat: 15.865,
+      lng: 74.49,
+      speed: 60,
+      timestamp: new Date().toISOString(),
+    },
+    beacons: [
+      { id: "Beacon-928", name: "Vikas", lastSeen: new Date().toISOString() },
+      { id: "Beacon-890", name: "Yogesh", lastSeen: new Date().toISOString() },
+    ],
   },
 ];

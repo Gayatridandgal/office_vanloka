@@ -35,8 +35,9 @@ export interface Gps {
 export interface Beacon {
   id: string; // A unique identifier for the record
   name: string;
-  imei_number: string; // The actual ID of the device hardware
+  imei_number?: string; // The actual ID of the device hardware
   remark?: string;
+  lastSeen?: Timestamps;
 }
 
 export interface Vehicle {
@@ -135,4 +136,17 @@ export interface Booking {
   drop_location: string; // This will be the organisation's address
   pickup_time: string;
   status: "Active" | "Inactive" | "Completed" | "Cancelled";
+}
+
+export interface LiveVehicle {
+  vehicleId: string;
+  vehicleName: string; // e.g., the bus number
+  orgId: string;
+  gps: {
+    lat: number;
+    lng: number;
+    speed: number;
+    timestamp: string;
+  };
+  beacons: Beacon[];
 }
