@@ -359,7 +359,6 @@ export const bookingsData: Booking[] = [
   },
 ];
 
-// Data for map
 export const liveVehicleData: LiveVehicle[] = [
   {
     vehicleId: "1",
