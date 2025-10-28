@@ -364,8 +364,16 @@ export const liveVehicleData: LiveVehicle[] = [
       timestamp: new Date().toISOString(),
     },
     beacons: [
-      { id: "Beacon-918", name: "Viresh", lastSeen: new Date().toISOString() },
-      { id: "Beacon-188", name: "Maya", lastSeen: new Date().toISOString() },
+      {
+        id: "Beacon-918",
+        name: "Viresh Sangappa",
+        lastSeen: new Date().toISOString(),
+      },
+      {
+        id: "Beacon-188",
+        name: "Maya Somanache",
+        lastSeen: new Date().toISOString(),
+      },
     ],
   },
   {
@@ -379,7 +387,11 @@ export const liveVehicleData: LiveVehicle[] = [
       timestamp: new Date().toISOString(),
     },
     beacons: [
-      { id: "Beacon-118", name: "Kumar", lastSeen: new Date().toISOString() },
+      {
+        id: "Beacon-118",
+        name: "Kumar Kothawadakar",
+        lastSeen: new Date().toISOString(),
+      },
     ],
   },
   {
@@ -393,8 +405,16 @@ export const liveVehicleData: LiveVehicle[] = [
       timestamp: new Date().toISOString(),
     },
     beacons: [
-      { id: "Beacon-928", name: "Vikas", lastSeen: new Date().toISOString() },
-      { id: "Beacon-890", name: "Yogesh", lastSeen: new Date().toISOString() },
+      {
+        id: "Beacon-928",
+        name: "Vikas Basrikatti",
+        lastSeen: new Date().toISOString(),
+      },
+      {
+        id: "Beacon-890",
+        name: "Yogesh Dhamanekar",
+        lastSeen: new Date().toISOString(),
+      },
     ],
   },
 ];

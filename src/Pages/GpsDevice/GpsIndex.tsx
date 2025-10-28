@@ -9,7 +9,7 @@ const columns = [
     label: "SNo",
     render: (_: Gps, index: number) => index + 1,
   },
-  { key: "name", label: "Name" },
+  { key: "name", label: "Model" },
   { key: "imei_number", label: "Device ID" },
 ];
 

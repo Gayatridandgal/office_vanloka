@@ -11,7 +11,7 @@ const columns = [
     label: "SNo",
     render: (_: Beacon, index: number) => index + 1,
   },
-  { key: "name", label: "Title" },
+  { key: "name", label: "Model" },
   { key: "imei_number", label: "Device ID" },
 ];
 

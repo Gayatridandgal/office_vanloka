@@ -9,7 +9,6 @@ import LoginPage from "./Auth/LoginPage";
 import RegisterPage from "./Auth/RegisterPage";
 import AuthLayout from "./Layouts/AuthLayout";
 import { getCurrentUser } from "./Services/AuthService";
-import DashboardPage from "./Pages/DashboardPage";
 
 // Auth Service
 
@@ -38,7 +37,6 @@ function App() {
     <Router>
       <Routes>
         {/* Public Routes */}
-        {/* <Route path="/" element={<PublicRoute><GuestPage /></PublicRoute>} /> */}
         <Route
           path="/"
           element={
@@ -72,12 +70,7 @@ function App() {
               <AuthLayout />
             </ProtectedRoute>
           }
-        >
-          {/* Define nested routes for the authenticated area */}
-          {/* The default protected route will be /dashboard */}
-          <Route path="dashboard" element={<DashboardPage />} />
-          {/* Example: <Route path="profile" element={<ProfilePage />} /> */}
-        </Route>
+        ></Route>
       </Routes>
     </Router>
   );

@@ -35,25 +35,19 @@ const BeaconDisplay: React.FC<BeaconDisplayProps> = ({
       {vehicleName && beacons && beacons.length > 0 && (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-purple-50">
               <tr>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-sm font-bold text-gray-600 uppercase"
                 >
-                  Traveler Name
+                  Full Name
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-sm font-bold text-gray-600 uppercase"
                 >
                   Beacon ID
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-sm font-bold text-gray-600 uppercase"
-                >
-                  Last Seen
                 </th>
               </tr>
             </thead>
@@ -65,9 +59,6 @@ const BeaconDisplay: React.FC<BeaconDisplayProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {beacon.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(beacon.lastSeen).toLocaleString()}
                   </td>
                 </tr>
               ))}
