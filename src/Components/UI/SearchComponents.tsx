@@ -37,7 +37,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
           value={query}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="w-full px-4 py-1 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-4 py-2 text-sm uppercase pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
         <div className="absolute right-2 text-purple-400">
           <IoSearchCircle size={30} />

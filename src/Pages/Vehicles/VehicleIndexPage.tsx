@@ -1,9 +1,12 @@
+import { useState } from "react"; // Import useState
 import { Link } from "react-router-dom";
 import PageHeader from "../../Components/UI/PageHeader";
 import Table from "../../Components/UI/Table";
 import { vehiclesData } from "../../Data/Index";
 import type { Vehicle } from "../../Types/Index";
+import SearchComponent from "../../Components/UI/SearchComponents";
 
+// Column definitions remain the same
 const columns = [
   {
     key: "sno",
@@ -32,16 +35,14 @@ const columns = [
       );
     },
   },
-
   {
     key: "actions",
-    label: "",
+    label: "", // Label for the column header
     render: (row: Vehicle) => (
-      <div className="flex items-center gap-4">
-        {/* The new "Track" button */}
+      <div className="flex items-center">
         <Link
           to={`/vehicles/track/${row.id}`}
-          className="text-purple-950 bg-amber-200 p-1 text-xs rounded-full font-semibold"
+          className="text-purple-950 bg-yellow-200 py-1 px-2 rounded-full font-semibold"
         >
           Track
         </Link>
@@ -56,6 +57,29 @@ const handleDelete = (vehicle: Vehicle) => {
 };
 
 const VehicleIndexPage = () => {
+  // State to hold the list of vehicles to be displayed
+  const [filteredVehicles, setFilteredVehicles] =
+    useState<Vehicle[]>(vehiclesData);
+
+  // The search handler function
+  const handleSearch = (query: string) => {
+    if (!query) {
+      setFilteredVehicles(vehiclesData);
+      return;
+    }
+
+    const lowercasedQuery = query.toLowerCase();
+    const filtered = vehiclesData.filter(
+      (vehicle) =>
+        (vehicle.name ?? "").toLowerCase().includes(lowercasedQuery) ||
+        (vehicle.model ?? "").toLowerCase().includes(lowercasedQuery) ||
+        (vehicle.registration_number ?? "")
+          .toLowerCase()
+          .includes(lowercasedQuery)
+    );
+    setFilteredVehicles(filtered);
+  };
+
   return (
     <div className="px-4 bg-white min-h-screen">
       <PageHeader
@@ -63,8 +87,17 @@ const VehicleIndexPage = () => {
         buttonText="Add Vehicle"
         buttonLink="create"
       />
+
+      {/* Add the SearchComponent */}
+      <div className="my-4">
+        <SearchComponent
+          onSearch={handleSearch}
+          placeholder="Search by Name, Model, Reg. No..."
+        />
+      </div>
+
       <Table<Vehicle>
-        list={vehiclesData}
+        list={filteredVehicles} // <-- Use the filtered state here
         columns={columns}
         viewUrl="/vehicles/show"
         editUrl="/vehicles/edit"

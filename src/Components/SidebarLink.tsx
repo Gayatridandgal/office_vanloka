@@ -49,14 +49,14 @@ const sidebarLinks: SidebarLinkType[] = [
 
   {
     name: "GPS Devices",
-    path: "/gps_devices",
+    path: "/gps",
     icon: <RiGpsFill size={22} />,
     feature: "MANAGE_GPS",
   },
 
   {
     name: "Beacon Devices",
-    path: "/beacon_devices",
+    path: "/beacons",
     icon: <GrBeacon size={22} />,
     feature: "MANAGE_BEACON",
   },

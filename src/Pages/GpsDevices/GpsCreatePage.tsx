@@ -3,27 +3,27 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import type { Beacon } from "../../Types/Index";
+import type { Gps } from "../../Types/Index";
 
-const BeaconCreatePage = () => {
+const GpsCreatePage = () => {
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Beacon>();
+  } = useForm<Gps>();
 
   // This function is called when the form is successfully validated
-  const onSubmit: SubmitHandler<Beacon> = (data: Beacon) => {
+  const onSubmit: SubmitHandler<Gps> = (data: Gps) => {
     console.log("Form Data:", data);
     // In a real app, you would make an API call here.
     alert(`Device "${data.name}" created successfully!`);
-    navigate("/beacon_devices"); // Redirect after submission
+    navigate("/gps"); // Redirect after submission
   };
 
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Add Beacon Device" buttonLink="/gps_devices" />
+      <PageHeaderBack title="Add GPS Device" buttonLink="/gps" />
 
       <div className="p-8 max-w-2xl mx-auto rounded-lg shadow-sm">
         {/* Pass the onSubmit handler to react-hook-form's handleSubmit */}
@@ -63,12 +63,30 @@ const BeaconCreatePage = () => {
                 required: "Device ID is required.",
               })}
               className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-              placeholder="BEACON-A001"
+              placeholder="GPS-A001"
             />
             {errors.id && (
               <p className="text-red-500 text-sm mt-1">{errors.id.message}</p>
             )}
           </div>
+
+          {/* Remark Field */}
+          <div className="mb-6">
+            <label
+              htmlFor="remark"
+              className="block text-purple-950 uppercase font-bold mb-2"
+            >
+              Remark
+            </label>
+            <textarea
+              id="remark"
+              {...register("remark")}
+              rows={4}
+              className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="Add a short description or note..."
+            />
+          </div>
+
           <button
             type="submit"
             className="bg-purple-200 text-purple-900 font-bold py-2 px-6 rounded-lg hover:bg-purple-300 uppercase transition-colors"
@@ -81,4 +99,4 @@ const BeaconCreatePage = () => {
   );
 };
 
-export default BeaconCreatePage;
+export default GpsCreatePage;

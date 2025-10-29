@@ -33,12 +33,12 @@ const GpsEditPage = () => {
   const onSubmit: SubmitHandler<Gps> = (data) => {
     console.log("Updated Data:", data);
     alert(`Device "${data.name}" updated successfully!`);
-    navigate("/gps_devices");
+    navigate("/gps");
   };
 
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Edit GPS Device" buttonLink="/gps_devices" />
+      <PageHeaderBack title="Edit GPS Device" buttonLink="/gps" />
 
       <div className="p-8 max-w-2xl mx-auto rounded-lg shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)}>

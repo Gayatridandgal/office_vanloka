@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Sidebar from "../Components/Sidebar";
-import IndexPage from "../Pages/RolesPermissions/Index";
+import IndexPage from "../Pages/RolesPermissions/IndexPage";
 import EditPage from "../Pages/RolesPermissions/EditPage";
 import CreatePage from "../Pages/RolesPermissions/CreatePage";
-import GpsIndexPage from "../Pages/GpsDevices/GpsIndex";
-import GpsCreatePage from "../Pages/GpsDevices/GpsCreate";
-import GpsEditPage from "../Pages/GpsDevices/GpsEdit";
+import GpsIndexPage from "../Pages/GpsDevices/GpsIndexPage";
+import GpsCreatePage from "../Pages/GpsDevices/GpsCreatePage";
+import GpsEditPage from "../Pages/GpsDevices/GpsEditPage";
 import MobileHeader from "../Components/MobileHeader";
-import BeaconIndexPage from "../Pages/BeaconDevices/BeaconIndex";
-import BeaconCreatePage from "../Pages/BeaconDevices/BeaconCreate";
-import BeaconEditPage from "../Pages/BeaconDevices/BeaconEdit";
+import BeaconIndexPage from "../Pages/BeaconDevices/BeaconIndexPage";
+import BeaconCreatePage from "../Pages/BeaconDevices/BeaconCreatePage";
+import BeaconEditPage from "../Pages/BeaconDevices/BeaconEditPage";
 import VehicleIndexPage from "../Pages/Vehicles/VehicleIndexPage";
 import VehicleShowPage from "../Pages/Vehicles/VehicleShowPage";
 import VehicleCreatePage from "../Pages/Vehicles/VehicleCreatePage";
@@ -63,20 +63,14 @@ const AuthLayout = () => {
             <Route path="staff/edit/:id" element={<StaffEditPage />} />
 
             {/* GPS Device Pages */}
-            <Route path="gps_devices" element={<GpsIndexPage />} />
-            <Route path="gps_devices/create" element={<GpsCreatePage />} />
-            <Route path="gps_devices/edit/:id" element={<GpsEditPage />} />
+            <Route path="gps" element={<GpsIndexPage />} />
+            <Route path="gps/create" element={<GpsCreatePage />} />
+            <Route path="gps/edit/:id" element={<GpsEditPage />} />
 
             {/* Beacon Device Pages */}
-            <Route path="beacon_devices" element={<BeaconIndexPage />} />
-            <Route
-              path="beacon_devices/create"
-              element={<BeaconCreatePage />}
-            />
-            <Route
-              path="beacon_devices/edit/:id"
-              element={<BeaconEditPage />}
-            />
+            <Route path="beacons" element={<BeaconIndexPage />} />
+            <Route path="beacons/create" element={<BeaconCreatePage />} />
+            <Route path="beacons/edit/:id" element={<BeaconEditPage />} />
 
             {/* Vehicle Pages */}
             <Route path="vehicles" element={<VehicleIndexPage />} />

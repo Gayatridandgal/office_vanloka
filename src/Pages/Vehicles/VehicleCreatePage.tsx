@@ -43,7 +43,7 @@ const VehicleCreatePage = () => {
 
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Add New Vehicle" buttonLink="/vehicles" />
+      <PageHeaderBack title="Add Vehicle" buttonLink="/vehicles" />
       <div className="p-10 mx-auto max-w-5xl rounded-lg shadow-lg bg-white border border-gray-200">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* --- Section 1: Vehicle Information --- */}

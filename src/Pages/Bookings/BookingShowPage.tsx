@@ -70,9 +70,9 @@ const BookingShowPage = () => {
     (canEditBeacon && selectedBeacon !== booking.beacon);
 
   return (
-    <div className="px-4 bg-gray-50 min-h-screen">
+    <div className="px-4 bg-white min-h-screen">
       <PageHeaderBack title="Booking Details" buttonLink="/bookings" />
-      <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-8 mt-4 space-y-8">
+      <div className="max-w-5xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-8 mt-4 space-y-8">
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-4">

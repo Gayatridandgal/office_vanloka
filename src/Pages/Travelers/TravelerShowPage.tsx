@@ -80,7 +80,7 @@ const TravelerShowPage = () => {
   return (
     <div className="px-4 bg-white min-h-screen">
       <PageHeaderBack title="Traveler Details" buttonLink="/travelers" />
-      <div className="p-8 mx-auto rounded-lg shadow-sm ">
+      <div className="p-8 mx-auto  rounded-lg shadow-sm ">
         <div className="space-y-8">
           <section className="flex flex-col sm:flex-row items-center gap-6 pb-6">
             <img

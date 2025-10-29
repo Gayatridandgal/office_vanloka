@@ -1,9 +1,11 @@
+import { useState } from "react"; // Import useState
 import PageHeader from "../../Components/UI/PageHeader";
 import Table from "../../Components/UI/Table";
 import { staffData } from "../../Data/Index";
 import type { Staff } from "../../Types/Index";
+import SearchComponent from "../../Components/UI/SearchComponents";
 
-// Column definitions for the staff table
+// Column definitions remain the same
 const columns = [
   {
     key: "sno",
@@ -17,7 +19,7 @@ const columns = [
       <div className="flex items-center">
         <img
           className="h-10 w-10 rounded-full object-cover"
-          src={row.photo as string} // Assuming photo is a URL string in the data
+          src={row.photo as string}
           alt={`${row.first_name} ${row.last_name}`}
         />
         <div className="ml-4">
@@ -69,18 +71,49 @@ const columns = [
 ];
 
 const StaffIndexPage = () => {
+  // State to hold the list of staff members that will be displayed
+  const [filteredStaff, setFilteredStaff] = useState<Staff[]>(staffData);
+
+  // The search handler function
+  const handleSearch = (query: string) => {
+    if (!query) {
+      setFilteredStaff(staffData);
+      return;
+    }
+
+    const lowercasedQuery = query.toLowerCase();
+    const filtered = staffData.filter(
+      (staff) =>
+        (staff.first_name + " " + staff.last_name)
+          .toLowerCase()
+          .includes(lowercasedQuery) ||
+        (staff.email ?? "").toLowerCase().includes(lowercasedQuery) ||
+        (staff.designation ?? "").toLowerCase().includes(lowercasedQuery)
+    );
+    setFilteredStaff(filtered);
+  };
+
   return (
     <div className="px-4 bg-white min-h-screen">
       <PageHeader
         title="Staff Management"
-        buttonText="Add Staff"
+        buttonText="Add New Staff"
         buttonLink="/staff/create"
       />
+
+      {/* Add the SearchComponent */}
+      <div className="my-4">
+        <SearchComponent
+          onSearch={handleSearch}
+          placeholder="Search by Name, Email, Designation..."
+        />
+      </div>
+
       <Table<Staff>
-        list={staffData}
+        list={filteredStaff} // <-- Use the filtered state here
         columns={columns}
-        // viewUrl="/staff/show"
         editUrl="/staff/edit"
+        // viewUrl="/staff/show"
       />
     </div>
   );

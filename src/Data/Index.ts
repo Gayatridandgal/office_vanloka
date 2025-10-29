@@ -91,8 +91,7 @@ export const rolesData = [
 export const staffData: Staff[] = [
   {
     id: "STAFF-001",
-    photo:
-      "https://img.freepik.com/premium-vector/icono-perfil-simple-color-blanco-icon_1076610-50204.jpg",
+    photo: "https://randomuser.me/api/portraits/men/40.jpg",
     first_name: "Sanjay",
     last_name: "Kumar",
     email: "sanjay.k@example.com",
@@ -106,8 +105,7 @@ export const staffData: Staff[] = [
   },
   {
     id: "STAFF-002",
-    photo:
-      "https://img.freepik.com/premium-vector/icono-perfil-simple-color-blanco-icon_1076610-50204.jpg",
+    photo: "https://randomuser.me/api/portraits/men/40.jpg",
     first_name: "Anita",
     last_name: "Desai",
     email: "anita.d@example.com",

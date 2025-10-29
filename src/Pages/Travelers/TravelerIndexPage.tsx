@@ -1,7 +1,13 @@
-import PageHeader from "../../Components/UI/PageHeader";
+import { useState } from "react";
+import PageHeader from "../../Components/UI/PageHeader"; // Use the PageHeader that can accept search props
 import Table from "../../Components/UI/Table";
-import { travelersData } from "../../Data/Index";
+import {
+  travelersData,
+  appUsersData,
+  organisationData,
+} from "../../Data/Index";
 import type { Traveler } from "../../Types/Index";
+import SearchComponent from "../../Components/UI/SearchComponents";
 
 // // Helper functions to find related data
 // const findParentUser = (userId: string) => {
@@ -10,7 +16,17 @@ import type { Traveler } from "../../Types/Index";
 //   return user ? `${user.first_name} ${user.last_name}` : "N/A";
 // };
 
-// Column definitions for the travelers table
+// --- Active Helper Functions ---
+const findActiveParentUser = (userId: string | undefined) => {
+  const user = appUsersData.find((u) => u.id === userId);
+  return user ? `${user.first_name} ${user.last_name}` : "N/A";
+};
+
+const findActiveOrgName = (orgId: string | undefined) => {
+  return organisationData.find((o) => o.id === orgId)?.name || "N/A";
+};
+
+// --- Updated Column definitions for a more informative view ---
 const columns = [
   {
     key: "name",
@@ -31,15 +47,59 @@ const columns = [
       </div>
     ),
   },
-  { key: "beacon", label: "Beacon" },
+  {
+    key: "user",
+    label: "Primary User",
+    render: (row: Traveler) => findActiveParentUser(row.user_id),
+  },
+  {
+    key: "organisation",
+    label: "Organisation",
+    render: (row: Traveler) => findActiveOrgName(row.organisation_id),
+  },
+  {
+    key: "beacon",
+    label: "Beacon ID",
+    render: (row: Traveler) => row.beacon || "N/A",
+  },
 ];
 
 const TravelerIndexPage = () => {
+  // State to hold the list of travelers to be displayed
+  const [filteredTravelers, setFilteredTravelers] =
+    useState<Traveler[]>(travelersData);
+
+  // The search handler function
+  const handleSearch = (query: string) => {
+    if (!query) {
+      setFilteredTravelers(travelersData);
+      return;
+    }
+
+    const lowercasedQuery = query.toLowerCase();
+    const filtered = travelersData.filter(
+      (traveler) =>
+        (traveler.first_name + " " + traveler.last_name)
+          .toLowerCase()
+          .includes(lowercasedQuery) ||
+        (traveler.beacon ?? "").toLowerCase().includes(lowercasedQuery)
+    );
+    setFilteredTravelers(filtered);
+  };
+
   return (
     <div className="px-4 bg-white min-h-screen">
       <PageHeader title="Travelers" />
+
+      {/* Add the SearchComponent */}
+      <div className="my-4">
+        <SearchComponent
+          onSearch={handleSearch}
+          placeholder="Search by Name, Beacon ID..."
+        />
+      </div>
       <Table<Traveler>
-        list={travelersData}
+        list={filteredTravelers} // <-- Use the filtered state here
         columns={columns}
         viewUrl="/travelers/show"
         editUrl="/travelers/edit"
