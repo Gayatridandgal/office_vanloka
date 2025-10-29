@@ -5,7 +5,7 @@ import BeaconDisplay from "../Components/Map/BeaconDisplay";
 import { LoadScript } from "@react-google-maps/api";
 import GoogleMapDisplay from "../Components/Map/GoogleMapDisplay";
 
-const DashboardPage = () => {
+const DashBoardPage2 = () => {
   const [vehicles, setVehicles] = useState<LiveVehicle[]>(liveVehicleData);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
     null
@@ -59,4 +59,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default DashBoardPage2;

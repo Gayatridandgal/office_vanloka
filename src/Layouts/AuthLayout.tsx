@@ -24,12 +24,12 @@ import BookingShowPage from "../Pages/Bookings/BookingShowPage";
 import TravelerIndexPage from "../Pages/Travelers/TravelerIndexPage";
 import TravelerShowPage from "../Pages/Travelers/TravelerShowPage";
 import BookingCreatePage from "../Pages/Bookings/BookingCreatePage";
-import DashboardPage from "../Pages/DashBoard";
 import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
 import TravelerEditPage from "../Pages/Travelers/TravelerEditPage";
 import StaffIndexPage from "../Pages/StaffUsers/StaffIndexPage";
 import StaffCreatePage from "../Pages/StaffUsers/StaffCreatePage";
 import StaffEditPage from "../Pages/StaffUsers/StaffEditPage";
+import DashBoardPage2 from "../Pages/DashBoardPage2";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -49,8 +49,8 @@ const AuthLayout = () => {
 
         <div className="p-2 overflow-y-auto">
           <Routes>
-            <Route path="dashboard" element={<DashboardPage />} />
-            {/* <Route path="dashboard" element={<Dashboard />} /> */}
+            {/* <Route path="dashboard" element={<DashBoardPage />} /> */}
+            <Route path="dashboard" element={<DashBoardPage2 />} />
 
             {/* Roles and Permissions Pages*/}
             <Route path="roles_permissions" element={<IndexPage />} />

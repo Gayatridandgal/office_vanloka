@@ -4,7 +4,7 @@ import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import {
   bookingsData,
   travelersData,
-  usersData,
+  appUsersData,
   organisationData,
   assignedBeacons, // Import the list of available beacons
 } from "../../Data/Index";
@@ -27,7 +27,7 @@ const BookingShowPage = () => {
   // Find all related data for the booking
   const booking = bookingsData.find((b) => b.id === id);
   const traveler = travelersData.find((t) => t.id === booking?.traveler_id);
-  const user = usersData.find((u) => u.id === booking?.user_id);
+  const user = appUsersData.find((u) => u.id === booking?.user_id);
   const organisation = organisationData.find(
     (o) => o.id === booking?.organisation_id
   );

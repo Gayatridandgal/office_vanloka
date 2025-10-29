@@ -4,7 +4,7 @@ import { liveVehicleData } from "../Data/Index";
 import LiveMap from "../Components/Map/MapDisplay";
 import BeaconDisplay from "../Components/Map/BeaconDisplay";
 
-const DashboardPage = () => {
+const DashBoardPage = () => {
   const [vehicles, setVehicles] = useState<LiveVehicle[]>(liveVehicleData);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
     null
@@ -46,4 +46,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default DashBoardPage;
