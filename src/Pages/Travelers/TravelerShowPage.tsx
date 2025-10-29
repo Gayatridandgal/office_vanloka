@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import DetailItem from "../../Components/UI/DetailItem";
 import {
@@ -44,7 +44,7 @@ const BookingHistoryCard = ({ booking }: { booking: Booking }) => {
 
 const TravelerShowPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   // 1. Find the traveler from the master traveler list
   const traveler = travelersData.find((t) => t.id === id);
