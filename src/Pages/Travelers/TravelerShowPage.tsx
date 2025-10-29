@@ -68,14 +68,14 @@ const TravelerShowPage = () => {
     );
   }
 
-  const handleBookTrip = () => {
-    navigate("/bookings/create", {
-      state: {
-        travelerId: traveler.id,
-        orgId: user.organisation_id,
-      },
-    });
-  };
+  // const handleBookTrip = () => {
+  //   navigate("/bookings/create", {
+  //     state: {
+  //       travelerId: traveler.id,
+  //       orgId: user.organisation_id,
+  //     },
+  //   });
+  // };
 
   return (
     <div className="px-4 bg-white min-h-screen">
