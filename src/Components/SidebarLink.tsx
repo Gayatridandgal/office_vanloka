@@ -8,8 +8,9 @@ import { FaUsersCog } from "react-icons/fa";
 import type { SidebarLinkType } from "../Types/Index";
 import { GrBeacon, GrOrganization } from "react-icons/gr";
 import { app_features as userFeatures } from "../Data/Index";
-import { HiUsers } from "react-icons/hi";
+import { HiOutlineDocumentReport, HiUsers } from "react-icons/hi";
 import { RiGpsFill } from "react-icons/ri";
+import { TbReport } from "react-icons/tb";
 
 const sidebarLinks: SidebarLinkType[] = [
   {
@@ -98,8 +99,22 @@ const sidebarLinks: SidebarLinkType[] = [
 
   {
     name: "Rase Support Ticket",
-    path: "/support-tickets",
+    path: "/support_tickets",
     icon: <MdOutlineSupportAgent size={22} />,
+    feature: "MANAGE_SUPPORT_TICKETS",
+  },
+
+  {
+    name: "Basic Reports",
+    path: "/basic_reports",
+    icon: <HiOutlineDocumentReport size={22} />,
+    feature: "MANAGE_SUPPORT_TICKETS",
+  },
+
+  {
+    name: "compliance Reports",
+    path: "/complience_reports",
+    icon: <TbReport size={22} />,
     feature: "MANAGE_SUPPORT_TICKETS",
   },
 

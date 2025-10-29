@@ -17,10 +17,10 @@ const columns = [
 ];
 
 // Placeholder for the delete action, to be consistent with other pages
-const handleDelete = (device: Beacon) => {
-  console.log("Delete device:", device);
-  alert(`Deleting ${device.name}`);
-};
+// const handleDelete = (device: Beacon) => {
+//   console.log("Delete device:", device);
+//   alert(`Deleting ${device.name}`);
+// };
 
 const BeaconIndexPage = () => {
   // State to hold the list of beacons that will be displayed

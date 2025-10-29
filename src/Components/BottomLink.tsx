@@ -47,7 +47,7 @@ export default function BottomLink() {
         <li>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-4 py-2 px-4 bg-purple-200 rounded-lg transition-all duration-300 text-purple-950 hover:bg-purple-300 hover:shadow-lg"
+            className="w-full flex items-center space-x-4 py-2 px-4 rounded-lg transition-all duration-300 text-purple-950 hover:bg-purple-2  00 hover:shadow-lg"
           >
             <FaSignOutAlt className="text-lg" />
             <span className="font-bold text-sm uppercase">Logout</span>
