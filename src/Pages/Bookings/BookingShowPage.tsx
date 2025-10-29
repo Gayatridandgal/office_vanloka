@@ -148,7 +148,7 @@ const BookingShowPage = () => {
                   onChange={(e) => setSelectedBeacon(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="">-- Assign a Beacon --</option>
+                  <option value="">Assign Beacon</option>
                   {assignedBeacons.map((device) => (
                     <option key={device.id} value={device.id}>
                       {device.name} ({device.imei_number})
@@ -156,7 +156,7 @@ const BookingShowPage = () => {
                   ))}
                 </select>
               ) : (
-                <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-800">
+                <div className="w-full px-4 text-sm uppercase py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-800">
                   {findBeaconName(booking.beacon)}
                 </div>
               )}

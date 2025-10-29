@@ -97,13 +97,13 @@ const TravelerShowPage = () => {
                 <DetailItem label="Gender" value={traveler.gender} />
               </div>
             </div>
-            <button
+            {/* <button
               onClick={handleBookTrip}
               disabled={!user.organisation_id}
               className="bg-purple-200 text-purple-900 text-sm font-bold p-2 rounded-lg hover:bg-purple-300 uppercase whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Book Trip
-            </button>
+            </button> */}
           </section>
 
           <section>

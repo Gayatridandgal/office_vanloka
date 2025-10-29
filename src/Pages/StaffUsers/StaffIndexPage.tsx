@@ -97,7 +97,7 @@ const StaffIndexPage = () => {
     <div className="px-4 bg-white min-h-screen">
       <PageHeader
         title="Staff Management"
-        buttonText="Add New Staff"
+        buttonText="Add Staff"
         buttonLink="/staff/create"
       />
 
