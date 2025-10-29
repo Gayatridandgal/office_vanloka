@@ -136,7 +136,7 @@ const MyPlanPage = () => {
 
         {/* --- Bottom Section: Upgrade Request Form --- */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-          <h2 className="text-md font-bold text-purple-950 uppercase mb-4">
+          <h2 className="text-sm font-bold text-purple-950 uppercase mb-4">
             Request a Plan Upgrade
           </h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
