@@ -449,3 +449,80 @@ export const liveVehicleData: LiveVehicle[] = [
     ],
   },
 ];
+
+export const plansData = [
+  {
+    id: "PREMIUM-01",
+    name: "Premium Suite",
+    description:
+      "The complete solution for large-scale fleets requiring advanced analytics and maximum device support.",
+    monthly_price: 4999,
+    yearly_price: 54990, // Approx. 1 month discount
+    duration: "Monthly",
+    features: [
+      { name: "VEHICLE MANAGEMENT", value: 50 },
+      { name: "DRIVER MANAGEMENT", value: 100 },
+      { name: "ERP INTEGRATION", value: 20 },
+    ],
+    status: "Active",
+  },
+  {
+    id: "STANDARD-01",
+    name: "Standard Pack",
+    description:
+      "Perfect for medium-sized businesses that need real-time tracking and standard reporting.",
+    monthly_price: 2999,
+    yearly_price: 32990,
+    duration: "Monthly",
+    features: [
+      { name: "VEHICLE MANAGEMENT", value: 25 },
+      { name: "DRIVER MANAGEMENT", value: 30 },
+      { name: "ERP INTEGRATION", value: 10 },
+    ],
+    status: "Active",
+  },
+  {
+    id: "BASIC-01",
+    name: "Basic Starter",
+    description:
+      "Ideal for small businesses or individuals who need essential tracking for a few assets.",
+    monthly_price: 999,
+    yearly_price: 10990,
+    duration: "Yearly",
+    features: [
+      { name: "VEHICLE MANAGEMENT", value: 10 },
+      { name: "DRIVER MANAGEMENT", value: 10 },
+      { name: "ERP INTEGRATION", value: 2 },
+    ],
+    status: "Inactive",
+  },
+];
+
+export const subscriptionsData = [
+  {
+    id: "SUB-ALPHA-001",
+    organisation_id: "ORG-003C",
+    plan_id: "PREMIUM-01",
+    payment_date: "2025-01-01",
+    start_date: "2025-01-01",
+    end_date: "2026-01-01",
+    next_payment_date: "2026-01-01", // For yearly, it's the end date
+    payment_method: "Bank Transfer",
+    billing_cycle: "Yearly",
+    amount: 54990,
+    status: "Active",
+  },
+  {
+    id: "SUB-GREEN-002",
+    organisation_id: "ORG-001A",
+    plan_id: "STANDARD-01",
+    payment_date: "2025-09-15",
+    start_date: "2025-09-15",
+    end_date: "2025-10-15",
+    next_payment_date: "2025-10-15", // For monthly, it's the end date
+    payment_method: "UPI",
+    billing_cycle: "Monthly",
+    amount: 2999,
+    status: "Active",
+  },
+];

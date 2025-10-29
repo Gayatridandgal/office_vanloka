@@ -30,6 +30,7 @@ import StaffIndexPage from "../Pages/StaffUsers/StaffIndexPage";
 import StaffCreatePage from "../Pages/StaffUsers/StaffCreatePage";
 import StaffEditPage from "../Pages/StaffUsers/StaffEditPage";
 import DashBoardPage2 from "../Pages/DashBoardPage2";
+import MyPlanPage from "../Pages/MyPlanPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -94,6 +95,9 @@ const AuthLayout = () => {
             <Route path="travelers" element={<TravelerIndexPage />} />
             <Route path="travelers/show/:id" element={<TravelerShowPage />} />
             <Route path="travelers/Edit/:id" element={<TravelerEditPage />} />
+
+            {/* Plan Detail Page */}
+            <Route path="plan" element={<MyPlanPage />} />
           </Routes>
         </div>
       </main>
