@@ -234,7 +234,7 @@ export const travelersData: Traveler[] = [
   },
 ];
 
-export const usersData: AppUser[] = [
+export const appUsersData: AppUser[] = [
   {
     id: "USER-001",
     organisation_id: "ORG-001A",

@@ -4,9 +4,9 @@ import Sidebar from "../Components/Sidebar";
 import IndexPage from "../Pages/RolesPermissions/Index";
 import EditPage from "../Pages/RolesPermissions/EditPage";
 import CreatePage from "../Pages/RolesPermissions/CreatePage";
-import GpsIndexPage from "../Pages/GpsDevice/GpsIndex";
-import GpsCreatePage from "../Pages/GpsDevice/GpsCreate";
-import GpsEditPage from "../Pages/GpsDevice/GpsEdit";
+import GpsIndexPage from "../Pages/GpsDevices/GpsIndex";
+import GpsCreatePage from "../Pages/GpsDevices/GpsCreate";
+import GpsEditPage from "../Pages/GpsDevices/GpsEdit";
 import MobileHeader from "../Components/MobileHeader";
 import BeaconIndexPage from "../Pages/BeaconDevices/BeaconIndex";
 import BeaconCreatePage from "../Pages/BeaconDevices/BeaconCreate";
@@ -19,17 +19,17 @@ import DriverIndexPage from "../Pages/Drivers/DriverIndexPage";
 import DriverShowPage from "../Pages/Drivers/DriverShowPage";
 import DriverEditPage from "../Pages/Drivers/DriverEditPage";
 import DriverCreatePage from "../Pages/Drivers/DriverCreatePage";
-import BookingIndexPage from "../Pages/Booking/BookingIndexPage";
-import BookingShowPage from "../Pages/Booking/BookingShowPage";
-import TravelerIndexPage from "../Pages/Traveler/TravelerIndexPage";
-import TravelerShowPage from "../Pages/Traveler/TravelerShowPage";
-import BookingCreatePage from "../Pages/Booking/BookingCreatePage";
+import BookingIndexPage from "../Pages/Bookings/BookingIndexPage";
+import BookingShowPage from "../Pages/Bookings/BookingShowPage";
+import TravelerIndexPage from "../Pages/Travelers/TravelerIndexPage";
+import TravelerShowPage from "../Pages/Travelers/TravelerShowPage";
+import BookingCreatePage from "../Pages/Bookings/BookingCreatePage";
 import DashboardPage from "../Pages/DashBoard";
 import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
-import TravelerEditPage from "../Pages/Traveler/TravelerEditPage";
-import StaffIndexPage from "../Pages/Staff/StaffIndexPage";
-import StaffCreatePage from "../Pages/Staff/StaffCreatePage";
-import StaffEditPage from "../Pages/Staff/StaffEditPage";
+import TravelerEditPage from "../Pages/Travelers/TravelerEditPage";
+import StaffIndexPage from "../Pages/StaffUsers/StaffIndexPage";
+import StaffCreatePage from "../Pages/StaffUsers/StaffCreatePage";
+import StaffEditPage from "../Pages/StaffUsers/StaffEditPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -90,12 +90,6 @@ const AuthLayout = () => {
             <Route path="drivers/create" element={<DriverCreatePage />} />
             <Route path="drivers/show/:id" element={<DriverShowPage />} />
             <Route path="drivers/edit/:id" element={<DriverEditPage />} />
-
-            {/* User Pages */}
-            {/* <Route path="users" element={<UserIndexPage />} />
-            <Route path="users/create" element={<UserCreatePage />} />
-            <Route path="users/show/:id" element={<UserShowPage />} />
-            <Route path="users/edit/:id" element={<UserEditPage />} /> */}
 
             {/* Booking Pages */}
             <Route path="bookings" element={<BookingIndexPage />} />

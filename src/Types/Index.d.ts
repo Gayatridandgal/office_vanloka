@@ -83,31 +83,31 @@ export interface Driver {
 
 export interface Traveler {
   id: string; // A unique ID for the traveler, useful for mapping keys
-  user_id: string; // Reference to the parent user
-  organisation_id: string;
-  photo: FileList | string; // Can be a FileList on create, or a string (URL) when fetched
-  first_name: string;
-  last_name: string;
-  dob: string;
-  gender: "Male" | "Female" | "Other";
+  user_id?: string; // Reference to the parent user
+  organisation_id?: string;
+  photo?: FileList | string; // Can be a FileList on create, or a string (URL) when fetched
+  first_name?: string;
+  last_name?: string;
+  dob?: string;
+  gender?: "Male" | "Female" | "Other";
   beacon?: string;
-  relationship: "Spouse" | "Child" | "Parent" | "Sibling" | "Other";
+  relationship?: "Spouse" | "Child" | "Parent" | "Sibling" | "Other";
 }
 
 export interface AppUser {
   id: string;
-  organisation_id: string | null;
-  photo: FileList | string;
-  first_name: string;
-  last_name: string;
-  dob: string;
-  email: string;
-  phone: string;
-  address_line1: string;
+  organisation_id?: string;
+  photo?: FileList | string;
+  first_name?: string;
+  last_name?: string;
+  dob?: string;
+  email?: string;
+  phone?: string;
+  address_line1?: string;
   address_line2?: string;
-  city: string;
-  state: string;
-  pin: string;
+  city?: string;
+  state?: string;
+  pin?: string;
   travelers?: Traveler[];
 }
 

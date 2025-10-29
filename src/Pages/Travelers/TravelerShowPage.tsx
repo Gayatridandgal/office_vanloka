@@ -3,9 +3,9 @@ import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import DetailItem from "../../Components/UI/DetailItem";
 import {
   travelersData,
-  usersData,
   bookingsData,
   organisationData,
+  appUsersData,
 } from "../../Data/Index";
 import type { Booking } from "../../Types/Index";
 
@@ -49,7 +49,7 @@ const TravelerShowPage = () => {
   // 1. Find the traveler from the master traveler list
   const traveler = travelersData.find((t) => t.id === id);
   // 2. Find the parent user using the traveler's user_id
-  const user = usersData.find((u) => u.id === traveler?.user_id);
+  const user = appUsersData.find((u) => u.id === traveler?.user_id);
 
   // 3. Find all bookings for THIS traveler
   const allBookings = bookingsData.filter((b) => b.traveler_id === id);
