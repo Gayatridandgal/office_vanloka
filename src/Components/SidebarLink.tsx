@@ -220,10 +220,10 @@ export default function Sidebar() {
             <li key={link.name}>
               <Link
                 to={link.path!}
-                className={`flex items-center space-x-4 py-2 px-4 rounded-lg transition-all duration-80 ${
+                className={`flex items-center space-x-4 py-2 px-4 rounded-lg transition-all hover:text-white duration-80 text-slate-800 ${
                   link.path && location.pathname.startsWith(link.path)
-                    ? "bg-purple-200 text-purple-950 shadow-xl font-bold border border-gray-300"
-                    : "text-purple-950 hover:bg-purple-100  "
+                    ? "bg-purple-500 text-white font-bold"
+                    : "hover:bg-purple-500"
                 }`}
               >
                 {link.icon}

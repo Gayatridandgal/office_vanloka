@@ -6,7 +6,7 @@ import { LoadScript } from "@react-google-maps/api";
 import GoogleMapDisplay from "../Components/Map/GoogleMapDisplay";
 
 const DashBoardPage2 = () => {
-  const [vehicles, setVehicles] = useState<LiveVehicle[]>(liveVehicleData);
+  const [vehicles] = useState<LiveVehicle[]>(liveVehicleData);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
     null
   );
@@ -39,13 +39,21 @@ const DashBoardPage2 = () => {
           </h2>
           <div className="h-[60vh] w-full rounded-lg overflow-hidden">
             {/* The LoadScript component handles loading the Google Maps API */}
-            <LoadScript googleMapsApiKey={googleMapsApiKey}>
+            {typeof window !== "undefined" && window.google ? (
               <GoogleMapDisplay
                 vehicles={vehicles}
                 selectedVehicleId={selectedVehicleId}
                 onVehicleSelect={handleVehicleSelect}
               />
-            </LoadScript>
+            ) : (
+              <LoadScript googleMapsApiKey={googleMapsApiKey}>
+                <GoogleMapDisplay
+                  vehicles={vehicles}
+                  selectedVehicleId={selectedVehicleId}
+                  onVehicleSelect={handleVehicleSelect}
+                />
+              </LoadScript>
+            )}
           </div>
         </div>
 
