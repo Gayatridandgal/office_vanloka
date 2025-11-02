@@ -1,11 +1,12 @@
 import { useState } from "react";
 import type { LiveVehicle } from "../Types/Index";
 import { liveVehicleData } from "../Data/Index";
-import LiveMap from "../Components/Map/MapDisplay";
 import BeaconDisplay from "../Components/Map/BeaconDisplay";
+import { LoadScript } from "@react-google-maps/api";
+import GoogleMapDisplay from "../Components/Map/GoogleMapDisplay";
 
 const DashBoardPage = () => {
-  const [vehicles, setVehicles] = useState<LiveVehicle[]>(liveVehicleData);
+  const [vehicles] = useState<LiveVehicle[]>(liveVehicleData);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
     null
   );
@@ -17,26 +18,46 @@ const DashBoardPage = () => {
     setSelectedVehicleId((prevId) => (prevId === vehicleId ? null : vehicleId));
   };
 
+  // The Google Maps API key from your .env file
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  if (!googleMapsApiKey) {
+    return (
+      <div className="p-10 text-center font-bold text-red-600">
+        Error: Google Maps API Key is missing.
+      </div>
+    );
+  }
+
   return (
-    // Main dashboard container with a light background and padding
-    <div className="mx-4 bg-white min-h-screen">
-      <div className="space-y-5">
+    <div className="px-4 bg-white min-h-screen">
+      <div className="space-y-8">
         {/* Card for the Map */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
           <h2 className="text-md font-bold text-purple-950 uppercase mb-4">
-            Live Vehicle Map
+            Live Map
           </h2>
-          {/* Container that defines the map's height */}
-          <div className="h-[55vh] w-full rounded-lg overflow-hidden">
-            <LiveMap
-              vehicles={vehicles}
-              selectedVehicleId={selectedVehicleId}
-              onVehicleSelect={handleVehicleSelect}
-            />
+          <div className="h-[60vh] w-full rounded-lg overflow-hidden">
+            {/* The LoadScript component handles loading the Google Maps API */}
+            {typeof window !== "undefined" && window.google ? (
+              <GoogleMapDisplay
+                vehicles={vehicles}
+                selectedVehicleId={selectedVehicleId}
+                onVehicleSelect={handleVehicleSelect}
+              />
+            ) : (
+              <LoadScript googleMapsApiKey={googleMapsApiKey}>
+                <GoogleMapDisplay
+                  vehicles={vehicles}
+                  selectedVehicleId={selectedVehicleId}
+                  onVehicleSelect={handleVehicleSelect}
+                />
+              </LoadScript>
+            )}
           </div>
         </div>
 
-        {/* The BeaconDisplay component will now be a self-contained card */}
+        {/* The BeaconDisplay component remains the same */}
         <BeaconDisplay
           beacons={selectedVehicle ? selectedVehicle.beacons : null}
           vehicleName={selectedVehicle ? selectedVehicle.vehicleName : null}

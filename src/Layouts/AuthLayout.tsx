@@ -29,8 +29,8 @@ import TravelerEditPage from "../Pages/Travelers/TravelerEditPage";
 import StaffIndexPage from "../Pages/StaffUsers/StaffIndexPage";
 import StaffCreatePage from "../Pages/StaffUsers/StaffCreatePage";
 import StaffEditPage from "../Pages/StaffUsers/StaffEditPage";
-import DashBoardPage2 from "../Pages/DashBoardPage2";
 import MyPlanPage from "../Pages/MyPlanPage";
+import DashBoardPage from "../Pages/DashBoardPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -41,7 +41,7 @@ const AuthLayout = () => {
   return (
     <div className="flex h-screen relative overflow-hidden">
       {/* Sidebar Component */}
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={isSidebarOpen} />
 
       {/* Main content area */}
       <main className="flex-grow flex flex-col transition-all duration-300">
@@ -51,7 +51,7 @@ const AuthLayout = () => {
         <div className="p-2 overflow-y-auto">
           <Routes>
             {/* <Route path="dashboard" element={<DashBoardPage />} /> */}
-            <Route path="dashboard" element={<DashBoardPage2 />} />
+            <Route path="dashboard" element={<DashBoardPage />} />
 
             {/* Roles and Permissions Pages*/}
             <Route path="roles_permissions" element={<IndexPage />} />
