@@ -28,6 +28,13 @@ const sidebarLinks: SidebarLinkType[] = [
   },
 
   {
+    name: "Driver Management",
+    path: "/drivers",
+    icon: <HiUsers size={22} />,
+    feature: "MANAGE_DRIVERS",
+  },
+
+  {
     name: "Roles & Permissions",
     path: "/roles_permissions",
     icon: <FaUsersCog size={22} />,
@@ -39,13 +46,6 @@ const sidebarLinks: SidebarLinkType[] = [
     path: "/staff",
     icon: <FaUserShield size={22} />,
     feature: "MANAGE_VEHICLES",
-  },
-
-  {
-    name: "Driver Management",
-    path: "/drivers",
-    icon: <HiUsers size={22} />,
-    feature: "MANAGE_DRIVERS",
   },
 
   {
