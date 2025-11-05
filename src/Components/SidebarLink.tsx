@@ -21,6 +21,13 @@ const sidebarLinks: SidebarLinkType[] = [
   },
 
   {
+    name: "Vehicle Management",
+    path: "/vehicles",
+    icon: <BsBusFront size={22} />,
+    feature: "MANAGE_VEHICLES",
+  },
+
+  {
     name: "Roles & Permissions",
     path: "/roles_permissions",
     icon: <FaUsersCog size={22} />,
@@ -31,13 +38,6 @@ const sidebarLinks: SidebarLinkType[] = [
     name: "Staff/Emp Management",
     path: "/staff",
     icon: <FaUserShield size={22} />,
-    feature: "MANAGE_VEHICLES",
-  },
-
-  {
-    name: "Vehicle Management",
-    path: "/vehicles",
-    icon: <BsBusFront size={22} />,
     feature: "MANAGE_VEHICLES",
   },
 
@@ -141,7 +141,7 @@ export default function Sidebar() {
         return {
           ...link,
           subLinks: link.subLinks.filter((sub) =>
-            userFeatures.includes(sub.feature)
+            userFeatures.includes(sub.feature),
           ),
         };
       }

@@ -1,40 +1,34 @@
-// src/services/authService.ts
-import axios from "axios";
 import type { User } from "../Types/Index";
+import tenantApi from "./ApiService";
 
-// const API_URL = "http://localhost:3000/api/";
-const API_URL = `http://${window.location.hostname}/api/`;
+// We will no longer use a raw axios import here.
 
-export const register = ({ username, email, password }: User) => {
-  return axios.post(API_URL + "register", { username, email, password });
-};
+export const login = async ({ email, password }: User) => {
+  // Use our configured adminApiService instance
+  const response = await tenantApi.post("/tenant-login", { email, password });
 
-// export const login = ({ email, password }: User) => {
-//   return axios.post(API_URL + "login", { email, password }).then((response) => {
-//     if (response.data.token) {
-//       localStorage.setItem("user", JSON.stringify(response.data));
-//     }
-//     return response.data;
-//   });
-// };
+  // When login is successful, save the token to localStorage
+  if (response.data.token) {
+    // 3. CONSISTENTLY SAVE THE TOKEN UNDER THE KEY 'token'
+    localStorage.setItem("token", response.data.token);
+  }
 
-export const login = ({ email, password }: User) => {
-  return axios
-    .post(API_URL + "tenant-login", { email, password })
-    .then((response) => {
-      if (response.data.token) {
-        localStorage.setItem("user", JSON.stringify(response.data));
-      }
-      return response.data;
-    });
+  return response.data;
 };
 
 export const logout = () => {
-  localStorage.removeItem("user");
+  // 4. CONSISTENTLY REMOVE THE TOKEN UNDER THE KEY 'token'
+  localStorage.removeItem("token");
+  // Optionally, you can also redirect here or in the component
+  // window.location.href = "/login";
 };
 
-export const getCurrentUser = () => {
-  const userStr = localStorage.getItem("user");
-  if (userStr) return JSON.parse(userStr);
-  return null;
+export const getToken = (): string | null => {
+  return localStorage.getItem("token");
+};
+
+// This function will be used by your ProtectedRoute
+export const isLoggedIn = (): boolean => {
+  const token = localStorage.getItem("token");
+  return !!token; // Returns true if token exists, false otherwise
 };

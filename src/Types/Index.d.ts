@@ -1,3 +1,17 @@
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+  };
+  message?: string;
+}
+
 export interface User {
   username?: string;
   email?: string;
@@ -58,14 +72,62 @@ export interface Beacon {
 }
 
 export interface Vehicle {
-  id: string;
-  model: string;
-  name: string;
-  registration_number: string;
-  insurance_certificate: file;
-  puc_certificate: file;
-  gps_code: string;
-  status: "Active" | "Inactive" | "Maintenance"; // Use a specific type for status
+  // Basic Information
+  vehicle_number: string;
+  vehicle_type: string;
+  manufacturer: string;
+  vehicle_model?: string;
+  manufacturing_year?: number;
+  fuel_type?: string;
+  seating_capacity?: number;
+  vehicle_color?: string;
+
+  // Tracking
+  kilometers_driven?: number;
+  gps_device_id?: string;
+  sim_number?: string;
+  beacon_count?: number;
+
+  // Assignment
+  assigned_driver_id?: string;
+  assigned_route_id?: string;
+
+  // Permit & Compliance
+  permit_type?: string;
+  permit_number?: string;
+  permit_issue_date?: string;
+  permit_expiry_date?: string;
+
+  // Ownership
+  ownership_type?: string;
+  owner_name?: string;
+  owner_contact_number?: string;
+  vendor_name?: string;
+  vendor_contact_number?: string;
+  organization_name?: string;
+
+  // Insurance & Fitness
+  gps_installation_date?: string;
+  insurance_provider_name?: string;
+  insurance_policy_number?: string;
+  insurance_expiry_date?: string;
+  fitness_certificate_number?: string;
+  fitness_expiry_date?: string;
+  pollution_certificate_number?: string;
+  pollution_expiry_date?: string;
+
+  // Service & Maintenance
+  last_service_date?: string;
+  next_service_due_date?: string;
+  tyre_replacement_due_date?: string;
+  battery_replacement_due_date?: string;
+
+  // Safety
+  fire_extinguisher_status?: string;
+  first_aid_kit_status?: string;
+  cctv_installed?: boolean;
+  panic_button_installed?: boolean;
+  vehicle_remarks?: string; // Use a specific type for status
 }
 
 export interface Driver {

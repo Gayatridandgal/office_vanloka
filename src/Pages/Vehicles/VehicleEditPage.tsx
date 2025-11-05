@@ -1,203 +1,710 @@
-// src/Pages/Vehicles/VehicleEditPage.tsx
-
 import { useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import { vehiclesData } from "../../Data/Index";
+import StarInputField from "../../Components/Form/StarInputField";
+import SaveButton from "../../Components/Form/SaveButton";
 import type { Vehicle } from "../../Types/Index";
+import tenantApi from "../../Services/ApiService";
+
+type FormInputs = {
+  // Basic Information
+  vehicle_number: string;
+  vehicle_type: string;
+  manufacturer: string;
+  vehicle_model?: string;
+  manufacturing_year?: number;
+  fuel_type?: string;
+  seating_capacity?: number;
+  vehicle_color?: string;
+
+  // Tracking
+  kilometers_driven?: number;
+  gps_device_id?: string;
+  sim_number?: string;
+  beacon_count?: number;
+
+  // Assignment
+  assigned_driver_id?: string;
+  assigned_route_id?: string;
+
+  // Permit & Compliance
+  permit_type?: string;
+  permit_number?: string;
+  permit_issue_date?: string;
+  permit_expiry_date?: string;
+
+  // Ownership
+  ownership_type?: string;
+  owner_name?: string;
+  owner_contact_number?: string;
+  vendor_name?: string;
+  vendor_contact_number?: string;
+  organization_name?: string;
+
+  // Insurance & Fitness
+  gps_installation_date?: string;
+  insurance_provider_name?: string;
+  insurance_policy_number?: string;
+  insurance_expiry_date?: string;
+  fitness_certificate_number?: string;
+  fitness_expiry_date?: string;
+  pollution_certificate_number?: string;
+  pollution_expiry_date?: string;
+
+  // Service & Maintenance
+  last_service_date?: string;
+  next_service_due_date?: string;
+  tyre_replacement_due_date?: string;
+  battery_replacement_due_date?: string;
+
+  // Safety
+  fire_extinguisher_status?: string;
+  first_aid_kit_status?: string;
+  cctv_installed?: boolean;
+  panic_button_installed?: boolean;
+  vehicle_remarks?: string;
+};
 
 const VehicleEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [currentVehicle, setCurrentVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    formState: { errors, isSubmitting },
     reset,
-    formState: { errors },
-  } = useForm<Vehicle>();
+  } = useForm<FormInputs>({
+    defaultValues: {
+      vehicle_type: "",
+      fuel_type: "Petrol",
+      ownership_type: "Owned",
+      fire_extinguisher_status: "Installed",
+      first_aid_kit_status: "Available",
+      cctv_installed: false,
+      panic_button_installed: false,
+    },
+  });
 
   useEffect(() => {
-    const vehicle = vehiclesData.find((v) => v.id === id);
-    if (vehicle) {
-      setCurrentVehicle(vehicle);
-      // We reset the form with existing text data.
-      // We cannot reset file inputs for security reasons.
-      reset({
-        name: vehicle.name,
-        model: vehicle.model,
-        registration_number: vehicle.registration_number,
-        gps_code: vehicle.gps_code,
-        status: vehicle.status,
-      });
+    fetchVehicle();
+  }, [id]);
+
+  const fetchVehicle = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await tenantApi.get<{
+        success: boolean;
+        data: Vehicle;
+      }>(`/vehicles/${id}`);
+
+      if (response.data.success) {
+        const vehicle = response.data.data;
+
+        // Format dates for input fields (YYYY-MM-DD)
+        const formatDate = (date?: string | null) => {
+          if (!date) return "";
+          return date.split("T")[0]; // Extract date part only
+        };
+
+        // Reset form with fetched data
+        reset({
+          vehicle_number: vehicle.vehicle_number || "",
+          vehicle_type: vehicle.vehicle_type || "",
+          manufacturer: vehicle.manufacturer || "",
+          vehicle_model: vehicle.vehicle_model || "",
+          manufacturing_year: vehicle.manufacturing_year || undefined,
+          fuel_type: vehicle.fuel_type || "Petrol",
+          seating_capacity: vehicle.seating_capacity || undefined,
+          vehicle_color: vehicle.vehicle_color || "",
+          kilometers_driven: vehicle.kilometers_driven || undefined,
+          gps_device_id: vehicle.gps_device_id || "",
+          sim_number: vehicle.sim_number || "",
+          beacon_count: vehicle.beacon_count || undefined,
+          assigned_driver_id: vehicle.assigned_driver_id || "",
+          assigned_route_id: vehicle.assigned_route_id || "",
+          permit_type: vehicle.permit_type || "",
+          permit_number: vehicle.permit_number || "",
+          permit_issue_date: formatDate(vehicle.permit_issue_date),
+          permit_expiry_date: formatDate(vehicle.permit_expiry_date),
+          ownership_type: vehicle.ownership_type || "Owned",
+          owner_name: vehicle.owner_name || "",
+          owner_contact_number: vehicle.owner_contact_number || "",
+          vendor_name: vehicle.vendor_name || "",
+          vendor_contact_number: vehicle.vendor_contact_number || "",
+          organization_name: vehicle.organization_name || "",
+          gps_installation_date: formatDate(vehicle.gps_installation_date),
+          insurance_provider_name: vehicle.insurance_provider_name || "",
+          insurance_policy_number: vehicle.insurance_policy_number || "",
+          insurance_expiry_date: formatDate(vehicle.insurance_expiry_date),
+          fitness_certificate_number: vehicle.fitness_certificate_number || "",
+          fitness_expiry_date: formatDate(vehicle.fitness_expiry_date),
+          pollution_certificate_number:
+            vehicle.pollution_certificate_number || "",
+          pollution_expiry_date: formatDate(vehicle.pollution_expiry_date),
+          last_service_date: formatDate(vehicle.last_service_date),
+          next_service_due_date: formatDate(vehicle.next_service_due_date),
+          tyre_replacement_due_date: formatDate(
+            vehicle.tyre_replacement_due_date,
+          ),
+          battery_replacement_due_date: formatDate(
+            vehicle.battery_replacement_due_date,
+          ),
+          fire_extinguisher_status:
+            vehicle.fire_extinguisher_status || "Installed",
+          first_aid_kit_status: vehicle.first_aid_kit_status || "Available",
+          cctv_installed: vehicle.cctv_installed || false,
+          panic_button_installed: vehicle.panic_button_installed || false,
+          vehicle_remarks: vehicle.vehicle_remarks || "",
+        });
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch vehicle";
+      setError(errorMessage);
+      console.error("Error fetching vehicle:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [id, reset]);
-
-  const onSubmit: SubmitHandler<Vehicle> = (data) => {
-    // Check if a new file was uploaded. If not, keep the old one.
-    const insuranceFile = data.insurance_certificate[0];
-    const pucFile = data.puc_certificate[0];
-
-    const finalData = {
-      ...data,
-      insurance_certificate: insuranceFile
-        ? insuranceFile.name
-        : currentVehicle?.insurance_certificate,
-      puc_certificate: pucFile ? pucFile.name : currentVehicle?.puc_certificate,
-    };
-
-    console.log("Updated Vehicle Data:", finalData);
-    alert(`Vehicle ${data.name} updated successfully!`);
-    navigate("/vehicles");
   };
+
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+    try {
+      const response = await tenantApi.put<{
+        success: boolean;
+        data: Vehicle;
+      }>(`/vehicles/${id}`, data);
+
+      if (response.data.success) {
+        alert(`Vehicle ${data.vehicle_number} updated successfully!`);
+        navigate(`/vehicles/show/${id}`);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const errorMessage =
+          error.response?.data?.message || "Failed to update vehicle";
+        alert(`Error: ${errorMessage}`);
+        console.error("Validation errors:", error.response?.data?.errors);
+      } else {
+        alert("An unexpected error occurred");
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="px-4 bg-white min-h-screen">
+        <PageHeaderBack title="Edit Vehicle" buttonLink="/vehicles" />
+        <div className="text-center py-8">Loading vehicle data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="px-4 bg-white min-h-screen">
+        <PageHeaderBack title="Edit Vehicle" buttonLink="/vehicles" />
+        <div className="p-8 text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => navigate("/vehicles")}
+            className="bg-purple-950 text-white px-4 py-2 rounded"
+          >
+            Back to Vehicles
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 bg-white min-h-screen">
       <PageHeaderBack title="Edit Vehicle" buttonLink="/vehicles" />
-      <div className="p-8 max-w-5xl mx-auto rounded-lg shadow-sm">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Fields from previous example... */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-purple-950 uppercase font-bold mb-2"
-              >
-                Vehicle Name
-              </label>
-              <input
-                type="text"
-                {...register("name", { required: "Name is required." })}
-                className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+      <div className="p-10 mx-auto max-w-6xl rounded-lg shadow-lg bg-white border border-gray-200">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* --- Section 1: Vehicle Basic Information --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Vehicle Basic Information
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <StarInputField
+                label="Vehicle Number"
+                name="vehicle_number"
+                register={register}
+                errors={errors}
+                required="Vehicle number is required."
+                placeholder="e.g., MH01AB1234"
               />
-              {errors.name && (
-                <p className="error-style">{errors.name.message}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="model"
-                className="block text-purple-950 uppercase font-bold mb-2"
-              >
-                Model
-              </label>
-              <input
-                type="text"
-                {...register("model", { required: "Model is required." })}
-                className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              {errors.model && (
-                <p className="error-style">{errors.model.message}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="registration_number"
-                className="block text-purple-950 uppercase font-bold mb-2"
-              >
-                Registration No.
-              </label>
-              <input
-                type="text"
-                {...register("registration_number", {
-                  required: "Registration is required.",
-                })}
-                className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              {errors.registration_number && (
-                <p className="error-style">
-                  {errors.registration_number.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="gps_code"
-                className="block text-purple-950 uppercase font-bold mb-2"
-              >
-                GPS Code
-              </label>
-              <input
-                type="text"
-                {...register("gps_code", { required: "GPS Code is required." })}
-                className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              {errors.gps_code && (
-                <p className="error-style">{errors.gps_code.message}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="status"
-                className="block text-purple-950 uppercase font-bold mb-2"
-              >
-                Status
-              </label>
-              <select
-                {...register("status")}
-                className="w-full px-4 py-3 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Maintenance">Maintenance</option>
-              </select>
-            </div>
-          </div>
+              <div>
+                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+                  Vehicle Type<span className="text-red-600">*</span>
+                </label>
+                <select
+                  {...register("vehicle_type", {
+                    required: "Vehicle type is required.",
+                  })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Select Type</option>
+                  <option value="Bus">Bus</option>
+                  <option value="Van">Van</option>
+                  <option value="Truck">Truck</option>
+                  <option value="Car">Car</option>
+                  <option value="Auto">Auto</option>
+                  <option value="Two-wheeler">Two-wheeler</option>
+                  <option value="Other">Other</option>
+                </select>
+                {errors.vehicle_type && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.vehicle_type.message}
+                  </p>
+                )}
+              </div>
 
-          {/* File Inputs */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
-            <div>
-              <label
-                htmlFor="insurance_certificate"
-                className="block text-purple-950 uppercase font-bold mb-2"
-              >
-                Insurance Certificate
-              </label>
-              <input
-                type="file"
-                id="insurance_certificate"
-                {...register("insurance_certificate", {
-                  required: "Title is required.",
-                })}
-                className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+              <StarInputField
+                label="Manufacturer (OEM)"
+                name="manufacturer"
+                register={register}
+                errors={errors}
+                required="Manufacturer is required."
+                placeholder="e.g., Tata, Maruti, Mahindra"
               />
-              {errors.insurance_certificate && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.insurance_certificate.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="puc_certificate"
-                className="block text-purple-950 uppercase font-bold mb-2"
-              >
-                PUC Certificate
-              </label>
-              <input
-                type="file"
-                id="puc_certificate"
-                {...register("puc_certificate", {
-                  required: "Title is required.",
-                })}
-                className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+              <StarInputField
+                label="Vehicle Model"
+                name="vehicle_model"
+                register={register}
+                errors={errors}
+                placeholder="e.g., Nexon, Ertiga"
               />
-              {errors.puc_certificate && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.puc_certificate.message}
-                </p>
-              )}
-            </div>
-          </div>
 
-          <button
-            type="submit"
-            className="bg-purple-200 text-purple-900 font-bold py-2 px-6 rounded-lg hover:bg-purple-300 uppercase transition-colors"
-          >
-            Save
-          </button>
+              <StarInputField
+                label="Manufacturing Year"
+                name="manufacturing_year"
+                register={register}
+                errors={errors}
+                type="number"
+                placeholder={new Date().getFullYear().toString()}
+              />
+
+              <div>
+                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+                  Fuel Type
+                </label>
+                <select
+                  {...register("fuel_type")}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="Petrol">Petrol</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Electric">Electric</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+
+              <StarInputField
+                label="Seating Capacity"
+                name="seating_capacity"
+                register={register}
+                errors={errors}
+                type="number"
+                placeholder="e.g., 5, 8, 50"
+              />
+
+              <StarInputField
+                label="Vehicle Color"
+                name="vehicle_color"
+                register={register}
+                errors={errors}
+                placeholder="e.g., White, Red, Blue"
+              />
+            </div>
+          </section>
+
+          {/* --- Section 2: Tracking & Assignment --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Tracking & Assignment
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <StarInputField
+                label="Kilometers Driven"
+                name="kilometers_driven"
+                register={register}
+                errors={errors}
+                type="number"
+                placeholder="e.g., 5000"
+              />
+
+              <StarInputField
+                label="GPS Device ID"
+                name="gps_device_id"
+                register={register}
+                errors={errors}
+                placeholder="e.g., GPS001"
+              />
+
+              <StarInputField
+                label="SIM Number"
+                name="sim_number"
+                register={register}
+                errors={errors}
+                placeholder="Enter SIM number"
+              />
+
+              <StarInputField
+                label="Beacon Count"
+                name="beacon_count"
+                register={register}
+                errors={errors}
+                type="number"
+                placeholder="e.g., 2"
+              />
+
+              <StarInputField
+                label="Assigned Driver ID"
+                name="assigned_driver_id"
+                register={register}
+                errors={errors}
+                placeholder="Driver ID"
+              />
+
+              <StarInputField
+                label="Assigned Route ID"
+                name="assigned_route_id"
+                register={register}
+                errors={errors}
+                placeholder="Route ID"
+              />
+            </div>
+          </section>
+
+          {/* --- Section 3: Permit & Compliance --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Permit & Compliance
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+                  Permit Type
+                </label>
+                <select
+                  {...register("permit_type")}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Select Permit Type</option>
+                  <option value="School">School</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Factory">Factory</option>
+                  <option value="Tourist">Tourist</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <StarInputField
+                label="Permit Number"
+                name="permit_number"
+                register={register}
+                errors={errors}
+                placeholder="RTO Permit Number"
+              />
+
+              <StarInputField
+                label="Permit Issue Date"
+                name="permit_issue_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+
+              <StarInputField
+                label="Permit Expiry Date"
+                name="permit_expiry_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+            </div>
+          </section>
+
+          {/* --- Section 4: Ownership & Contact --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Ownership & Contact Information
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+                  Ownership Type
+                </label>
+                <select
+                  {...register("ownership_type")}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="Owned">Owned</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Leased">Leased</option>
+                </select>
+              </div>
+
+              <StarInputField
+                label="Owner Name"
+                name="owner_name"
+                register={register}
+                errors={errors}
+                placeholder="Full name"
+              />
+
+              <StarInputField
+                label="Owner Contact Number"
+                name="owner_contact_number"
+                register={register}
+                errors={errors}
+                placeholder="10-digit number"
+              />
+
+              <StarInputField
+                label="Vendor Name"
+                name="vendor_name"
+                register={register}
+                errors={errors}
+                placeholder="Vendor name"
+              />
+
+              <StarInputField
+                label="Vendor Contact Number"
+                name="vendor_contact_number"
+                register={register}
+                errors={errors}
+                placeholder="10-digit number"
+              />
+
+              <StarInputField
+                label="Organization / Fleet Name"
+                name="organization_name"
+                register={register}
+                errors={errors}
+                placeholder="Organization name"
+              />
+            </div>
+          </section>
+
+          {/* --- Section 5: Insurance & Fitness --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Insurance & Fitness Certificates
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <StarInputField
+                label="GPS Installation Date"
+                name="gps_installation_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+
+              <StarInputField
+                label="Insurance Provider Name"
+                name="insurance_provider_name"
+                register={register}
+                errors={errors}
+                placeholder="e.g., ICICI Lombard"
+              />
+
+              <StarInputField
+                label="Insurance Policy Number"
+                name="insurance_policy_number"
+                register={register}
+                errors={errors}
+                placeholder="Policy number"
+              />
+
+              <StarInputField
+                label="Insurance Expiry Date"
+                name="insurance_expiry_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+
+              <StarInputField
+                label="Fitness Certificate Number"
+                name="fitness_certificate_number"
+                register={register}
+                errors={errors}
+                placeholder="RTO Fitness No."
+              />
+
+              <StarInputField
+                label="Fitness Expiry Date"
+                name="fitness_expiry_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+
+              <StarInputField
+                label="Pollution Certificate Number"
+                name="pollution_certificate_number"
+                register={register}
+                errors={errors}
+                placeholder="PUC number"
+              />
+
+              <StarInputField
+                label="Pollution Expiry Date"
+                name="pollution_expiry_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+            </div>
+          </section>
+
+          {/* --- Section 6: Service & Maintenance --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Service & Maintenance Dates
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <StarInputField
+                label="Last Service Date"
+                name="last_service_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+
+              <StarInputField
+                label="Next Service Due Date"
+                name="next_service_due_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+
+              <StarInputField
+                label="Tyre Replacement Due Date"
+                name="tyre_replacement_due_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+
+              <StarInputField
+                label="Battery Replacement Due Date"
+                name="battery_replacement_due_date"
+                register={register}
+                errors={errors}
+                type="date"
+              />
+            </div>
+          </section>
+
+          {/* --- Section 7: Safety Features --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Safety Features & Status
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+                  Fire Extinguisher Status
+                </label>
+                <select
+                  {...register("fire_extinguisher_status")}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="Installed">Installed</option>
+                  <option value="Expired">Expired</option>
+                  <option value="Not Installed">Not Installed</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+                  First Aid Kit Status
+                </label>
+                <select
+                  {...register("first_aid_kit_status")}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="Available">Available</option>
+                  <option value="Missing">Missing</option>
+                  <option value="Expired">Expired</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="cctv_installed"
+                  {...register("cctv_installed")}
+                  className="w-4 h-4 rounded"
+                />
+                <label
+                  htmlFor="cctv_installed"
+                  className="text-purple-950 uppercase text-sm font-bold"
+                >
+                  CCTV Installed
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="panic_button_installed"
+                  {...register("panic_button_installed")}
+                  className="w-4 h-4 rounded"
+                />
+                <label
+                  htmlFor="panic_button_installed"
+                  className="text-purple-950 uppercase text-sm font-bold"
+                >
+                  Panic Button Installed
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* --- Section 8: Remarks --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Additional Remarks
+            </h2>
+            <div>
+              <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+                Vehicle Remarks / Notes
+              </label>
+              <textarea
+                {...register("vehicle_remarks")}
+                placeholder="Enter any special instructions or conditions..."
+                rows={4}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+          </section>
+
+          {/* --- Form Submission Buttons --- */}
+          <div className="flex gap-4">
+            <SaveButton
+              label={isSubmitting ? "Updating..." : "Update Vehicle"}
+            />
+            <button
+              type="button"
+              onClick={() => navigate("/vehicles")}
+              className="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white font-bold rounded-lg transition"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

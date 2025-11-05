@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../Services/AuthService";
+import { login } from "../Services/AuthService"; // Your refactored service
 import logo from "../../public/logo.avif";
+import type { User } from "../Types/Index";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -9,13 +10,20 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e: any) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      await login({ email, password });
-      navigate("/dashboard"); // Navigate to the protected area
-    } catch (err) {
-      setError("Failed to log in. Please check your credentials.");
+      await login({ email, password } as User);
+
+      navigate("/dashboard");
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message ||
+        "Login failed. Please check your credentials.";
+
+      setError(errorMessage);
+      console.error("Login error:", err);
     }
   };
 
@@ -61,7 +69,9 @@ const LoginPage = () => {
             />
           </div>
           {error && (
-            <p className="text-red-300 text-center text-sm mt-4">{error}</p>
+            <p className="text-red-500 bg-red-100 p-2 rounded-md text-center text-sm mt-4">
+              {error}
+            </p>
           )}
           <button
             type="submit"

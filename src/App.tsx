@@ -6,26 +6,25 @@ import {
 } from "react-router-dom";
 import "./App.css";
 import LoginPage from "./Auth/LoginPage";
-import RegisterPage from "./Auth/RegisterPage";
 import AuthLayout from "./Layouts/AuthLayout";
-import { getCurrentUser } from "./Services/AuthService";
+import DashBoardPage from "./Pages/DashBoardPage";
+import { isLoggedIn } from "./Services/AuthService";
 
 // Auth Service
-
 // Protected Route Component
 const ProtectedRoute = ({ children }: any) => {
-  const user = getCurrentUser();
-  if (!user) {
+  if (!isLoggedIn()) {
+    // <-- Use the new check
     // If no user token, redirect to the login page
     return <Navigate to="/login" />;
   }
   return children;
 };
 
-// Public Route Component (prevents logged-in users from seeing guest/login pages)
+// Public Route Component
 const PublicRoute = ({ children }: any) => {
-  const user = getCurrentUser();
-  if (user) {
+  if (isLoggedIn()) {
+    // <-- Use the new check
     // If user is logged in, redirect to the dashboard
     return <Navigate to="/dashboard" />;
   }
@@ -36,7 +35,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
         <Route
           path="/"
           element={
@@ -53,14 +51,14 @@ function App() {
             </PublicRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/register"
           element={
             <PublicRoute>
               <RegisterPage />
             </PublicRoute>
           }
-        />
+        /> */}
 
         {/* Protected Routes inside AuthLayout */}
         <Route
@@ -70,7 +68,12 @@ function App() {
               <AuthLayout />
             </ProtectedRoute>
           }
-        ></Route>
+        >
+          {/* Define nested routes for the authenticated area */}
+          {/* The default protected route will be /dashboard */}
+          <Route path="dashboard" element={<DashBoardPage />} />
+          {/* Example: <Route path="profile" element={<ProfilePage />} /> */}
+        </Route>
       </Routes>
     </Router>
   );
