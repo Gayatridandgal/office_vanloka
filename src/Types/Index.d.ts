@@ -131,16 +131,67 @@ export interface Vehicle {
 }
 
 export interface Driver {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-  email: string;
-  driving_license: file;
-  aadhaar_card?: file;
-  pan_card?: file;
-  beacon_code: string;
-  status: "Active" | "Inactive"; // Use a specific type for status
+  id: string | number;
+  // Basic Information
+  first_name?: string;
+  last_name?: string;
+  gender?: string;
+  date_of_birth?: string;
+  profile_photo?: string;
+  // Contact & Address
+  email?: string;
+  mobile_number?: string;
+  emergency_contact?: string;
+  address_line_1?: string;
+  address_line_2?: string;
+  village?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pin_code?: string;
+  // KYC
+  kyc_document_type?: string;
+  kyc_document_number?: string;
+  // Driver License
+  driving_license_number?: string;
+  license_issue_date?: string;
+  license_expiry_date?: string;
+  license_type?: string;
+  // Professional
+  employment_type?: string;
+  driving_experience_years?: number;
+  employee_id?: string;
+  // Compliance
+  safety_training_completed?: boolean;
+  safety_training_date?: string;
+  permit_verified?: boolean;
+  blood_group?: string;
+  medical_fitness_required?: boolean;
+  medical_fitness_date?: string;
+  // Insurance & Emergency
+  marital_status?: string;
+  number_of_dependents?: number;
+  insurance_details?: string;
+  insurance_coverage?: boolean;
+  // Tracking
+  beacon_assigned?: string;
+  vehicle_assigned?: string;
+  // Documents
+  driving_license_document?: string;
+  aadhaar_card_document?: string;
+  pan_card_document?: string;
+  police_verification_document?: string;
+  medical_fitness_document?: string;
+  passport_size_photo?: string;
+  address_proof_document?: string;
+  badge_psv_authorization?: string;
+  training_certificate_document?: string;
+  consent_checkbox_document?: string;
+  // Status
+  status?: string;
+  remarks?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Traveler {
