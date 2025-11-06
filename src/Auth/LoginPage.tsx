@@ -5,8 +5,8 @@ import logo from "../../public/logo.avif";
 import type { User } from "../Types/Index";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@admin.com");
+  const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
