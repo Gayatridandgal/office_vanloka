@@ -4,7 +4,7 @@ import { BsBusFront } from "react-icons/bs";
 import { FaUserShield } from "react-icons/fa6";
 import { FaBusinessTime } from "react-icons/fa6";
 import { FaRegAddressBook } from "react-icons/fa6";
-import { FaUsersCog } from "react-icons/fa";
+import { FaUserCheck, FaUsersCog } from "react-icons/fa";
 import type { SidebarLinkType } from "../Types/Index";
 import { GrBeacon, GrOrganization } from "react-icons/gr";
 import { app_features as userFeatures } from "../Data/Index";
@@ -32,6 +32,13 @@ const sidebarLinks: SidebarLinkType[] = [
     path: "/drivers",
     icon: <HiUsers size={22} />,
     feature: "MANAGE_DRIVERS",
+  },
+
+  {
+    name: "Instructor Management",
+    path: "/instructors",
+    icon: <FaUserCheck size={22} />,
+    feature: "MANAGE_INSTRUCTORS",
   },
 
   {

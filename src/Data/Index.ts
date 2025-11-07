@@ -17,6 +17,7 @@ export const app_features = [
   "MANAGE_DRIVERS",
   "MANAGE_USERS",
   "MANAGE_TRAVELERS",
+  "MANAGE_INSTRUCTORS",
   "MANAGE_GPS",
   "MANAGE_BEACON",
   "MANAGE_BOOKINGS",

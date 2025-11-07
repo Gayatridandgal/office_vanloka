@@ -31,6 +31,10 @@ import StaffCreatePage from "../Pages/StaffUsers/StaffCreatePage";
 import StaffEditPage from "../Pages/StaffUsers/StaffEditPage";
 import MyPlanPage from "../Pages/MyPlanPage";
 import DashBoardPage from "../Pages/DashBoardPage";
+import InstructorIndexPage from "../Pages/Instructors/InstructorIndexPage";
+import InstructorCreatePage from "../Pages/Instructors/InstructorCreatePage";
+import InstructorShowPage from "../Pages/Instructors/InstructorShowPage";
+import InstructorEditPage from "../Pages/Instructors/InstructorEditpage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -98,6 +102,21 @@ const AuthLayout = () => {
 
             {/* Plan Detail Page */}
             <Route path="plan" element={<MyPlanPage />} />
+
+            {/*Instructor */}
+            <Route path="instructors" element={<InstructorIndexPage />} />
+            <Route
+              path="instructors/create"
+              element={<InstructorCreatePage />}
+            />
+            <Route
+              path="instructors/show/:id"
+              element={<InstructorShowPage />}
+            />
+            <Route
+              path="instructors/edit/:id"
+              element={<InstructorEditPage />}
+            />
           </Routes>
         </div>
       </main>

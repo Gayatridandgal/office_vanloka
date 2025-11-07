@@ -6,6 +6,7 @@ import type { PaginatedResponse } from "../../Types/Index";
 import SearchComponent from "../../Components/UI/SearchComponents";
 import SingleFilterHeader from "../../Components/UI/SingleFilterHeader";
 import tenantApi from "../../Services/ApiService";
+import { HiRefresh } from "react-icons/hi";
 
 export interface Vehicle {
   id: string | number;
@@ -366,7 +367,9 @@ const VehicleIndexPage = () => {
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin">Loading...</div>
+          <div className="inline-block animate-spin">
+            <HiRefresh className="w-6 h-6" />
+          </div>
         </div>
       ) : (
         <>
