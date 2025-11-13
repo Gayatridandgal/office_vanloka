@@ -183,6 +183,8 @@ const DriverShowPage = () => {
             <DetailItem label="PIN Code" value={driver.pin_code} />
           </div>
 
+
+
           {/* Professional Information */}
           <SectionHeader title="Professional Information" />
           <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
@@ -227,6 +229,14 @@ const DriverShowPage = () => {
                 value={formatDate(driver.police_verification_date)}
               />
             )}
+          </div>
+
+          <SectionHeader title="Bank Account Details" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
+            <DetailItem label="Bank Name" value={driver.bank_name} />
+            <DetailItem label="Account Holder Name" value={driver.account_holder_name} />
+            <DetailItem label="Account Number" value={driver.account_number} />
+            <DetailItem label="Ifsc Code" value={driver.ifsc_code} />
           </div>
 
           {/* License & Insurance Information */}
@@ -302,7 +312,6 @@ const DriverShowPage = () => {
               />
             )}
           </div>
-
 
           {/* Remarks / Notes */}
           {driver.remarks && (

@@ -182,6 +182,22 @@ const DriverEditPage = () => {
         }
       });
 
+       // Bank Information
+      const bankAccountFields = [
+        "bank_name",
+        "account_number",
+        "ifsc_code",
+        "account_holder_name",
+      ];
+
+      bankAccountFields.forEach((field) => {
+        const value = data[field as keyof FormInputs];
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(field, String(value));
+        }
+      });
+
+
       // License/Insurance Array (JSON string)
       if (data.license_insurance && data.license_insurance.length > 0) {
         formData.append(
@@ -731,11 +747,44 @@ const DriverEditPage = () => {
                   exp_date: "",
                 })
               }
-              className="bg-green-300 text-purple-950 uppercase text-sm font-bold py-2 px-4 rounded-lg hover:bg-green-400 transition-colors"
+              className="bg-green-300 text-purple-950 uppercase text-sm font-bold py-3 px-4 rounded-lg hover:bg-green-400 transition-colors"
             >
-              <ImPlus className="inline mr-1" /> Add Entry
+              <ImPlus/>
             </button>
           </div>
+
+          {/* --- Bank Information --- */}
+          <section>
+            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
+              Bank Account Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+              <InputField
+                label="Account Holder Name"
+                name="account_holder_name"
+                register={register}
+                errors={errors}
+              />
+              <InputField
+                label="account number"
+                name="account_number"
+                register={register}
+                errors={errors}
+              />
+              <InputField
+                label="ifsc code"
+                name="ifsc_code"
+                register={register}
+                errors={errors}
+              />
+              <InputField
+                label="bank name"
+                name="bank_name"
+                register={register}
+                errors={errors}
+              />
+            </div>
+          </section>
 
           {/* --- Section 7: Tracking & Assignment --- */}
           <section>

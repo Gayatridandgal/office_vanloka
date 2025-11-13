@@ -44,6 +44,12 @@ export interface Driver {
   police_verification?: string;
   police_verification_date?: string;
 
+  // bank details
+  bank_name?:string;
+  account_holder_name?:string;
+  account_number?:string;
+  ifsc_code?:string;
+
   // License/Insurance Array
   license_insurance?: LicenseInsurance[];
 
