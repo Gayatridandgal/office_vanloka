@@ -16,10 +16,10 @@ const MobileHeader: React.FC<PanelHeaderProps> = ({
 }) => {
   return (
     <div
-      className={`xxl:hidden flex items-center justify-between py-2 mb-4 ${bgColor} shadow-md`}
+      className={`xxl:hidden flex items-center justify-between py-5 shadow-sm ${bgColor} `}
     >
-      <h1 className={`text-lg font-bold ${textColor} p-3 uppercase`}>
-        {title}
+      <h1 className={`text-lg font-bold ${textColor} py-2 uppercase`}>
+        
       </h1>
       <button
         onClick={toggleSidebar}

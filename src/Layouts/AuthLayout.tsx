@@ -52,7 +52,7 @@ const AuthLayout = () => {
         {/* Mobile Header with Toggle Button */}
         <MobileHeader title="Institute Panel" toggleSidebar={toggleSidebar} />
 
-        <div className="p-2 overflow-y-auto">
+        <div className="p-2 mt-4 overflow-y-auto">
           <Routes>
             {/* <Route path="dashboard" element={<DashBoardPage />} /> */}
             <Route path="dashboard" element={<DashBoardPage />} />

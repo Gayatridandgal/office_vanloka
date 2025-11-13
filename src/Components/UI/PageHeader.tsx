@@ -5,18 +5,13 @@ interface HeaderProps {
   title: string;
   buttonText?: string;
   buttonLink?: string;
-  buttonColor?: string; // optional Tailwind color class
 }
 
 const PageHeader: React.FC<HeaderProps> = ({
   title,
   buttonText = "",
   buttonLink = "#",
-  buttonColor = "purple",
 }) => {
-  const bgColor = `bg-${buttonColor}-200`;
-  const hoverColor = `hover:bg-${buttonColor}-300`;
-  const textColor = `text-${buttonColor}-950`;
 
   return (
     <div className="flex justify-between items-center mb-4">
@@ -24,7 +19,7 @@ const PageHeader: React.FC<HeaderProps> = ({
       {buttonLink && buttonText && (
         <Link
           to={buttonLink}
-          className={`${bgColor} ${textColor} shadow-sm font-bold py-1 px-4 rounded-lg ${hoverColor} transition-colors uppercase`}
+          className={` bg-blue-300 shadow-sm font-bold py-1 px-2 hover:bg-blue-400 rounded-lg  transition-colors uppercase`}
         >
           {buttonText}
         </Link>

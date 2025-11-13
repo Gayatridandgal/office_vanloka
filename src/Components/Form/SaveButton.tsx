@@ -8,7 +8,7 @@ const SaveButton = ({ label, onClick }: SaveButtonProps) => {
     <button
       type="submit"
       onClick={onClick}
-      className={`bg-purple-200 text-purple-900 font-bold py-1 px-4 rounded-lg hover:bg-purple-300 uppercase transition-colors`}
+      className={`bg-green-400 text-purple-950 font-bold py-1 px-4 rounded-lg hover:bg-green-500 uppercase transition-colors`}
     >
       {label}
     </button>

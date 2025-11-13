@@ -1,31 +1,34 @@
 import React from "react";
 import { type FieldErrors, type UseFormRegister } from "react-hook-form";
 
-// Define the props for the component
-type StarInputFieldProps = {
+type Option = {
+  value: string | number;
+  label: string;
+};
+
+type StarSelectFieldProps = {
   name: string;
   label: string;
   register: UseFormRegister<any>;
   errors: FieldErrors;
+  options: Option[];
   required?: boolean | string;
-  type?: "text" | "email" | "number" | "password" | "tel" | "date";
   className?: string;
   placeholder?: string;
   disabled?: boolean;
 };
 
-const StarInputField: React.FC<StarInputFieldProps> = ({
+const StarSelectField: React.FC<StarSelectFieldProps> = ({
   name,
   label,
   register,
   errors,
+  options,
   required = false,
-  type = "text",
   className = "",
+  placeholder = "Select an option",
   disabled = false,
-  ...props // To capture other props like placeholder
 }) => {
-  // Define validation rules based on the 'required' prop
   const validationRules = {
     required: required
       ? typeof required === "string"
@@ -34,7 +37,6 @@ const StarInputField: React.FC<StarInputFieldProps> = ({
       : false,
   };
 
-  // Safely access the specific error message for this field
   const errorMessage = errors[name]?.message;
 
   return (
@@ -46,14 +48,23 @@ const StarInputField: React.FC<StarInputFieldProps> = ({
         {label}
         {required && <span className="text-red-600">*</span>}
       </label>
-      <input
+
+      <select
         id={name}
-        type={type}
-        disabled={disabled}
         {...register(name, validationRules)}
-        className={`w-full px-4 py-2 border text-sm border-gray-300 uppercase rounded-lg focus:outline-none focus:ring focus:ring-purple-400 ${className}`}
-        {...props} // Spread other props like placeholder
-      />
+        disabled={disabled}
+        className={`w-full px-4 py-3 border text-sm border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white ${
+          disabled ? "bg-gray-100 cursor-not-allowed" : ""
+        } ${className}`}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value} >
+            <span className="uppercase text-sm">{opt.label}</span>
+          </option>
+        ))}
+      </select>
+
       {errorMessage && (
         <p className="text-red-500 text-sm mt-1">{String(errorMessage)}</p>
       )}
@@ -61,4 +72,4 @@ const StarInputField: React.FC<StarInputFieldProps> = ({
   );
 };
 
-export default StarInputField;
+export default StarSelectField;

@@ -13,11 +13,11 @@ const Sidebar = ({ isOpen }: Props) => {
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      <div className="p-2 border-b border-gray-200 border mb-4 bg-purple-50">
-        <h3 className="text-xl font-extrabold uppercase tracking-wide text-purple-950 overflow-hidden">
+      <div className="py-4 px-4  shadow-sm mb-2 bg-purple-50">
+        <h3 className="text-lg font-extrabold uppercase tracking-wide text-purple-950 overflow-hidden">
           Organization Admin
         </h3>
-        <p className="text-sm uppercase text-gray-600">Fleet Tracking System</p>
+        {/* <p className="text-sm uppercase text-gray-600">Fleet Tracking System</p> */}
       </div>
 
       {/* The main navigation links, which will grow to fill available space */}

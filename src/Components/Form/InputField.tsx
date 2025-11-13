@@ -12,6 +12,7 @@ type InputFieldProps = {
   className?: string;
   placeholder?: string;
   disabled?: boolean;
+  step?:any
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -23,6 +24,7 @@ const InputField: React.FC<InputFieldProps> = ({
   type = "text",
   className = "",
   disabled = false,
+  step=1,
   ...props // To capture other props like placeholder
 }) => {
   // Define validation rules based on the 'required' prop
@@ -48,9 +50,10 @@ const InputField: React.FC<InputFieldProps> = ({
       <input
         id={name}
         type={type}
+        step={step}
         disabled={disabled}
         {...register(name, validationRules)}
-        className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-sm uppercase focus:outline-none focus:ring-2 focus:ring-purple-500 ${className}`}
+        className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-sm uppercase focus:outline-none focus:ring focus:ring-purple-400 ${className}`}
         {...props} // Spread other props like placeholder
       />
       {errorMessage && (
