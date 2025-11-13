@@ -3,6 +3,8 @@ import axios from "axios";
 export const baseURL = `http://${window.location.hostname}/api/`;
 // const baseURL = `http://localhost/api/`;
 
+export const asset = `http://${window.location.hostname}/storage`
+
 const tenantApi = axios.create({
   baseURL: baseURL,
   withCredentials: true, // Correct for Sanctum

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import PageHeader from "../../Components/UI/PageHeader";
 import Table from "../../Components/UI/Table";
-import type { Driver, PaginatedResponse } from "../../Types/Index";
 import SearchComponent from "../../Components/UI/SearchComponents";
 import SingleFilterHeader from "../../Components/UI/SingleFilterHeader";
 import tenantApi from "../../Services/ApiService";
+import type { Driver } from "./Driver.types";
+import type { PaginatedResponse } from "../../Types/Index";
 
 // Helper function to determine status color
 const getStatusColor = (status?: string): string => {
@@ -20,21 +21,42 @@ const getStatusColor = (status?: string): string => {
   }
 };
 
-// Check if license is expiring soon
-const isLicenseExpiringSoon = (expiryDate?: string): boolean => {
-  if (!expiryDate) return false;
-  const expiry = new Date(expiryDate);
+// Helper to get license/insurance info from JSON array
+const getLicenseInfo = (licenseInsurance?: any[]): string => {
+  if (!licenseInsurance || !Array.isArray(licenseInsurance) || licenseInsurance.length === 0) {
+    return "—";
+  }
+  
+  const licenseItem = licenseInsurance.find(item => item.type === 'license');
+  if (licenseItem && licenseItem.exp_date) {
+    return new Date(licenseItem.exp_date).toLocaleDateString("en-IN");
+  }
+  
+  return "—";
+};
+
+// Check if any license is expiring soon
+const hasExpiringLicense = (licenseInsurance?: any[]): boolean => {
+  if (!licenseInsurance || !Array.isArray(licenseInsurance)) return false;
+  
   const today = new Date();
-  const thirtyDaysFromNow = new Date(today.setDate(today.getDate() + 30));
-  return expiry <= thirtyDaysFromNow && expiry >= new Date();
+  const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+  
+  return licenseInsurance.some(item => {
+    if (!item.exp_date) return false;
+    const expiry = new Date(item.exp_date);
+    return expiry <= thirtyDaysFromNow && expiry >= today;
+  });
 };
 
 // Column definitions
 const columns = [
   {
     key: "sno",
-    label: "SNo",
-    render: (_: Driver, index: number) => index + 1,
+    label: "S.No",
+    render: (_: Driver, index: number) => (
+      <span className="text-sm font-medium">{index + 1}</span>
+    ),
   },
   {
     key: "name",
@@ -45,18 +67,18 @@ const columns = [
           <img
             src={`http://localhost/storage/${row.profile_photo}`}
             alt={`${row.first_name} ${row.last_name}`}
-            className="h-8 w-8 rounded-full object-cover"
+            className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}
           />
         )}
         <div>
-          <div className="font-medium text-gray-900">
+          <div className="font-semibold text-gray-900 text-sm uppercase">
             {row.first_name} {row.last_name}
           </div>
-          <div className="text-xs text-gray-500">
-            {row.driving_license_number}
+          <div className="text-xs text-gray-500 uppercase">
+            {row.employee_id || "N/A"}
           </div>
         </div>
       </div>
@@ -67,53 +89,98 @@ const columns = [
     label: "Contact",
     render: (row: Driver) => (
       <div>
-        <div className="text-sm font-medium">{row.mobile_number}</div>
-        {row.email && <div className="text-xs text-gray-500">{row.email}</div>}
-      </div>
-    ),
-  },
-  {
-    key: "license_info",
-    label: "License Info",
-    render: (row: Driver) => (
-      <div>
-        <div className="text-sm">{row.license_type}</div>
-        {row.license_expiry_date && (
-          <div
-            className={`text-xs ${
-              isLicenseExpiringSoon(row.license_expiry_date)
-                ? "text-red-600 font-semibold"
-                : "text-gray-500"
-            }`}
-          >
-            Exp: {new Date(row.license_expiry_date).toLocaleDateString("en-IN")}
-          </div>
+        <div className="text-sm font-medium uppercase">{row.mobile_number}</div>
+        {row.email && (
+          <div className="text-xs text-gray-500">{row.email}</div>
         )}
       </div>
     ),
   },
   {
+    key: "address",
+    label: "Location",
+    render: (row: Driver) => (
+      <div>
+        <div className="text-sm font-medium uppercase">{row.city || "—"}</div>
+        {row.state && (
+          <div className="text-xs text-gray-500 uppercase">{row.state}</div>
+        )}
+      </div>
+    ),
+  },
+  {
+    key: "license_info",
+    label: "License/Insurance",
+    render: (row: Driver) => {
+      const licenseCount = row.license_insurance?.length || 0;
+      const isExpiring = hasExpiringLicense(row.license_insurance);
+      const expiryDate = getLicenseInfo(row.license_insurance);
+      
+      return (
+        <div>
+          <div className="text-sm font-medium uppercase">
+            {licenseCount} Record{licenseCount !== 1 ? 's' : ''}
+          </div>
+          {expiryDate !== "—" && (
+            <div
+              className={`text-xs uppercase ${
+                isExpiring ? "text-red-600 font-bold" : "text-gray-500"
+              }`}
+            >
+              Exp: {expiryDate}
+            </div>
+          )}
+        </div>
+      );
+    },
+  },
+  {
     key: "experience",
     label: "Experience",
     render: (row: Driver) => (
-      <span className="text-sm">
-        {row.driving_experience_years
-          ? `${row.driving_experience_years} yrs`
-          : "—"}
+      <span className="text-sm uppercase">
+        {row.driving_experience ? `${row.driving_experience} YRS` : "—"}
       </span>
     ),
   },
   {
-    key: "city",
-    label: "City",
-    render: (row: Driver) => <span className="text-sm">{row.city || "—"}</span>,
+    key: "employment",
+    label: "Employment",
+    render: (row: Driver) => (
+      <span className="text-xs uppercase px-2 py-1 bg-blue-50 text-blue-700 rounded">
+        {row.employment_type || "N/A"}
+      </span>
+    ),
+  },
+  {
+    key: "verification",
+    label: "Verification",
+    render: (row: Driver) => (
+      <div className="flex flex-col gap-1">
+        {row.medical_fitness === "YES" && (
+          <span className="text-xs uppercase px-2 py-0.5 bg-green-50 text-green-700 rounded">
+            ✓ Medical
+          </span>
+        )}
+        {row.police_verification === "YES" && (
+          <span className="text-xs uppercase px-2 py-0.5 bg-purple-50 text-purple-700 rounded">
+            ✓ Police
+          </span>
+        )}
+        {row.safety_training_completion === "YES" && (
+          <span className="text-xs uppercase px-2 py-0.5 bg-orange-50 text-orange-700 rounded">
+            ✓ Training
+          </span>
+        )}
+      </div>
+    ),
   },
   {
     key: "status",
     label: "Status",
     render: (row: Driver) => (
       <span
-        className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+        className={`px-3 py-1 text-xs font-bold rounded-full uppercase ${getStatusColor(
           row.status,
         )}`}
       >
@@ -129,11 +196,11 @@ const DriverIndexPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedLicenseType, setSelectedLicenseType] = useState("");
+  const [selectedEmploymentType, setSelectedEmploymentType] = useState("");
   const [displayDrivers, setDisplayDrivers] = useState<Driver[]>([]);
   const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
   const [cities, setCities] = useState<Array<{ id: string; name: string }>>([]);
-  const [licenseTypes, setLicenseTypes] = useState<
+  const [employmentTypes, setEmploymentTypes] = useState<
     Array<{ id: string; name: string }>
   >([]);
   const [loading, setLoading] = useState(true);
@@ -175,12 +242,14 @@ const DriverIndexPage = () => {
           uniqueCities.sort().map((city) => ({ id: city, name: city })),
         );
 
-        // Extract unique license types
-        const uniqueLicenseTypes = Array.from(
-          new Set(drivers.map((d) => d.license_type).filter(Boolean)),
+        // Extract unique employment types
+        const uniqueEmploymentTypes = Array.from(
+          new Set(drivers.map((d) => d.employment_type).filter(Boolean)),
         ) as string[];
-        setLicenseTypes(
-          uniqueLicenseTypes.sort().map((type) => ({ id: type, name: type })),
+        setEmploymentTypes(
+          uniqueEmploymentTypes
+            .sort()
+            .map((type) => ({ id: type, name: type })),
         );
 
         // Set pagination info
@@ -212,9 +281,9 @@ const DriverIndexPage = () => {
       result = result.filter((d) => d.status === selectedStatus);
     }
 
-    // Apply license type filter
-    if (selectedLicenseType) {
-      result = result.filter((d) => d.license_type === selectedLicenseType);
+    // Apply employment type filter
+    if (selectedEmploymentType) {
+      result = result.filter((d) => d.employment_type === selectedEmploymentType);
     }
 
     // Apply search filter
@@ -229,7 +298,7 @@ const DriverIndexPage = () => {
           (driver.mobile_number ?? "")
             .toLowerCase()
             .includes(lowercasedQuery) ||
-          (driver.driving_license_number ?? "")
+          (driver.employee_id ?? "")
             .toLowerCase()
             .includes(lowercasedQuery),
       );
@@ -240,7 +309,7 @@ const DriverIndexPage = () => {
     searchQuery,
     selectedCity,
     selectedStatus,
-    selectedLicenseType,
+    selectedEmploymentType,
     allDrivers,
   ]);
 
@@ -290,7 +359,7 @@ const DriverIndexPage = () => {
       <div className="my-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <SearchComponent
           onSearch={(query) => setSearchQuery(query)}
-          placeholder="Search by Name, Email, Phone, License..."
+          placeholder="Search by Name, Email, Phone, Employee ID..."
         />
 
         <div className="flex gap-2">
@@ -327,12 +396,12 @@ const DriverIndexPage = () => {
           />
 
           <SingleFilterHeader
-            label="License Type"
-            id="license-filter"
-            options={licenseTypes}
-            value={selectedLicenseType}
+            label="Employment"
+            id="employment-filter"
+            options={employmentTypes}
+            value={selectedEmploymentType}
             onChange={(type) => {
-              setSelectedLicenseType(type);
+              setSelectedEmploymentType(type);
               setCurrentPage(1);
             }}
             optionValueKey="id"
@@ -344,7 +413,8 @@ const DriverIndexPage = () => {
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin">Loading...</div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          <p className="mt-4 text-gray-600 text-sm uppercase">Loading Drivers...</p>
         </div>
       ) : (
         <>
@@ -357,9 +427,15 @@ const DriverIndexPage = () => {
           />
 
           {/* Pagination Info */}
-          <div className="mt-4 text-sm text-gray-600">
-            Showing {displayDrivers.length} of {allDrivers.length} drivers
-            {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+          <div className="mt-4 flex justify-between items-center text-sm text-gray-600 uppercase">
+            <span>
+              Showing {displayDrivers.length} of {allDrivers.length} drivers
+            </span>
+            {totalPages > 1 && (
+              <span className="font-semibold">
+                Page {currentPage} of {totalPages}
+              </span>
+            )}
           </div>
         </>
       )}
