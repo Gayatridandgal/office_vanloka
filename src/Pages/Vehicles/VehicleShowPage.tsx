@@ -1,195 +1,40 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
+import type { Vehicle } from "./Vehicle.types";
 import tenantApi from "../../Services/ApiService";
+import DetailItem from "../../Components/UI/DetailItem";
+import DocumentItem from "../../Components/UI/DocumentItem";
 
-// ===== VEHICLE TYPES =====
-export interface Vehicle {
-  id: string | number;
-  vehicle_number?: string;
-  vehicle_type?: string;
-  manufacturer?: string;
-  vehicle_model?: string;
-  manufacturing_year?: number;
-  fuel_type?: string;
-  seating_capacity?: number;
-  vehicle_color?: string;
-  kilometers_driven?: number;
-  gps_device_id?: string;
-  sim_number?: string;
-  beacon_count?: number;
-  assigned_driver_id?: string;
-  assigned_route_id?: string;
-  permit_type?: string;
-  permit_number?: string;
-  permit_issue_date?: string;
-  permit_expiry_date?: string;
-  ownership_type?: string;
-  owner_name?: string;
-  owner_contact_number?: string;
-  vendor_name?: string;
-  vendor_contact_number?: string;
-  organization_name?: string;
-  gps_installation_date?: string;
-  insurance_provider_name?: string;
-  insurance_policy_number?: string;
-  insurance_expiry_date?: string;
-  fitness_certificate_number?: string;
-  fitness_expiry_date?: string;
-  pollution_certificate_number?: string;
-  pollution_expiry_date?: string;
-  last_service_date?: string;
-  next_service_due_date?: string;
-  tyre_replacement_due_date?: string;
-  battery_replacement_due_date?: string;
-  fire_extinguisher_status?: string;
-  first_aid_kit_status?: string;
-  cctv_installed?: boolean;
-  panic_button_installed?: boolean;
-  vehicle_remarks?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+// Utility Components
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
-// ===== APP USER TYPES =====
-export interface AppUser {
-  id: string | number;
-  first_name?: string;
-  last_name?: string;
-  gender?: string;
-  date_of_birth?: string;
-  profile_photo?: string;
-  email?: string;
-  mobile_number?: string;
-  address_line_1?: string;
-  address_line_2?: string;
-  village?: string;
-  city?: string;
-  district?: string;
-  state?: string;
-  pin_code?: string;
-  kyc_document_type?: string;
-  kyc_document_number?: string;
-  referral_code?: string;
-  preferred_language?: string;
-  interest?: string;
-  occupation?: string;
-  emergency_contact_name?: string;
-  emergency_contact_number?: string;
-  travellers?: Traveller[];
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface Traveller {
-  id: string | number;
-  app_user_id: string | number;
-  first_name?: string;
-  last_name?: string;
-  gender?: string;
-  date_of_birth?: string;
-  profile_photo?: string;
-  relationship?: string;
-  beacon_id?: string;
-  aadhaar_number?: string;
-  blood_group?: string;
-  remarks_notes?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-// Helper component for displaying field info
-const InfoField = ({
-  label,
-  value,
-  colSpan = 1,
-}: {
-  label: string;
-  value?: string | number | boolean | null;
-  colSpan?: number;
-}) => (
-  <div className={`col-span-${colSpan}`}>
-    <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">{label}</h4>
-    <p className="text-sm text-purple-950 font-medium">
-      {value === null || value === undefined || value === ""
-        ? "—"
-        : typeof value === "boolean"
-          ? value
-            ? "Yes"
-            : "No"
-          : value}
-    </p>
-  </div>
+const SectionHeader = ({ title }: { title: string }) => (
+  <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md">
+    {title}
+  </h2>
 );
 
-// Helper component for dates
-const DateField = ({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string | null;
-}) => {
-  if (!value) return <InfoField label={label} value={null} />;
-  const date = new Date(value);
-  const isExpired = new Date() > date;
-  return (
-    <div>
-      <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">
-        {label}
-      </h4>
-      <p
-        className={`text-sm font-medium ${
-          isExpired ? "text-red-600" : "text-purple-950"
-        }`}
-      >
-        {date.toLocaleDateString("en-IN")}
-        {isExpired && (
-          <span className="ml-2 text-xs bg-red-100 px-2 py-1 rounded">
-            Expired
-          </span>
-        )}
-      </p>
-    </div>
-  );
-};
-
-// Helper component for status badges
-const StatusBadge = ({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string | null;
-}) => {
-  if (!value) return <InfoField label={label} value={null} />;
-
-  const statusColors: Record<string, string> = {
-    Active: "bg-green-100 text-green-800",
-    Inactive: "bg-red-100 text-red-800",
-    Maintenance: "bg-yellow-100 text-yellow-800",
-    Installed: "bg-green-100 text-green-800",
-    Available: "bg-green-100 text-green-800",
-    Expired: "bg-red-100 text-red-800",
-    "Not Installed": "bg-gray-100 text-gray-800",
-    Missing: "bg-red-100 text-red-800",
-  };
-
-  return (
-    <div>
-      <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">
-        {label}
-      </h4>
-      <span
-        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-          statusColors[value] || "bg-gray-100 text-gray-800"
-        }`}
-      >
-        {value}
-      </span>
-    </div>
-  );
-};
+// Helper for Yes/No badge display
+const YesNoBadge = ({ value }: { value?: string | null }) => (
+  <span
+    className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase ${value === "YES"
+      ? "bg-green-100 text-green-800"
+      : value === "NO"
+        ? "bg-red-100 text-red-800"
+        : "bg-gray-100 text-gray-800"
+      }`}
+  >
+    {value || "NO"}
+  </span>
+);
 
 const VehicleShowPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -227,310 +72,289 @@ const VehicleShowPage = () => {
 
   if (loading) {
     return (
-      <div className="px-4 bg-white min-h-screen">
-        <PageHeaderBack title="Vehicle Details" buttonLink="/vehicles" />
-        <div className="text-center py-8">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 uppercase text-sm">
+            Loading Vehicle Details...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (error || !vehicle) {
     return (
-      <div className="px-4 bg-white min-h-screen">
-        <PageHeaderBack title="Vehicle Not Found" buttonLink="/vehicles" />
-        <div className="p-8 text-center">
-          <p className="text-red-600 mb-4">
-            {error || "The requested vehicle could not be found."}
-          </p>
-          <button
-            onClick={() => navigate("/vehicles")}
-            className="bg-purple-950 text-white px-4 py-2 rounded"
-          >
-            Back to Vehicles
-          </button>
-        </div>
+      <div className="px-4 bg-white min-h-screen text-center py-10">
+        <h1 className="text-2xl font-bold uppercase">Vehicle not found.</h1>
+        <p className="text-red-600 mt-4 uppercase">{error}</p>
       </div>
     );
   }
 
-  // Helper function to determine vehicle status
-  const getVehicleStatus = (): string => {
-    const now = new Date();
-    if (
-      vehicle.permit_expiry_date &&
-      new Date(vehicle.permit_expiry_date) < now
-    ) {
-      return "Inactive";
-    }
-    if (
-      vehicle.insurance_expiry_date &&
-      new Date(vehicle.insurance_expiry_date) < now
-    ) {
-      return "Inactive";
-    }
-    if (
-      vehicle.next_service_due_date &&
-      new Date(vehicle.next_service_due_date) < now
-    ) {
-      return "Maintenance";
-    }
-    return "Active";
-  };
-
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Vehicle Details" buttonLink="/vehicles" />
+      <PageHeaderBack title="Back" buttonLink="/vehicles" />
 
-      <div className="p-8 mx-auto max-w-7xl rounded-lg shadow-sm">
+      <div className="p-10 mx-auto max-w-7xl rounded-lg shadow-lg bg-white border border-gray-200">
         {/* Header with Vehicle Number and Status */}
-        <div className="mb-8 pb-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-purple-950 mb-2">
-                {vehicle.vehicle_number}
-              </h1>
-              <p className="text-gray-600">
-                {vehicle.manufacturer} {vehicle.vehicle_model} •{" "}
-                {vehicle.fuel_type}
-              </p>
-            </div>
-            <StatusBadge label="Status" value={getVehicleStatus()} />
+        <div className="mb-8 pb-6 border-b border-gray-200 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-purple-950 uppercase">
+              {vehicle.vehicle_number || "N/A"}
+            </h1>
+            <p className="text-gray-600 text-sm uppercase mt-1">
+              {vehicle.manufacturer} {vehicle.vehicle_model} • {vehicle.fuel_type}
+            </p>
+            <p className="text-gray-600 text-sm uppercase">
+              {vehicle.vehicle_type}
+            </p>
+          </div>
+          <div className="text-right">
+            {vehicle.status && (
+              <span
+                className={`inline-block px-4 py-2 rounded-full text-xs font-bold uppercase ${vehicle.status === "active"
+                  ? "bg-green-100 text-green-800"
+                  : vehicle.status === "under_maintenance"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-gray-100 text-gray-800"
+                  }`}
+              >
+                {vehicle.status.replace(/_/g, " ")}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Section 1: Vehicle Basic Information */}
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-            Vehicle Basic Information
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <InfoField label="Vehicle Type" value={vehicle.vehicle_type} />
-            <InfoField
-              label="Manufacturer (OEM)"
-              value={vehicle.manufacturer}
-            />
-            <InfoField label="Vehicle Model" value={vehicle.vehicle_model} />
-            <InfoField
-              label="Manufacturing Year"
-              value={vehicle.manufacturing_year}
-            />
-            <InfoField label="Fuel Type" value={vehicle.fuel_type} />
-            <InfoField
-              label="Seating Capacity"
-              value={vehicle.seating_capacity}
-            />
-            <InfoField label="Vehicle Color" value={vehicle.vehicle_color} />
-            <InfoField
-              label="Kilometers Driven"
-              value={vehicle.kilometers_driven}
-            />
+        <div className="space-y-8">
+          {/* Basic Information */}
+          <SectionHeader title="Basic Information" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
+            <DetailItem label="Vehicle Number" value={vehicle.vehicle_number} />
+            <DetailItem label="Vehicle Type" value={vehicle.vehicle_type} />
+            <DetailItem label="RC Number" value={vehicle.rc_number} />
+            <DetailItem label="RC Issued Date" value={formatDate(vehicle.rc_isued_date)} />
+            <DetailItem label="RC Expiry Date" value={formatDate(vehicle.rc_expiry_date)} />
+            <DetailItem label="Manufacturer" value={vehicle.manufacturer} />
+            <DetailItem label="Vehicle Model" value={vehicle.vehicle_model} />
+            <DetailItem label="Manufacturing Year" value={vehicle.manufacturing_year} />
+            <DetailItem label="Fuel Type" value={vehicle.fuel_type} />
+            <DetailItem label="Seating Capacity" value={vehicle.seating_capacity} />
+            <DetailItem label="Vehicle Color" value={vehicle.vehicle_color} />
+            <DetailItem label="Kilometers Driven" value={vehicle.kilometers_driven} />
+            <DetailItem label="Driver Assigned" value={vehicle.driver} />
+            <DetailItem label="Route Assigned" value={vehicle.route} />
           </div>
-        </section>
 
-        {/* Section 2: Tracking & Assignment */}
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-            Tracking & Assignment
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <InfoField label="GPS Device ID" value={vehicle.gps_device_id} />
-            <InfoField label="SIM Number" value={vehicle.sim_number} />
-            <InfoField label="Beacon Count" value={vehicle.beacon_count} />
-            <InfoField
-              label="Assigned Driver ID"
-              value={vehicle.assigned_driver_id}
-            />
-            <InfoField
-              label="Assigned Route ID"
-              value={vehicle.assigned_route_id}
-            />
-            <DateField
+          {/* GPS Tracking */}
+          <SectionHeader title="Device" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
+            <DetailItem label="GPS Device" value={vehicle.gps_device} />
+            <DetailItem
               label="GPS Installation Date"
-              value={vehicle.gps_installation_date}
+              value={formatDate(vehicle.gps_installation_date)}
             />
           </div>
-        </section>
 
-        {/* Section 3: Permit & Compliance */}
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-            Permit & Compliance
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <InfoField label="Permit Type" value={vehicle.permit_type} />
-            <InfoField label="Permit Number" value={vehicle.permit_number} />
-            <DateField
+          {/* Ownership Information */}
+          <SectionHeader title="Ownership Information" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
+            <DetailItem label="Ownership Type" value={vehicle.ownership_type} />
+          </div>
+
+          {/* Conditional Vendor Details */}
+          {vehicle.ownership_type === "contract" && (
+            <>
+
+              <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
+                <DetailItem label="Vendor Name" value={vehicle.vendor_name} />
+                <DetailItem
+                  label="Vendor Aadhaar Number"
+                  value={vehicle.vendor_aadhar_number}
+                />
+                <DetailItem label="Vendor PAN Number" value={vehicle.vendor_pan_number} />
+                <DetailItem
+                  label="Vendor Contact Number"
+                  value={vehicle.vendor_contact_number}
+                />
+                <DetailItem
+                  label="Vendor Organization Name"
+                  value={vehicle.vendor_organization_name}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Insurance Information */}
+          <SectionHeader title="Compliance" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
+            <DetailItem label="Permit Type" value={vehicle.permit_type} />
+            <DetailItem label="Permit Number" value={vehicle.permit_number} />
+            <DetailItem
               label="Permit Issue Date"
-              value={vehicle.permit_issue_date}
+              value={formatDate(vehicle.permit_issue_date)}
             />
-            <DateField
+            <DetailItem
               label="Permit Expiry Date"
-              value={vehicle.permit_expiry_date}
+              value={formatDate(vehicle.permit_expiry_date)}
             />
-          </div>
-        </section>
-
-        {/* Section 4: Ownership & Contact */}
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-            Ownership & Contact Information
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatusBadge
-              label="Ownership Type"
-              value={vehicle.ownership_type}
-            />
-            <InfoField label="Owner Name" value={vehicle.owner_name} />
-            <InfoField
-              label="Owner Contact Number"
-              value={vehicle.owner_contact_number}
-            />
-            <InfoField label="Vendor Name" value={vehicle.vendor_name} />
-            <InfoField
-              label="Vendor Contact Number"
-              value={vehicle.vendor_contact_number}
-            />
-            <InfoField
-              label="Organization / Fleet Name"
-              value={vehicle.organization_name}
-            />
-          </div>
-        </section>
-
-        {/* Section 5: Insurance & Fitness */}
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-            Insurance & Fitness Certificates
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <InfoField
+            <DetailItem
               label="Insurance Provider Name"
               value={vehicle.insurance_provider_name}
             />
-            <InfoField
+            <DetailItem
               label="Insurance Policy Number"
               value={vehicle.insurance_policy_number}
             />
-            <DateField
-              label="Insurance Expiry Date"
-              value={vehicle.insurance_expiry_date}
+            <DetailItem
+              label="Insurance Issued Date"
+              value={formatDate(vehicle.insurance_issued_date)}
             />
-            <InfoField
+            <DetailItem
+              label="Insurance Expiry Date"
+              value={formatDate(vehicle.insurance_expiry_date)}
+            />
+            <DetailItem
               label="Fitness Certificate Number"
               value={vehicle.fitness_certificate_number}
             />
-            <DateField
-              label="Fitness Expiry Date"
-              value={vehicle.fitness_expiry_date}
+            <DetailItem
+              label="Fitness Issued Date"
+              value={formatDate(vehicle.fitness_issued_date)}
             />
-            <InfoField
-              label="Pollution Certificate Number"
+            <DetailItem
+              label="Fitness Expiry Date"
+              value={formatDate(vehicle.fitness_expiry_date)}
+            />
+            <DetailItem
+              label="PUC Number"
               value={vehicle.pollution_certificate_number}
             />
-            <DateField
-              label="Pollution Expiry Date"
-              value={vehicle.pollution_expiry_date}
+            <DetailItem
+              label="PUC Issued Date"
+              value={formatDate(vehicle.pollution_issued_date)}
+            />
+            <DetailItem
+              label="PUC Expiry Date"
+              value={formatDate(vehicle.pollution_expiry_date)}
             />
           </div>
-        </section>
 
-        {/* Section 6: Service & Maintenance */}
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-            Service & Maintenance Dates
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <DateField
+          {/* Service & Maintenance */}
+          <SectionHeader title="Service & Maintenance" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 px-2">
+            <DetailItem
               label="Last Service Date"
-              value={vehicle.last_service_date}
+              value={formatDate(vehicle.last_service_date)}
             />
-            <DateField
+            <DetailItem
               label="Next Service Due Date"
-              value={vehicle.next_service_due_date}
+              value={formatDate(vehicle.next_service_due_date)}
             />
-            <DateField
+            <DetailItem
               label="Tyre Replacement Due Date"
-              value={vehicle.tyre_replacement_due_date}
+              value={formatDate(vehicle.tyre_replacement_due_date)}
             />
-            <DateField
+            <DetailItem
               label="Battery Replacement Due Date"
-              value={vehicle.battery_replacement_due_date}
+              value={formatDate(vehicle.battery_replacement_due_date)}
             />
-          </div>
-        </section>
-
-        {/* Section 7: Safety Features & Status */}
-        <section className="mb-8">
-          <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-            Safety Features & Status
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatusBadge
-              label="Fire Extinguisher Status"
-              value={vehicle.fire_extinguisher_status}
-            />
-            <StatusBadge
-              label="First Aid Kit Status"
-              value={vehicle.first_aid_kit_status}
-            />
+            <div>
+              <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">
+                Fire Extinguisher
+              </h4>
+              <YesNoBadge value={vehicle.fire_extinguisher} />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">
+                First Aid Kit
+              </h4>
+              <YesNoBadge value={vehicle.first_aid_kit} />
+            </div>
             <div>
               <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">
                 CCTV Installed
               </h4>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                  vehicle.cctv_installed
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {vehicle.cctv_installed ? "Yes" : "No"}
-              </span>
+              <YesNoBadge value={vehicle.cctv_installed} />
             </div>
             <div>
               <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">
                 Panic Button Installed
               </h4>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                  vehicle.panic_button_installed
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {vehicle.panic_button_installed ? "Yes" : "No"}
-              </span>
+              <YesNoBadge value={vehicle.panic_button_installed} />
             </div>
           </div>
-        </section>
 
-        {/* Section 8: Remarks */}
-        {vehicle.vehicle_remarks && (
-          <section className="mb-8">
-            <h2 className="text-lg font-bold text-purple-950 mb-4 pb-2 border-b-2 border-purple-200">
-              Additional Remarks
-            </h2>
-            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-              <p className="text-sm text-purple-950 leading-relaxed">
-                {vehicle.vehicle_remarks}
-              </p>
-            </div>
-          </section>
-        )}
+          {/* Documents */}
+          <SectionHeader title="Documents" />
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {vehicle.insurance_doc && (
+              <DocumentItem label="Insurance Document" path={vehicle.insurance_doc} />
+            )}
+            {vehicle.rc_book_doc && (
+              <DocumentItem label="RC Book" path={vehicle.rc_book_doc} />
+            )}
+            {vehicle.puc_doc && (
+              <DocumentItem label="PUC Document" path={vehicle.puc_doc} />
+            )}
+            {vehicle.fitness_certificate && (
+              <DocumentItem
+                label="Fitness Certificate"
+                path={vehicle.fitness_certificate}
+              />
+            )}
+            {vehicle.permit_copy && (
+              <DocumentItem label="Permit Copy" path={vehicle.permit_copy} />
+            )}
+            {vehicle.gps_installation_proof && (
+              <DocumentItem
+                label="GPS Installation Proof"
+                path={vehicle.gps_installation_proof}
+              />
+            )}
+            {vehicle.ownership_type === "contract" && (
+              <>
+                {vehicle.vendor_pan && (
+                  <DocumentItem label="Vendor PAN Card" path={vehicle.vendor_pan} />
+                )}
+                {vehicle.vendor_adhaar && (
+                  <DocumentItem label="Vendor Aadhaar" path={vehicle.vendor_adhaar} />
+                )}
+                {vehicle.vendor_bank_proof && (
+                  <DocumentItem
+                    label="Vendor Bank Proof"
+                    path={vehicle.vendor_bank_proof}
+                  />
+                )}
+                {vehicle.vendor_contract_proof && (
+                  <DocumentItem
+                    label="Contract Agreement"
+                    path={vehicle.vendor_contract_proof}
+                  />
+                )}
+                {vehicle.vedor_company_registration_doc && (
+                  <DocumentItem
+                    label="Company Registration"
+                    path={vehicle.vedor_company_registration_doc}
+                  />
+                )}
+              </>
+            )}
+          </div>
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-700 whitespace-pre-wrap uppercase">
+              Remarks  {vehicle.remarks}
+            </p>
+          </div>
+        </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 flex gap-4 pt-6 border-t border-gray-200">
-          <button
-            onClick={() => navigate(`/vehicles/edit/${vehicle.id}`)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition"
-          >
-            Edit Vehicle
-          </button>
+        <div className="mt-8 flex gap-4">
           <button
             onClick={() => navigate("/vehicles")}
-            className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition"
+            className="px-6 py-2 bg-gray-600 font-bold text-white text-sm rounded-md hover:bg-gray-500 uppercase"
           >
-            Back to List
+            Back
           </button>
         </div>
       </div>
