@@ -78,7 +78,7 @@ const sidebarLinks: SidebarLinkType[] = [
 
   {
     name: "Travelers Management",
-    path: "/travelers",
+    path: "/travellers",
     icon: <FaBusinessTime size={22} />,
     feature: "MANAGE_TRAVELERS",
   },

@@ -96,9 +96,9 @@ const AuthLayout = () => {
             <Route path="bookings/create" element={<BookingCreatePage />} />
 
             {/* Traveler Pages */}
-            <Route path="travelers" element={<TravelerIndexPage />} />
-            <Route path="travelers/show/:id" element={<TravelerShowPage />} />
-            <Route path="travelers/Edit/:id" element={<TravelerEditPage />} />
+            <Route path="travellers" element={<TravelerIndexPage />} />
+            <Route path="travellers/show/:id" element={<TravelerShowPage />} />
+            <Route path="travellers/Edit/:id" element={<TravelerEditPage />} />
 
             {/* Plan Detail Page */}
             <Route path="plan" element={<MyPlanPage />} />

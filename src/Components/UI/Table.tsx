@@ -29,7 +29,7 @@ const Table = <T extends { id: number | string }>({
   return (
     <div className="overflow-x-auto rounded-t-lg shadow-sm">
       <table className="min-w-full">
-        <thead className="bg-purple-100 text-left">
+        <thead className="bg-gray-100 text-left">
           <tr>
             {columns.map((col) => (
               <th
@@ -99,9 +99,9 @@ const Table = <T extends { id: number | string }>({
             <tr>
               <td
                 colSpan={columns.length + 1}
-                className="px-6 py-4 text-center text-gray-500"
+                className="px-6 py-10 uppercase text-center text-gray-500"
               >
-                No records found.
+                No records found..
               </td>
             </tr>
           )}
