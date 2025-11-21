@@ -1,8 +1,6 @@
 import type { User } from "../Types/Index";
 import tenantApi from "./ApiService";
 
-// We will no longer use a raw axios import here.
-
 export const login = async ({ email, password }: User) => {
   // Use our configured adminApiService instance
   const response = await tenantApi.post("/tenant-login", { email, password });

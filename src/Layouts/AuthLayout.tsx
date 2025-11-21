@@ -26,9 +26,9 @@ import TravelerShowPage from "../Pages/Travelers/TravelerShowPage";
 import BookingCreatePage from "../Pages/Bookings/BookingCreatePage";
 import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
 import TravelerEditPage from "../Pages/Travelers/TravelerEditPage";
-import StaffIndexPage from "../Pages/StaffUsers/StaffIndexPage";
-import StaffCreatePage from "../Pages/StaffUsers/StaffCreatePage";
-import StaffEditPage from "../Pages/StaffUsers/StaffEditPage";
+import StaffIndexPage from "../Pages/Staffs/StaffIndexPage";
+import StaffCreatePage from "../Pages/Staffs/StaffCreatePage";
+import StaffEditPage from "../Pages/Staffs/StaffEditPage";
 import MyPlanPage from "../Pages/MyPlanPage";
 import DashBoardPage from "../Pages/DashBoardPage";
 import InstructorIndexPage from "../Pages/Instructors/InstructorIndexPage";
@@ -52,7 +52,7 @@ const AuthLayout = () => {
         {/* Mobile Header with Toggle Button */}
         <MobileHeader title="Institute Panel" toggleSidebar={toggleSidebar} />
 
-        <div className="p-2 mt-4 overflow-y-auto">
+        <div className="py-4">
           <Routes>
             {/* <Route path="dashboard" element={<DashBoardPage />} /> */}
             <Route path="dashboard" element={<DashBoardPage />} />
