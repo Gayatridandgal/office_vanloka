@@ -1,63 +1,89 @@
-import { useState } from "react"; // Import useState
+import { useEffect, useState } from "react";
 import PageHeader from "../../Components/UI/PageHeader";
 import Table from "../../Components/UI/Table";
-import { rolesData } from "../../Data/Index";
-import type { Role } from "../../Types/Index";
-import SearchComponent from "../../Components/UI/SearchComponents";
+import { useAlert } from "../../Context/AlertContext";
+import adminApi from "../../Services/ApiService";
+import type { Role } from "./RolesPermissions.types";
 
-// Column definitions remain the same
 const columns = [
   {
     key: "sno",
     label: "SNo",
     render: (_: Role, index: number) => index + 1,
   },
-  { key: "name", label: "Name" },
-  { key: "description", label: "Description" },
+  { key: "name", label: "Role Name" },
+  // {
+  //   key: "permissions_count",
+  //   label: "Permissions",
+  //   render: (row: Role) => `${row.permissions_count} permissions assigned`, // A user-friendly display
+  // },
 ];
 
-const handleDelete = (role: Role) => {
-  console.log("Delete role:", role);
-  alert(`Deleting role: ${role.name}`);
-};
-
 const IndexPage = () => {
-  // State to hold the list of roles that will be displayed
-  const [filteredRoles, setFilteredRoles] = useState<Role[]>(rolesData);
-  // The search handler function
-  const handleSearch = (query: string) => {
-    if (!query) {
-      setFilteredRoles(rolesData);
-      return;
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const { showAlert } = useAlert();
+
+  // Fetch data when the component mounts
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await adminApi.get("/roles");
+        setRoles(response.data.data);
+      } catch (error) {
+        showAlert("Failed to fetch roles. Please try again later.", "error");
+        console.error("Failed to fetch roles:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoles();
+  }, [showAlert]); // Dependency array includes showAlert as a good practice
+
+  const handleDelete = async (role: Role) => {
+    // 2. ADD A CONFIRMATION STEP
+    // window.confirm() is a simple but effective way to do this.
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the role "${role.name}"? This action cannot be undone.`
+      )
+    ) {
+      return; // Stop if the user clicks "Cancel"
     }
 
-    const lowercasedQuery = query.toLowerCase();
-    const filtered = rolesData.filter(
-      (role) =>
-        (role.name ?? "").toLowerCase().includes(lowercasedQuery) ||
-        (role.description ?? "").toLowerCase().includes(lowercasedQuery)
-    );
-    setFilteredRoles(filtered);
+    try {
+      // 3. MAKE THE API CALL
+      const response = await adminApi.delete(`/roles/${role.id}`);
+
+      // 4. UPDATE THE UI ON SUCCESS
+      // Filter out the deleted role from the state to instantly update the table
+      setRoles((currentRoles) => currentRoles.filter((r) => r.id !== role.id));
+
+      // Show a success message
+      showAlert(
+        response.data.message || "Role deleted successfully.",
+        "success"
+      );
+    } catch (error: any) {
+      // 5. SHOW AN ERROR MESSAGE ON FAILURE
+      const errorMessage =
+        error.response?.data?.message || "Failed to delete the role.";
+      showAlert(errorMessage, "error");
+      console.error("Delete role error:", error);
+    }
   };
 
+  // Show a loading indicator while fetching data
+  if (loading) {
+    return <div className="p-4">Loading roles...</div>;
+  }
   return (
     <div className="px-4 bg-white min-h-screen">
-      <PageHeader
-        title="Roles & Permissions"
-        buttonText="Add Role"
-        buttonLink="create"
-      />
-
-      {/* Add the SearchComponent */}
-      <div className="my-4">
-        <SearchComponent
-          onSearch={handleSearch}
-          placeholder="Search by Role Name, Description..."
-        />
-      </div>
+      <PageHeader title="Roles" buttonText="Add Role" buttonLink="create" />
 
       <Table<Role>
-        list={filteredRoles} // <-- Use the filtered state here
+        list={roles}
         columns={columns}
         editUrl="/roles_permissions/edit"
         onDelete={handleDelete}

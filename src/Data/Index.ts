@@ -2,28 +2,27 @@ import type {
   AppUser,
   Beacon,
   Booking,
-  Driver,
   Gps,
   LiveVehicle,
   Organisation,
   Staff,
   Traveler,
-  Vehicle,
 } from "../Types/Index";
 
 export const app_features = [
-  "VIEW_DASHBOARD",
-  "MANAGE_VEHICLES",
-  "MANAGE_DRIVERS",
-  "MANAGE_USERS",
-  "MANAGE_TRAVELERS",
-  "MANAGE_INSTRUCTORS",
-  "MANAGE_GPS",
-  "MANAGE_BEACON",
-  "MANAGE_BOOKINGS",
-  "MANAGE_TRAININGS",
-  "DEFAULT",
-  "MANAGE_SUPPORT_TICKETS",
+"VIEW DASHBOARD",
+"MANAGE ROLE PERMISIONS",
+"MANAGE EMPLOYEES",
+"MANAGE ATTENDERS",
+"MANAGE VEHICLES",
+"MANAGE DRIVERS",
+"MANAGE INSTRUCTORS",
+"MANAGE TRAVELERS",
+"MANAGE BOOKINGS",
+"MANAGE VENDORS",
+"MANAGE SUPPORT TICKETS",
+"VIEW BASIC REPORTS",
+"VIEW COMPLIANCE REPORTS",
 ];
 
 export const allPermissions = [
@@ -117,7 +116,7 @@ export const staffData: Staff[] = [
   },
 ];
 
-export const vehiclesData: Vehicle[] = [
+export const vehiclesData = [
   {
     id: "1",
     model: "TAT A406",
@@ -151,7 +150,7 @@ export const vehiclesData: Vehicle[] = [
   },
 ];
 
-export const driverData: Driver[] = [
+export const driverData = [
   {
     id: "1",
     first_name: "Arun",
