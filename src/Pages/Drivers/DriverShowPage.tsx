@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   FaUser,
   FaMapMarkerAlt,
@@ -13,7 +13,7 @@ import {
   FaTimesCircle,
   FaExclamationTriangle,
 } from "react-icons/fa";
-import { MdVerified, MdWarning } from "react-icons/md";
+import { MdWarning } from "react-icons/md";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import tenantApi from "../../Services/ApiService";
 import useAsset from "../../Hooks/useAsset";
@@ -21,6 +21,7 @@ import DetailItem from "../../Components/UI/DetailItem";
 import DocumentItem from "../../Components/UI/DocumentItem";
 import type { Driver } from "./Driver.types";
 import { SectionHeader } from "../../Components/UI/SectionHeader";
+import { Loader } from "../../Components/UI/Loader";
 
 // Utility function for date formatting
 const formatDate = (dateString: string | null | undefined) => {
@@ -30,50 +31,6 @@ const formatDate = (dateString: string | null | undefined) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
   return `${day}-${month}-${year}`;
-};
-
-
-// Status Badge Component
-const StatusBadge = ({ status }: { status?: string }) => {
-  const getStatusConfig = () => {
-    switch (status?.toLowerCase()) {
-      case "active":
-        return {
-          label: "Active",
-          color: "bg-green-100 text-green-800 border-green-200",
-          dotColor: "bg-green-500",
-        };
-      case "inactive":
-        return {
-          label: "Inactive",
-          color: "bg-gray-100 text-gray-800 border-gray-200",
-          dotColor: "bg-gray-500",
-        };
-      case "suspended":
-        return {
-          label: "Suspended",
-          color: "bg-red-100 text-red-800 border-red-200",
-          dotColor: "bg-red-500",
-        };
-      default:
-        return {
-          label: status || "Unknown",
-          color: "bg-gray-100 text-gray-800 border-gray-200",
-          dotColor: "bg-gray-500",
-        };
-    }
-  };
-
-  const config = getStatusConfig();
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 p-1 rounded-lg text-sm font-bold uppercase border-2 ${config.color}`}
-    >
-      <span className={`w-2 h-2 rounded-full ${config.dotColor} animate-pulse`}></span>
-      {config.label}
-    </span>
-  );
 };
 
 // Yes/No Badge with Icons
@@ -99,6 +56,25 @@ const YesNoBadge = ({ value }: { value?: string | null }) => {
       N/A
     </span>
   );
+};
+
+const StatusBadge = ({ status }:any) => {
+  if (status === "active") {
+    return (
+      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-green-100 text-green-800 border-2 border-green-200">
+        <FaCheckCircle size={12} />
+        active
+      </span>
+    );
+  }
+  if (status === "inactive") {
+    return (
+      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-red-100 text-red-800 border-2 border-red-200">
+        <FaTimesCircle size={12} />
+        inactive
+      </span>
+    );
+  }
 };
 
 // Employment Type Badge
@@ -130,7 +106,6 @@ const EmploymentTypeBadge = ({ type }: { type?: string | null }) => {
 
 const DriverShowPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -166,35 +141,13 @@ const DriverShowPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-500 mx-auto"></div>
-          <p className="mt-4 text-gray-700 font-semibold uppercase text-sm">
-            Loading Driver Details...
-          </p>
-        </div>
-      </div>
+      <Loader/>
     );
   }
 
   if (error || !driver) {
     return (
-      <div className="px-4 bg-white min-h-screen">
-        <PageHeaderBack title="Back to Drivers" buttonLink="/drivers" />
-        <div className="text-center py-20">
-          <FaExclamationTriangle className="text-red-500 mx-auto mb-4" size={48} />
-          <h1 className="text-2xl font-bold uppercase text-gray-900 mb-2">
-            Driver Not Found
-          </h1>
-          <p className="text-red-600 uppercase text-sm">{error}</p>
-          <button
-            onClick={() => navigate("/drivers")}
-            className="mt-6 px-6 py-2 bg-purple-500 text-white font-bold text-sm rounded-lg hover:bg-purple-600 uppercase"
-          >
-            Back to Drivers
-          </button>
-        </div>
-      </div>
+      <Loader/>
     );
   }
 
@@ -245,7 +198,7 @@ const DriverShowPage = () => {
           </div>
         </div>
         
-        <div className="overflow-y-auto max-h-[70vh] space-y-4">
+        <div className="overflow-y-auto max-h-[70vh] space-y-4 border border-gray-200 p-6 rounded-lg">
           {/* Basic Information Section */}
         <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
           <SectionHeader icon={<FaUser size={20} />} title="Basic Information" />
