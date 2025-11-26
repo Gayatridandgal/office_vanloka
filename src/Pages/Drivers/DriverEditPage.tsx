@@ -1,17 +1,36 @@
-import { useEffect, useState } from "react";
-import { useFieldArray, useForm, type SubmitHandler } from "react-hook-form";
+import { useState, useEffect } from "react";
+import { useFieldArray, useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import StarInputField from "../../Components/Form/StarInputField";
-import SaveButton from "../../Components/Form/SaveButton";
-import tenantApi from "../../Services/ApiService";
-import InputField from "../../Components/Form/InputField";
-import type { Driver } from "./Driver.types";
+import {
+  FaUser,
+  FaMapMarkerAlt,
+  FaBriefcase,
+  FaFileAlt,
+  FaIdCard,
+  FaCreditCard,
+  FaExclamationTriangle,
+  FaStickyNote,
+  FaUserShield,
+} from "react-icons/fa";
+import { FaCircleInfo } from "react-icons/fa6";
+import { MdWarning } from "react-icons/md";
 import { ImCross, ImPlus } from "react-icons/im";
 
+import PageHeaderBack from "../../Components/UI/PageHeaderBack";
+import SaveButton from "../../Components/Form/SaveButton";
+import FileInputField from "../../Components/Form/FileInputField";
+import tenantApi, { centralUrl } from "../../Services/ApiService";
+import { useAlert } from "../../Context/AlertContext";
+import type { Driver } from "./Driver.types";
+import type { BeaconDevice, FormDropdown, StateDistrict } from "../../Types/Index";
+import { SectionHeader } from "../../Components/UI/SectionHeader";
+import InputField from "../../Components/Form/InputField";
+import SelectInputField from "../../Components/Form/SelectInputField";
+import type { Vehicle } from "../Vehicles/Vehicle.types";
+import { Loader } from "../../Components/UI/Loader";
+
 type FormInputs = Driver & {
-  // File fields for react-hook-form
   profile_photo?: FileList;
   driving_license?: FileList;
   aadhaar_card?: FileList;
@@ -23,87 +42,157 @@ type FormInputs = Driver & {
 };
 
 const DriverEditPage = () => {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const { showAlert } = useAlert();
+  const { id } = useParams<{ id: string }>();
 
   const {
     register,
     watch,
     control,
     handleSubmit,
+    setValue,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormInputs>();
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "license_insurance",
   });
 
-  // Helper function to format date for input[type="date"]
-  const formatDateForInput = (dateString: string | null | undefined): string => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
+  // State for dropdown data
+  const [genders, setGenders] = useState<FormDropdown[]>([]);
+  const [bloodGroups, setBloodGroups] = useState<FormDropdown[]>([]);
+  const [maritalStatuses, setMaritalStatuses] = useState<FormDropdown[]>([]);
+  const [employmentTypes, setEmploymentTypes] = useState<FormDropdown[]>([]);
+  const [filetypes, setFileTypes] = useState<FormDropdown[]>([]);
+  const [statuses, setStatuses] = useState<FormDropdown[]>([]);
+  const [states, setStates] = useState<StateDistrict[]>([]);
+  const [districts, setDistricts] = useState<StateDistrict[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [beacons, setBeacons] = useState<BeaconDevice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [driverData, setDriverData] = useState<Driver | null>(null);
 
-  // Fetch driver data
+  // Watch state for dependent district dropdown
+  const selectedState = useWatch({ control, name: "state" });
+
+  // Fetch driver data and dropdown data
   useEffect(() => {
-    const fetchDriver = async () => {
+    const fetchInitialData = async () => {
+      if (!id) {
+        showAlert("Invalid driver ID", "error");
+        navigate("/drivers");
+        return;
+      }
+
       try {
         setLoading(true);
-        const response = await tenantApi.get<{
-          success: boolean;
-          data: Driver;
-        }>(`/drivers/${id}`);
+        const [
+          driverResponse,
+          gendersRes,
+          bloodGroupsRes,
+          maritalStatusesRes,
+          employmentTypesRes,
+          statusesRes,
+          fileTypesRes,
+          statesRes,
+          vehiclesRes,
+          beaconsRes,
+        ] = await Promise.all([
+          tenantApi.get(`/drivers/${id}`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=gender`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=blood_group`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=marital_status`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=employment_type`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=status`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=driver&field=file_type`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/states`),
+          tenantApi.get(`/active-vehicles/for/dropdown`),
+          tenantApi.get(`/beacon-device/for/dropdown`),
+        ]);
 
-        if (response.data.success) {
-          const driver = response.data.data;
-          
-          // Prepare data for form - exclude file fields and format dates
-          const formData: any = {
-            ...driver,
-            // Format dates for input[type="date"]
-            date_of_birth: formatDateForInput(driver.date_of_birth),
-            safety_training_completion_date: formatDateForInput(driver.safety_training_completion_date),
-            medical_fitness_exp_date: formatDateForInput(driver.medical_fitness_exp_date),
-            police_verification_date: formatDateForInput(driver.police_verification_date),
-            // Ensure license_insurance is an array
-            license_insurance: driver.license_insurance || [],
-          };
+        const driver = driverResponse.data.data || driverResponse.data;
+        setDriverData(driver);
 
-          // Remove file path fields as they will be handled separately
-          delete formData.profile_photo;
-          delete formData.driving_license;
-          delete formData.aadhaar_card;
-          delete formData.pan_card;
-          delete formData.police_verification_doc;
-          delete formData.medical_fitness_certificate;
-          delete formData.address_proof_doc;
-          delete formData.training_certificate_doc;
+        // Set dropdown data
+        setGenders(gendersRes.data || []);
+        setBloodGroups(bloodGroupsRes.data || []);
+        setMaritalStatuses(maritalStatusesRes.data || []);
+        setEmploymentTypes(employmentTypesRes.data || []);
+        setStatuses(statusesRes.data || []);
+        setFileTypes(fileTypesRes.data || []);
+        setStates(statesRes.data || []);
+        setVehicles(vehiclesRes.data || []);
+        setBeacons(beaconsRes.data || []);
 
-          reset(formData);
+        // Populate form with driver data
+        reset(driver);
+
+        // Populate license_insurance array if exists
+        if (driver.license_insurance && Array.isArray(driver.license_insurance)) {
+          replace(driver.license_insurance);
+        }
+
+        // Fetch districts if driver has a state
+        if (driver.state) {
+          const districtsRes = await axios.get(
+            `${centralUrl}/masters/forms/dropdowns/districts/${driver.state}`
+          );
+          setDistricts(districtsRes.data || []);
         }
       } catch (error) {
-        console.error("Error fetching driver:", error);
-        alert("Failed to fetch driver data");
+        console.error("Error fetching driver data:", error);
+        showAlert("Failed to load driver data. Please try again.", "error");
+        navigate("/drivers");
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      fetchDriver();
-    }
-  }, [id, reset]);
+    fetchInitialData();
+  }, [id, showAlert, navigate, reset, replace]);
+
+  // Fetch districts when state changes
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (!selectedState) {
+        setDistricts([]);
+        setValue("district", "");
+        return;
+      }
+
+      // Don't refetch if state hasn't changed from initial load
+      if (driverData && selectedState === driverData.state && districts.length > 0) {
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${centralUrl}/masters/forms/dropdowns/districts/${selectedState}`
+        );
+        setDistricts(response.data || []);
+
+        // Only clear district if state actually changed
+        if (driverData && selectedState !== driverData.state) {
+          setValue("district", "");
+        }
+      } catch (err) {
+        showAlert("Failed to load districts", "error");
+        setDistricts([]);
+      }
+    };
+
+    fetchDistricts();
+  }, [selectedState, setValue, showAlert, driverData, districts.length]);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     try {
       const formData = new FormData();
+
+      // Add _method for Laravel to handle PUT request with files
+      formData.append("_method", "PUT");
 
       // Basic Information
       const basicFields = [
@@ -182,7 +271,7 @@ const DriverEditPage = () => {
         }
       });
 
-       // Bank Information
+      // Bank Information
       const bankAccountFields = [
         "bank_name",
         "account_number",
@@ -197,13 +286,9 @@ const DriverEditPage = () => {
         }
       });
 
-
-      // License/Insurance Array (JSON string)
+      // License/Insurance Array
       if (data.license_insurance && data.license_insurance.length > 0) {
-        formData.append(
-          "license_insurance",
-          JSON.stringify(data.license_insurance)
-        );
+        formData.append("license_insurance", JSON.stringify(data.license_insurance));
       }
 
       // Tracking & Assignment
@@ -233,9 +318,7 @@ const DriverEditPage = () => {
         }
       });
 
-      // Laravel requires _method for PUT via FormData
-      formData.append("_method", "PUT");
-
+      // Use POST with _method=PUT for Laravel multipart/form-data handling
       const response = await tenantApi.post<{
         success: boolean;
         data: Driver;
@@ -247,8 +330,9 @@ const DriverEditPage = () => {
       });
 
       if (response.data.success) {
-        alert(
-          `Driver ${data.first_name} ${data.last_name} updated successfully!`
+        showAlert(
+          `Driver ${data.first_name} ${data.last_name} updated successfully!`,
+          "success"
         );
         navigate("/drivers");
       }
@@ -256,99 +340,89 @@ const DriverEditPage = () => {
       if (axios.isAxiosError(error)) {
         const errorMessage =
           error.response?.data?.message || "Failed to update driver";
-        alert(`Error: ${errorMessage}`);
+        showAlert(`Error: ${errorMessage}`, "error");
         console.error("Validation errors:", error.response?.data?.errors);
       } else {
-        alert("An unexpected error occurred");
+        showAlert("An unexpected error occurred", "error");
       }
     }
   };
 
-  // Helper component for required label
-  const RequiredLabel = ({ label }: { label: string }) => (
-    <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-      {label}
-      <span className="text-red-600">*</span>
-    </label>
-  );
-
+  // Show loading state while fetching data
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600 uppercase text-sm">
-            Loading Driver Data...
-          </p>
-        </div>
-      </div>
+      <Loader/>
     );
   }
 
   return (
-    <div className="px-4 bg-white min-h-screen">
+    <div className="px-4 bg-white">
       <PageHeaderBack title="Edit Driver" buttonLink="/drivers" />
-      <div className="p-10 mx-auto max-w-7xl rounded-lg shadow-lg bg-white border border-gray-200">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* --- Section 1: Basic Information --- */}
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
-              Basic Information
-            </h2>
+
+      <div className="p-6 mx-auto max-w-7xl border border-gray-200 rounded-lg">
+        {/* Info Banner */}
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-l-4 border-purple-500 p-2 mb-4 rounded-r-lg shadow-sm">
+          <div className="flex gap-2">
+            <FaCircleInfo className="text-purple-700" size={16} />
+            <div>
+              <p className="text-xs uppercase font-semibold text-purple-800">
+                Update Driver Information
+              </p>
+              <p className="text-xs uppercase text-purple-800 mt-1">
+                Modify driver details below. Files are optional - only upload if replacing existing documents.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto max-h-[75vh]">
+          {/* Basic Information */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader icon={<FaUser size={20} />} title="Basic Information" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StarInputField
+              <InputField
                 label="First Name"
                 name="first_name"
                 register={register}
                 errors={errors}
-                required="First name is required."
+                required
               />
-              <StarInputField
+              <InputField
                 label="Last Name"
                 name="last_name"
                 register={register}
                 errors={errors}
-                required="Last name is required."
+                required
               />
 
-              <div>
-                <RequiredLabel label="Gender" />
-                <select
-                  {...register("gender", {
-                    required: "Gender is required.",
-                  })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-                {errors.gender && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.gender.message}
-                  </p>
-                )}
-              </div>
+              <SelectInputField
+                label="Gender"
+                name="gender"
+                register={register}
+                errors={errors}
+                options={genders.map((data) => ({ label: data.value, value: data.value }))}
+                disabled={loading}
+                required
+              />
 
-              <StarInputField
+              <InputField
                 label="Date of Birth"
                 name="date_of_birth"
+                type="date"
                 register={register}
                 errors={errors}
-                required="Date of birth is required."
-                type="date"
+                required
               />
 
-              <StarInputField
+              <InputField
                 label="Email"
                 name="email"
+                type="email"
                 register={register}
                 errors={errors}
-                type="email"
               />
 
-              <StarInputField
+              <InputField
                 label="Mobile Number"
                 name="mobile_number"
                 register={register}
@@ -356,141 +430,135 @@ const DriverEditPage = () => {
                 required="Mobile number is required."
               />
 
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Blood Group
-                </label>
-                <select
-                  {...register("blood_group")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                </select>
-              </div>
+              <SelectInputField
+                label="Blood Group"
+                name="blood_group"
+                register={register}
+                errors={errors}
+                options={bloodGroups.map((data) => ({
+                  label: data.value,
+                  value: data.value,
+                }))}
+                disabled={loading}
+              />
+
+              <SelectInputField
+                label="Marital Status"
+                name="marital_status"
+                register={register}
+                errors={errors}
+                options={maritalStatuses.map((data) => ({
+                  label: data.value,
+                  value: data.value,
+                }))}
+                disabled={loading}
+              />
+
+              <InputField
+                label="Number of Dependents"
+                name="number_of_dependents"
+                type="number"
+                register={register}
+                errors={errors}
+              />
 
               <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Marital Status
-                </label>
-                <select
-                  {...register("marital_status")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select</option>
-                  <option value="Single">Single</option>
-                  <option value="Married">Married</option>
-                  <option value="Widowed">Widowed</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Number of Dependents
-                </label>
-                <input
-                  type="number"
-                  {...register("number_of_dependents")}
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                <FileInputField
+                  label="Profile Photo (Optional)"
+                  name="profile_photo"
+                  register={register}
+                  errors={errors}
                 />
+                {driverData?.profile_photo && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> Current file uploaded
+                  </p>
+                )}
               </div>
-
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Profile Photo
-                </label>
-                <input
-                  type="file"
-                  {...register("profile_photo")}
-                  accept="image/*"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none file:text-sm focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current photo
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Emergency Contact */}
-          <div>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-4">
-              Emergency Contact Person
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
-              <InputField
-                label="Full Name"
-                name="primary_person_name"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="Primary Phone"
-                name="primary_person_phone_1"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="Secondary Phone"
-                name="primary_person_phone_2"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="Email"
-                name="primary_person_email"
-                type="email"
-                register={register}
-                errors={errors}
-              />
-            </div>
-
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mt-4 mb-4">
-              Secondary Contact Person
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
-              <InputField
-                label="Full Name"
-                name="secondary_person_name"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="Primary Phone"
-                name="secondary_person_phone_1"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="Secondary Phone"
-                name="secondary_person_phone_2"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="Email"
-                name="secondary_person_email"
-                type="email"
-                register={register}
-                errors={errors}
-              />
             </div>
           </div>
 
-          {/* --- Section 2: Address Information --- */}
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
-              Address
-            </h2>
+          {/* Emergency Contact Persons */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader
+              icon={<FaUserShield size={20} />}
+              title="Emergency Contact Persons"
+            />
+
+            {/* Primary Contact */}
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-blue-700 uppercase mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                Primary
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
+                <InputField
+                  label="Full Name"
+                  name="primary_person_name"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="Email Address"
+                  name="primary_person_email"
+                  type="email"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="Primary Phone Number"
+                  name="primary_person_phone_1"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="Secondary Phone Number"
+                  name="primary_person_phone_2"
+                  register={register}
+                  errors={errors}
+                />
+              </div>
+            </div>
+
+            {/* Secondary Contact */}
+            <div>
+              <h3 className="text-sm font-bold text-green-700 uppercase mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                Secondary
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
+                <InputField
+                  label="Full Name"
+                  name="secondary_person_name"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="Email Address"
+                  name="secondary_person_email"
+                  type="email"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="Primary Phone Number"
+                  name="secondary_person_phone_1"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="Secondary Phone Number"
+                  name="secondary_person_phone_2"
+                  register={register}
+                  errors={errors}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Address Details */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader icon={<FaMapMarkerAlt size={20} />} title="Address Details" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <InputField
                 label="Address Line 1"
@@ -510,24 +578,30 @@ const DriverEditPage = () => {
                 register={register}
                 errors={errors}
               />
-              <InputField
+
+              <SelectInputField
                 label="State"
                 name="state"
                 register={register}
                 errors={errors}
+                options={states.map((data) => ({ label: data.state, value: data.state }))}
+                disabled={loading}
               />
-              <InputField
+
+              <SelectInputField
                 label="District"
                 name="district"
                 register={register}
                 errors={errors}
+                options={districts.map((data) => ({
+                  label: data.district,
+                  value: data.district,
+                }))}
+                disabled={loading || districts.length === 0}
               />
-              <InputField
-                label="City"
-                name="city"
-                register={register}
-                errors={errors}
-              />
+
+              <InputField label="City" name="city" register={register} errors={errors} />
+
               <InputField
                 label="PIN Code"
                 name="pin_code"
@@ -535,28 +609,26 @@ const DriverEditPage = () => {
                 errors={errors}
               />
             </div>
-          </section>
+          </div>
 
-          {/* --- Section 4: Professional Information --- */}
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
-              Professional Information
-            </h2>
+          {/* Professional Information */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader
+              icon={<FaBriefcase size={20} />}
+              title="Professional Information"
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Employment Type
-                </label>
-                <select
-                  {...register("employment_type")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Self-employed">Self-employed</option>
-                </select>
-              </div>
+              <SelectInputField
+                label="Employment Type"
+                name="employment_type"
+                register={register}
+                errors={errors}
+                options={employmentTypes.map((data) => ({
+                  label: data.value,
+                  value: data.value,
+                }))}
+                disabled={loading}
+              />
 
               <InputField
                 label="Employee ID"
@@ -565,200 +637,95 @@ const DriverEditPage = () => {
                 errors={errors}
               />
 
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Driving Experience (Years)
-                </label>
-                <input
-                  type="number"
-                  {...register("driving_experience")}
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
+              <InputField
+                label="Driving Experience (Years)"
+                name="driving_experience"
+                type="number"
+                register={register}
+                errors={errors}
+              />
 
-              {/* Safety Training Completed */}
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Safety Training Completed
-                </label>
-                <select
-                  {...register("safety_training_completion")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select</option>
-                  <option value="YES">YES</option>
-                  <option value="NO">NO</option>
-                </select>
-              </div>
+              {/* Safety Training */}
+              <SelectInputField
+                label="Safety Training Completed"
+                name="safety_training_completion"
+                register={register}
+                errors={errors}
+                options={[
+                  { label: "YES", value: "YES" },
+                  { label: "NO", value: "NO" },
+                ]}
+              />
 
-              {/* Conditional: Show date only if YES */}
               {watch("safety_training_completion") === "YES" && (
-                <div>
-                  <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                    Training Completion Date
-                  </label>
-                  <input
-                    type="date"
-                    {...register("safety_training_completion_date")}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              )}
-
-              {/* Medical Fitness Issued */}
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Medical Fitness Issued
-                </label>
-                <select
-                  {...register("medical_fitness")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select</option>
-                  <option value="YES">YES</option>
-                  <option value="NO">NO</option>
-                </select>
-              </div>
-
-              {/* Conditional: Show expiry date only if YES */}
-              {watch("medical_fitness") === "YES" && (
-                <div>
-                  <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                    Medical Fitness Expiry Date
-                  </label>
-                  <input
-                    type="date"
-                    {...register("medical_fitness_exp_date")}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              )}
-
-              {/* Police Verification */}
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Police Verification
-                </label>
-                <select
-                  {...register("police_verification")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">Select</option>
-                  <option value="YES">YES</option>
-                  <option value="NO">NO</option>
-                </select>
-              </div>
-
-              {/* Conditional: Show verification date only if YES */}
-              {watch("police_verification") === "YES" && (
-                <div>
-                  <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                    Police Verification Date
-                  </label>
-                  <input
-                    type="date"
-                    {...register("police_verification_date")}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* License/Insurance Section */}
-          <div className="mb-6">
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-4">
-              License / Insurance Information
-            </h2>
-
-            {fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid grid-cols-1 lg:grid-cols-5 md:grid-cols-3 gap-4 mb-3 items-end bg-gray-50 p-3 rounded border border-gray-200"
-              >
-                {/* Type Dropdown */}
-                <div>
-                  <label className="block text-purple-950 uppercase text-xs font-bold mb-1">
-                    Type
-                  </label>
-                  <select
-                    {...register(`license_insurance.${index}.type`)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm uppercase focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="">SELECT</option>
-                    <option value="life_insurance">Life Insurance</option>
-                    <option value="license">License</option>
-                    <option value="health_insurance">Health Insurance</option>
-                  </select>
-                </div>
-
-                {/* Number */}
                 <InputField
-                  label="Document Number"
-                  name={`license_insurance.${index}.number`}
+                  label="Training Completion Date"
+                  name="safety_training_completion_date"
+                  type="date"
                   register={register}
                   errors={errors}
                 />
+              )}
 
-                {/* Issue Date */}
-                <div>
-                  <label className="block text-purple-950 uppercase text-xs font-bold mb-1">
-                    Issue Date
-                  </label>
-                  <input
-                    type="date"
-                    {...register(`license_insurance.${index}.issue_date`)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
+              {/* Medical Fitness */}
+              <SelectInputField
+                label="Medical Fitness Issued"
+                name="medical_fitness"
+                register={register}
+                errors={errors}
+                options={[
+                  { label: "YES", value: "YES" },
+                  { label: "NO", value: "NO" },
+                ]}
+              />
 
-                {/* Exp Date */}
-                <div>
-                  <label className="block text-purple-950 uppercase text-xs font-bold mb-1">
-                    Expiry Date
-                  </label>
-                  <input
-                    type="date"
-                    {...register(`license_insurance.${index}.exp_date`)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
+              {watch("medical_fitness") === "YES" && (
+                <InputField
+                  label="Medical Fitness Expiry Date"
+                  name="medical_fitness_exp_date"
+                  type="date"
+                  register={register}
+                  errors={errors}
+                />
+              )}
 
-                {/* Remove Button */}
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className="bg-red-500 w-10 text-white font-bold px-3 py-2 rounded-lg hover:bg-red-600 transition-colors h-10"
-                >
-                  <ImCross />
-                </button>
-              </div>
-            ))}
+              {/* Police Verification */}
+              <SelectInputField
+                label="Police Verification"
+                name="police_verification"
+                register={register}
+                errors={errors}
+                options={[
+                  { label: "YES", value: "YES" },
+                  { label: "NO", value: "NO" },
+                ]}
+              />
 
-            {/* Add Button */}
-            <button
-              type="button"
-              onClick={() =>
-                append({
-                  type: "",
-                  number: "",
-                  issue_date: "",
-                  exp_date: "",
-                })
-              }
-              className="bg-green-300 text-purple-950 uppercase text-sm font-bold py-3 px-4 rounded-lg hover:bg-green-400 transition-colors"
-            >
-              <ImPlus/>
-            </button>
+              {watch("police_verification") === "YES" && (
+                <InputField
+                  label="Police Verification Date"
+                  name="police_verification_date"
+                  type="date"
+                  register={register}
+                  errors={errors}
+                />
+              )}
+            </div>
           </div>
 
-          {/* --- Bank Information --- */}
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
-              Bank Account Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          {/* Bank Account Details */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader
+              icon={<FaCreditCard size={20} />}
+              title="Bank Account Details"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputField
+                label="Bank Name"
+                name="bank_name"
+                register={register}
+                errors={errors}
+              />
               <InputField
                 label="Account Holder Name"
                 name="account_holder_name"
@@ -766,202 +733,278 @@ const DriverEditPage = () => {
                 errors={errors}
               />
               <InputField
-                label="account number"
+                label="Account Number"
                 name="account_number"
                 register={register}
                 errors={errors}
               />
               <InputField
-                label="ifsc code"
+                label="IFSC Code"
                 name="ifsc_code"
                 register={register}
                 errors={errors}
               />
-              <InputField
-                label="bank name"
-                name="bank_name"
-                register={register}
-                errors={errors}
-              />
             </div>
-          </section>
+          </div>
 
-          {/* --- Section 7: Tracking & Assignment --- */}
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
-              Tracking & Assignment
-            </h2>
+          {/* License/Insurance Section */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader
+              icon={<FaIdCard size={20} />}
+              title="License / Insurance Information"
+            />
+
+            <div className="space-y-3">
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="grid grid-cols-1 lg:grid-cols-5 md:grid-cols-3 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-200"
+                >
+                  <SelectInputField
+                    label="Type"
+                    name={`license_insurance.${index}.type`}
+                    register={register}
+                    errors={errors}
+                    options={filetypes.map((data) => ({ label: data.value, value: data.value }))}
+                  />
+
+                  <InputField
+                    label="Document Number"
+                    name={`license_insurance.${index}.number`}
+                    register={register}
+                    errors={errors}
+                  />
+
+                  <InputField
+                    label="Issue Date"
+                    name={`license_insurance.${index}.issue_date`}
+                    type="date"
+                    register={register}
+                    errors={errors}
+                  />
+
+                  <InputField
+                    label="Expiry Date"
+                    name={`license_insurance.${index}.exp_date`}
+                    type="date"
+                    register={register}
+                    errors={errors}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="bg-red-400 w-20 text-sm uppercase text-white font-bold  rounded-lg hover:bg-red-600 transition-colors h-10 flex items-center justify-center"
+                  >
+                    remove
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() =>
+                  append({
+                    type: "",
+                    number: "",
+                    issue_date: "",
+                    exp_date: "",
+                  })
+                }
+                className="bg-green-500 text-white uppercase text-sm font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* Tracking & Assignment */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader
+              icon={<FaExclamationTriangle size={20} />}
+              title="Tracking & Assignment"
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InputField
-                label="Beacon Assigned"
+              <SelectInputField
+                label="Assign Beacon Device"
                 name="beacon"
                 register={register}
                 errors={errors}
+                options={beacons.map((data) => ({
+                  label: data.device_id,
+                  value: data.imei_number,
+                }))}
+                disabled={loading}
               />
-              <InputField
-                label="Vehicle Assigned"
+
+              <SelectInputField
+                label="Assign Vehicle"
                 name="vehicle"
                 register={register}
                 errors={errors}
+                options={vehicles.map((data) => ({
+                  label: `${data.vehicle_number} (${data.vehicle_type})`,
+                  value: data.vehicle_number,
+                }))}
+                disabled={loading}
               />
             </div>
-          </section>
+          </div>
 
-          {/* --- Section 8: Documents --- */}
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
-              Documents
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Driving License
-                </label>
-                <input
-                  type="file"
-                  {...register("driving_license")}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current document
-                </p>
-              </div>
+          {/* Document Uploads */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader icon={<FaFileAlt size={20} />} title="Documents (Optional)" />
 
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Aadhaar Card
-                </label>
-                <input
-                  type="file"
-                  {...register("aadhaar_card")}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current document
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  PAN Card
-                </label>
-                <input
-                  type="file"
-                  {...register("pan_card")}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current document
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Police Verification Document
-                </label>
-                <input
-                  type="file"
-                  {...register("police_verification_doc")}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current document
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Medical Fitness Certificate
-                </label>
-                <input
-                  type="file"
-                  {...register("medical_fitness_certificate")}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current document
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Address Proof Document
-                </label>
-                <input
-                  type="file"
-                  {...register("address_proof_doc")}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current document
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Training Certificate
-                </label>
-                <input
-                  type="file"
-                  {...register("training_certificate_doc")}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-500 mt-1 uppercase">
-                  Leave blank to keep current document
-                </p>
+            {/* Info Banner */}
+            <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+              <div className="flex items-start gap-2">
+                <FaCircleInfo className="text-blue-700" size={16} />
+                <div>
+                  <p className="text-xs uppercase font-semibold text-blue-800">
+                    Update Documents
+                  </p>
+                  <p className="text-xs uppercase text-blue-700 mt-1">
+                    Upload new files only if you need to replace existing documents. Accepted formats: PDF, JPG, PNG (Max 5MB per file).
+                  </p>
+                </div>
               </div>
             </div>
-          </section>
 
-          {/* --- Section 9: Status & Remarks --- */}
-          <section>
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
-                  Status
-                </label>
-                <select
-                  {...register("status")}
-                  className="w-1/4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
-                </select>
+                <FileInputField
+                  label="Driving License"
+                  name="driving_license"
+                  register={register}
+                  errors={errors}
+                />
+                {driverData?.driving_license && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> File uploaded
+                  </p>
+                )}
               </div>
 
-              <div className="md:col-span-1">
-                <label className="block text-purple-950 uppercase text-sm font-bold mb-2">
+              <div>
+                <FileInputField
+                  label="Aadhaar Card"
+                  name="aadhaar_card"
+                  register={register}
+                  errors={errors}
+                />
+                {driverData?.aadhaar_card && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> File uploaded
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <FileInputField
+                  label="PAN Card"
+                  name="pan_card"
+                  register={register}
+                  errors={errors}
+                />
+                {driverData?.pan_card && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> File uploaded
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <FileInputField
+                  label="Police Verification Document"
+                  name="police_verification_doc"
+                  register={register}
+                  errors={errors}
+                />
+                {driverData?.police_verification_doc && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> File uploaded
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <FileInputField
+                  label="Medical Fitness Certificate"
+                  name="medical_fitness_certificate"
+                  register={register}
+                  errors={errors}
+                />
+                {driverData?.medical_fitness_certificate && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> File uploaded
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <FileInputField
+                  label="Address Proof Document"
+                  name="address_proof_doc"
+                  register={register}
+                  errors={errors}
+                />
+                {driverData?.address_proof_doc && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> File uploaded
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <FileInputField
+                  label="Training Certificate"
+                  name="training_certificate_doc"
+                  register={register}
+                  errors={errors}
+                />
+                {driverData?.training_certificate_doc && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <span>✓</span> File uploaded
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Status & Remarks */}
+          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <SectionHeader icon={<FaStickyNote size={20} />} title="Status & Remarks" />
+
+            <div className="grid grid-cols-1 gap-6">
+              <SelectInputField
+                label="Status"
+                name="status"
+                register={register}
+                errors={errors}
+                options={statuses.map((data) => ({
+                  label: data.value,
+                  value: data.value,
+                }))}
+                disabled={loading}
+                ClassName="w-1/2"
+              />
+
+              <div>
+                <label className="block text-gray-700 uppercase text-sm font-bold mb-2">
                   Remarks / Notes
                 </label>
                 <textarea
                   {...register("remarks")}
-                  placeholder="Any additional notes..."
+                  placeholder="Enter any additional notes, special requirements, or remarks..."
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
                 />
               </div>
             </div>
-          </section>
-
-          {/* --- Form Submission Button --- */}
-          <div className="flex gap-4">
-            <SaveButton label={isSubmitting ? "Saving..." : "Save"} />
-            <button
-              type="button"
-              onClick={() => navigate("/drivers")}
-              className="px-2 py-2 bg-gray-400 text-white font-bold rounded-lg hover:bg-gray-500 transition-colors uppercase"
-            >
-              Cancel
-            </button>
           </div>
+
+          {/* Submit Button */}
+          <SaveButton label={isSubmitting ? "Updating..." : "SAVE"} />
         </form>
       </div>
     </div>
