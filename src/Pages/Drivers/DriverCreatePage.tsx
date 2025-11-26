@@ -773,18 +773,7 @@ const DriverCreatePage = () => {
               title="Tracking & Assignment"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InputField
-                label="Assign Beacon"
-                name="beacon"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="Assign Vehicle"
-                name="vehicle"
-                register={register}
-                errors={errors}
-              />
+             
               <SelectInputField
                 label="Assign Beacon Device"
                 name="beacon"
