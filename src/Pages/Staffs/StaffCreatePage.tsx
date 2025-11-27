@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import StarInputField from "../../Components/Form/StarInputField";
 import SaveButton from "../../Components/Form/SaveButton";
 import FileInputField from "../../Components/Form/FileInputField";
 import { useAlert } from "../../Context/AlertContext";
 import type { Staff } from "./Staff.types";
 import tenantApi from "../../Services/ApiService";
+import InputField from "../../Components/Form/InputField";
 
 interface Role {
   id: number;
@@ -133,28 +133,28 @@ const StaffCreatePage = () => {
               Staff Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StarInputField
+              <InputField
                 label="Emp ID"
                 name="employee_id"
                 register={register}
                 errors={errors}
                 required
               />
-              <StarInputField
+              <InputField
                 label="First Name"
                 name="first_name"
                 register={register}
                 errors={errors}
                 required
               />
-              <StarInputField
+              <InputField
                 label="Last Name"
                 name="last_name"
                 register={register}
                 errors={errors}
                 required
               />
-              <StarInputField
+              <InputField
                 label="Email"
                 name="email"
                 type="email"
@@ -162,7 +162,7 @@ const StaffCreatePage = () => {
                 errors={errors}
                 required
               />
-              <StarInputField
+              <InputField
                 label="Phone"
                 name="phone"
                 type="tel"
@@ -170,21 +170,21 @@ const StaffCreatePage = () => {
                 errors={errors}
                 required
               />
-              <StarInputField
+              <InputField
                 label="Designation"
                 name="designation"
                 register={register}
                 errors={errors}
                 required
               />
-              <StarInputField
+              <InputField
                 label="Address"
                 name="address"
                 register={register}
                 errors={errors}
                 required
               />
-              <StarInputField
+              <InputField
                 label="Joining Date"
                 name="joining_date"
                 type="date"
