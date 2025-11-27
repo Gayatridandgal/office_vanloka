@@ -14,8 +14,6 @@ import {
   FaUserShield,
 } from "react-icons/fa";
 import { FaCircleInfo } from "react-icons/fa6";
-import { MdWarning } from "react-icons/md";
-import { ImCross, ImPlus } from "react-icons/im";
 
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import SaveButton from "../../Components/Form/SaveButton";
@@ -351,7 +349,7 @@ const DriverEditPage = () => {
   // Show loading state while fetching data
   if (loading) {
     return (
-      <Loader/>
+      <Loader />
     );
   }
 
@@ -825,17 +823,21 @@ const DriverEditPage = () => {
               title="Tracking & Assignment"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectInputField
-                label="Assign Beacon Device"
-                name="beacon"
-                register={register}
-                errors={errors}
-                options={beacons.map((data) => ({
-                  label: data.device_id,
-                  value: data.imei_number,
-                }))}
-                disabled={loading}
-              />
+              <div>
+                <span className="text-sm uppercase font-semibold text-purple-950">Currently Assigned : <span className="text-sm uppercase text-green-700 font-semibold">{driverData?.beacon}</span></span>
+
+                <SelectInputField
+                  label=""
+                  name="beacon"
+                  register={register}
+                  errors={errors}
+                  options={beacons.map((data) => ({
+                    label: data.device_id,
+                    value: data.imei_number,
+                  }))}
+                  disabled={loading}
+                />
+              </div>
 
               <SelectInputField
                 label="Assign Vehicle"
