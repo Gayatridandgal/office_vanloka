@@ -31,6 +31,21 @@ export interface SidebarLinkType {
   requiredPermissions?: string[];
 }
 
+export interface FormDropdown {
+  id: any;
+  type: string;
+  field: string;
+  value: string;
+}
+
+export interface StateDistrict {
+  id: any;
+  state: string;
+  district: string;
+  city: string;
+  pincode: string;
+}
+
 // application types
 export interface User {
   id?: string | number;
@@ -45,52 +60,24 @@ export interface User {
   photo_url?: string;
 }
 
-
-export interface Gps {
-  id: string; // A unique identifier for the record
-  name: string;
-  imei_number: string; // The actual ID of the device hardware
-  remark?: string;
+export interface GpsDevice {
+  id: any;
+  sequnce_number: string;
+  serial_number: string;
+  device_id: string;
+  manufacture_date:Date;
+  imei_number: string;
+  status: string;
 }
 
-export interface Beacon {
-  id: string; // A unique identifier for the record
-  name: string;
-  imei_number?: string; // The actual ID of the device hardware
-  remark?: string;
-  lastSeen?: Timestamps;
-}
-
-export interface Organisation {
-  id: string;
-  plan_id: string;
-  name: string;
-  registred_business_name: string;
-  udyam_number: string;
-  gst_number: string;
-  sector: string;
-  contact_person_name: string;
-  contact_person_email: string;
-  contact_person_phone: string;
-  contact_person_designation: string;
-  emergency_contact_number: string;
-
-  // count
-  employees: string;
-  vehicles: string;
-  gps_required: string;
-  beacon_required: string;
-  checkpoints?: { name: string }[];
-
-  gps_devices?: { name: string; imei_number: string }[];
-  beacon_devices?: { name: string; imei_number: string }[];
-
-  address?: string;
-
-  // Admin credentials
-  username: string;
-  password: string;
-  status: "Active" | "Inactive";
+export interface BeaconDevice {
+  id: any;
+  sequnce_number: string;
+  serial_number: string;
+  device_id: string;
+  manufacture_date:Date;
+  imei_number: string;
+  status: string;
 }
 
 export interface LiveVehicle {

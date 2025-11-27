@@ -2,10 +2,9 @@
 
 import axios from "axios";
 
-export const baseURL = `http://${window.location.hostname}/api/`;
-// const baseURL = `http://localhost/api/`;
-
+export const baseURL = `http://${window.location.hostname}/api`;
 export const asset = `http://${window.location.hostname}/storage`
+export const centralUrl =`http://localhost/api`
 
 const tenantApi = axios.create({
   baseURL: baseURL,
