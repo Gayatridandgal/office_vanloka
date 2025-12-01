@@ -25,28 +25,7 @@ import {
 import { MdGpsFixed, MdSignalCellularAlt } from "react-icons/md";
 import { LuBus } from "react-icons/lu";
 import { Loader } from "../Components/UI/Loader";
-
-// Types
-export interface LiveVehicle {
-  vehicleId: string;
-  vehicleName: string;
-  registrationNumber?: string;
-  orgId: string;
-  gps: {
-    lat: number;
-    lng: number;
-    speed: number;
-    timestamp: string;
-  };
-  beacons: Array<{
-    id: string;
-    name: string;
-    type: string;
-    lastSeen: string;
-    rssi?: number;
-  }>;
-  battery?: number;
-}
+import type { LiveVehicle } from "../Types/Index";
 
 const STORAGE_KEY = "dashboard_cooldown_timestamp";
 const COOLDOWN_DURATION = 300; // 5 Minutes
@@ -310,7 +289,7 @@ const DashBoardPage = () => {
                     </div>
 
                     {/* Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+                    <div className="flex-1 p-4 space-y-6 custom-scrollbar">
                         
                         {/* 1. Telemetry Pills */}
                         <div className="grid grid-cols-2 gap-3">
@@ -378,7 +357,7 @@ const DashBoardPage = () => {
                         </div>
 
                         {/* 3. Passengers Info - SCROLLABLE */}
-                        <div className="flex flex-col h-full min-h-0">
+                        <div className="flex overflow-y-auto flex-col h-auto">
                            <div className="flex items-center justify-between mb-3 shrink-0">
                               <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
                                  <FaUsers /> Passengers

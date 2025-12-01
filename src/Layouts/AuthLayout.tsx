@@ -25,6 +25,7 @@ import InstructorIndexPage from "../Pages/Instructors/InstructorIndexPage";
 import InstructorCreatePage from "../Pages/Instructors/InstructorCreatePage";
 import InstructorShowPage from "../Pages/Instructors/InstructorShowPage";
 import InstructorEditPage from "../Pages/Instructors/InstructorEditpage";
+import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -85,7 +86,7 @@ const AuthLayout = () => {
               <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
               <Route path="vehicles/create" element={<VehicleCreatePage />} />
               <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
-              {/* <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} /> */}
+              <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} />
 
               {/* Driver Pages */}
               <Route path="drivers" element={<DriverIndexPage />} />
