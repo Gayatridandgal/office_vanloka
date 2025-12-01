@@ -80,7 +80,7 @@ export interface BeaconDevice {
   status: string;
 }
 
-export interface LiveVehicle {
+export interface oldLiveVehicle {
   vehicleId: string;
   vehicleName: string; // e.g., the bus number
   orgId: string;
@@ -91,4 +91,25 @@ export interface LiveVehicle {
     timestamp: string;
   };
   beacons: Beacon[];
+}
+
+export interface LiveVehicle {
+  vehicleId: string;
+  vehicleName: string;
+  registrationNumber?: string;
+  orgId: string;
+  gps: {
+    lat: number;
+    lng: number;
+    speed: number;
+    timestamp: string;
+  };
+  beacons: Array<{
+    id: string;
+    name: string;
+    type: string;
+    lastSeen: string;
+    rssi?: number;
+  }>;
+  battery?: number;
 }

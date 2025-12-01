@@ -17,11 +17,9 @@ import BookingIndexPage from "../Pages/Bookings/BookingIndexPage";
 import BookingShowPage from "../Pages/Bookings/BookingShowPage";
 import TravelerIndexPage from "../Pages/Travelers/TravelerIndexPage";
 import TravelerShowPage from "../Pages/Travelers/TravelerShowPage";
-import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
 import StaffIndexPage from "../Pages/Staffs/StaffIndexPage";
 import StaffCreatePage from "../Pages/Staffs/StaffCreatePage";
 import StaffEditPage from "../Pages/Staffs/StaffEditPage";
-import MyPlanPage from "../Pages/MyPlanPage";
 import DashBoardPage from "../Pages/DashBoardPage";
 import InstructorIndexPage from "../Pages/Instructors/InstructorIndexPage";
 import InstructorCreatePage from "../Pages/Instructors/InstructorCreatePage";
@@ -87,7 +85,7 @@ const AuthLayout = () => {
               <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
               <Route path="vehicles/create" element={<VehicleCreatePage />} />
               <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
-              <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} />
+              {/* <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} /> */}
 
               {/* Driver Pages */}
               <Route path="drivers" element={<DriverIndexPage />} />
@@ -106,7 +104,7 @@ const AuthLayout = () => {
               {/* <Route path="travellers/Edit/:id" element={<TravelerEditPage />} /> */}
 
               {/* Plan Detail Page */}
-              <Route path="plan" element={<MyPlanPage />} />
+              {/* <Route path="plan" element={<MyPlanPage />} /> */}
 
               {/*Instructor */}
               <Route path="instructors" element={<InstructorIndexPage />} />
