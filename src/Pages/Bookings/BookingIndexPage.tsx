@@ -1,135 +1,75 @@
+// src/components/bookings/BookingIndexPage.tsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+// Icons
+import { 
+  FaSearch, 
+  FaFilter, 
+  FaEye, 
+  FaMapMarkerAlt, 
+  FaBus, 
+  FaBuilding, 
+  FaUserCircle,
+  FaRegCalendarAlt
+} from "react-icons/fa";
+import { MdClear, MdEventSeat } from "react-icons/md";
+
+// Components
 import PageHeader from "../../Components/UI/PageHeader";
-import Table from "../../Components/UI/Table";
-import SearchComponent from "../../Components/UI/SearchComponents";
+import EmptyState from "../../Components/UI/EmptyState";
+import { Pagination } from "../../Components/Table/Pagination";
+import {
+  TableDiv,
+  TableContainer,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+} from "../../Components/Table/Table";
+
+// Services & Utils
 import tenantApi from "../../Services/ApiService";
 import type { Booking } from "./Booking.types";
 import { Loader } from "../../Components/UI/Loader";
 
-const getStatusColor = (status: string): string => {
+// Helper: Status Styles
+const getStatusStyles = (status: string) => {
   switch (status.toLowerCase()) {
-    case "active":
-      return "bg-green-100 text-green-800";
-    case "approved":
-      return "bg-blue-100 text-blue-800";
-    case "completed":
-      return "bg-purple-100 text-purple-800";
-    case "cancelled":
-      return "bg-red-100 text-red-800";
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    default:
-      return "bg-gray-100 text-gray-800";
+    case "active": return "bg-green-50 text-green-700 border-green-200";
+    case "approved": return "bg-blue-50 text-blue-700 border-blue-200";
+    case "completed": return "bg-purple-50 text-purple-700 border-purple-200";
+    case "cancelled": return "bg-red-50 text-red-700 border-red-200";
+    case "pending": return "bg-yellow-50 text-yellow-700 border-yellow-200";
+    default: return "bg-slate-50 text-slate-700 border-slate-200";
   }
 };
 
-const columns = [
-  {
-    key: "sno",
-    label: "S.No",
-    render: (_: Booking, index: number) => index + 1,
-  },
-  {
-    key: "traveller",
-    label: "Traveller",
-    render: (row: Booking) => (
-      <div className="flex items-center gap-3">
-        {row.traveller_profile_photo && (
-          <img
-            src={`http://localhost/storage/${row.traveller_profile_photo}`}
-            alt={`${row.traveller_first_name} ${row.traveller_last_name}`}
-            className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        )}
-        <div>
-          <div className="font-semibold text-gray-900 text-sm uppercase">
-            {row.traveller_first_name} {row.traveller_last_name}
-          </div>
-          {row.employee_id && (
-            <div className="text-xs text-gray-500 uppercase">
-              EMP: {row.employee_id}
-            </div>
-          )}
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: "pickup_location",
-    label: "Pickup Location",
-    render: (row: Booking) => (
-      <div>
-        <div className="text-sm font-medium uppercase">
-          {row.pickup_location_name}
-        </div>
-        <div className="text-xs text-gray-500 uppercase">
-          {row.pickup_location_city}
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: "organisation",
-    label: "Organisation",
-    render: (row: Booking) => (
-      <span className="text-sm uppercase">{row.organisation_name || "—"}</span>
-    ),
-  },
-  {
-    key: "vehicle",
-    label: "Vehicle",
-    render: (row: Booking) => (
-      <span className="text-sm uppercase font-semibold">
-        {row.assigned_vehicle || "—"}
-      </span>
-    ),
-  },
-  {
-    key: "status",
-    label: "Status",
-    render: (row: Booking) => (
-      <span
-        className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${getStatusColor(
-          row.status
-        )}`}
-      >
-        {row.status}
-      </span>
-    ),
-  },
-  {
-    key: "pickup_time",
-    label: "Pickup Time",
-    render: (row: Booking) => (
-      <span className="text-sm">{row.pickup_time || "—"}</span>
-    ),
-  },
-];
-
 const BookingIndexPage = () => {
+  // Data State
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  const [displayBookings, setDisplayBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [displayBookings, setDisplayBookings] = useState<Booking[]>([]);
-  const [allBookings, setAllBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [statusFilter]);
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(10);
 
+  // 1. Fetch Data
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      setError(null);
-
+      
+      // Fetching 50 as per original logic, but we will paginate client-side for the view
       const response = await tenantApi.get("/bookings", {
         params: {
-          per_page: 50,
+          per_page: 100, // Fetch a larger batch
           status: statusFilter,
         },
       });
@@ -140,115 +80,260 @@ const BookingIndexPage = () => {
         setDisplayBookings(bookings);
       }
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch bookings";
-      setError(errorMessage);
       console.error("Error fetching bookings:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Search effect
   useEffect(() => {
-    if (!searchQuery) {
-      setDisplayBookings(allBookings);
-      return;
+    fetchBookings();
+  }, [statusFilter]);
+
+  // 2. Filter Logic (Search)
+  useEffect(() => {
+    let result = allBookings;
+
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter((b) =>
+        `${b.traveller_first_name} ${b.traveller_last_name}`.toLowerCase().includes(lowerQuery) ||
+        (b.employee_id ?? "").toLowerCase().includes(lowerQuery) ||
+        (b.pickup_location_name ?? "").toLowerCase().includes(lowerQuery) ||
+        (b.assigned_vehicle ?? "").toLowerCase().includes(lowerQuery)
+      );
     }
 
-    const lowercasedQuery = searchQuery.toLowerCase();
-    const filtered = allBookings.filter(
-      (booking) =>
-        `${booking.traveller_first_name} ${booking.traveller_last_name}`
-          .toLowerCase()
-          .includes(lowercasedQuery) ||
-        (booking.employee_id ?? "").toLowerCase().includes(lowercasedQuery) ||
-        (booking.pickup_location_name ?? "")
-          .toLowerCase()
-          .includes(lowercasedQuery) ||
-        (booking.assigned_vehicle ?? "").toLowerCase().includes(lowercasedQuery)
-    );
-
-    setDisplayBookings(filtered);
+    setDisplayBookings(result);
+    setCurrentPage(1); // Reset to page 1 on search
   }, [searchQuery, allBookings]);
 
-  const handleDelete = async (booking: Booking) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete booking for ${booking.traveller_first_name} ${booking.traveller_last_name}?`
-      )
-    ) {
-      return;
-    }
+  // 3. Pagination Logic (Client-Side Slicing)
+  const indexOfLastItem = currentPage * perPage;
+  const indexOfFirstItem = indexOfLastItem - perPage;
+  const currentItems = displayBookings.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(displayBookings.length / perPage);
 
-    try {
-      const response = await tenantApi.delete(`/bookings/${booking.id}`);
-
-      if (response.data.success) {
-        setAllBookings((prev) => prev.filter((b) => b.id !== booking.id));
-        setDisplayBookings((prev) => prev.filter((b) => b.id !== booking.id));
-        alert("Booking deleted successfully");
-      }
-    } catch (err) {
-      console.error("Error deleting booking:", err);
-      alert("Failed to delete booking");
-    }
+  // 4. Handlers
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("");
+    setCurrentPage(1);
   };
 
-  if (error) {
+  // Helper: Render Avatar
+  const renderAvatar = (row: Booking) => {
+    const imgSrc = row.traveller_profile_photo 
+      ? `http://localhost/storage/${row.traveller_profile_photo}` 
+      : `https://ui-avatars.com/api/?name=${row.traveller_first_name}+${row.traveller_last_name}&background=random`;
+
     return (
-      <div className="px-4 bg-white min-h-screen">
-        <PageHeader title="Bookings" />
-        <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          Error: {error}
-        </div>
-      </div>
+      <img
+        src={imgSrc}
+        alt="Traveller"
+        className="h-10 w-10 rounded-full object-cover border border-slate-200"
+        onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${row.traveller_first_name}+${row.traveller_last_name}&background=random`; }}
+      />
     );
-  }
+  };
 
   return (
-    <div className="px-4 bg-white min-h-screen">
-      <PageHeader title="Bookings" />
-
-      {/* Filters */}
-      <div className="my-4 flex gap-4 items-center">
-        <SearchComponent
-          onSearch={(query) => setSearchQuery(query)}
-          placeholder="Search by Traveller, Employee ID, Location..."
-        />
-
-        {/* Status Filter */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase text-sm"
-        >
-          <option value="">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="active">Active</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+    <div className="min-h-screen bg-white px-2">
+      {/* Header */}
+      <div className="mx-2">
+        <PageHeader title="Booking Management" />
       </div>
 
-      {loading ? (
-        <Loader/>
-      ) : (
-        <>
-          <Table<Booking>
-            list={displayBookings}
-            columns={columns}
-            viewUrl="/bookings/show"
-            // editUrl="/bookings/edit"
-            // onDelete={handleDelete}
-          />
+      <div className="px-4 pb-10">
+        <div className="mx-auto space-y-4">
 
-          <div className="mt-4 text-sm text-gray-600">
-            Showing {displayBookings.length} of {allBookings.length} bookings
+          {/* Search & Filter Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
+                <FaSearch className="text-white" size={10} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Search Input */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Search Bookings
+                </label>
+                <div className="relative">
+                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={14} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Traveller, Location, Vehicle..."
+                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Filter by Status
+                </label>
+                <div className="relative">
+                  <FaFilter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={14} />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm uppercase appearance-none bg-white cursor-pointer"
+                  >
+                    <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Filters */}
+            {(searchQuery || statusFilter) && (
+              <div className="flex justify-end mt-4 pt-2 border-t border-slate-50">
+                <button
+                  onClick={handleClearFilters}
+                  className="text-xs font-bold text-red-600 flex items-center gap-1 hover:text-red-800 uppercase"
+                >
+                  <MdClear /> Clear Filters
+                </button>
+              </div>
+            )}
           </div>
-        </>
-      )}
+
+          {/* Table Section */}
+          <TableDiv>
+            {loading ? (
+              <div className="py-20"><Loader /></div>
+            ) : displayBookings.length === 0 ? (
+              <EmptyState 
+                title="No Bookings Found" 
+                description="Try adjusting your search filters."
+                icon={<MdEventSeat className="text-slate-300 text-6xl mb-4" />}
+              />
+            ) : (
+              <>
+                <TableContainer maxHeight="70vh">
+                  <Table>
+                    <Thead>
+                      <Th width="5%">S.No</Th>
+                      <Th>Traveller Details</Th>
+                      <Th>Pickup Info</Th>
+                      <Th>Transport</Th>
+                      <Th>Status</Th>
+                      <Th>Time</Th>
+                      <Th align="right">Actions</Th>
+                    </Thead>
+
+                    <Tbody>
+                      {currentItems.map((row, index) => (
+                        <Tr key={row.id}>
+                          {/* S.No */}
+                          <Td isMono className="font-bold text-slate-500">
+                            {(currentPage - 1) * Number(perPage) + index + 1}
+                          </Td>
+
+                          {/* Traveller */}
+                          <Td>
+                            <div className="flex items-center gap-3">
+                              {renderAvatar(row)}
+                              <div>
+                                <div className="font-bold text-slate-800 uppercase text-sm">
+                                  {row.traveller_first_name} {row.traveller_last_name}
+                                </div>
+                                <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold mt-0.5">
+                                  <FaUserCircle className="text-slate-400" />
+                                  {row.employee_id || "N/A"}
+                                </div>
+                              </div>
+                            </div>
+                          </Td>
+
+                          {/* Pickup Info */}
+                          <Td>
+                            <div className="flex flex-col">
+                                <span className="flex items-center gap-1.5 font-bold text-slate-700 text-sm">
+                                    <FaMapMarkerAlt className="text-red-400 text-xs" />
+                                    {row.pickup_location_name}
+                                </span>
+                                <span className="text-xs text-slate-500 pl-4 uppercase">
+                                    {row.pickup_location_city}
+                                </span>
+                            </div>
+                          </Td>
+
+                          {/* Transport (Org + Vehicle) */}
+                          <Td>
+                            <div className="flex flex-col gap-1">
+                                {row.organisation_name && (
+                                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium uppercase">
+                                        <FaBuilding className="text-slate-400" />
+                                        {row.organisation_name}
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-1.5 text-xs text-indigo-700 font-bold uppercase bg-indigo-50 px-2 py-0.5 rounded w-fit">
+                                    <FaBus />
+                                    {row.assigned_vehicle || "Unassigned"}
+                                </div>
+                            </div>
+                          </Td>
+
+                          {/* Status */}
+                          <Td>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase border ${getStatusStyles(row.status)}`}>
+                              {row.status}
+                            </span>
+                          </Td>
+
+                          {/* Time */}
+                          <Td>
+                             <div className="flex items-center gap-1.5 text-slate-700 text-sm font-mono font-medium">
+                                <FaRegCalendarAlt className="text-slate-400" />
+                                {row.pickup_time || "--:--"}
+                             </div>
+                          </Td>
+
+                          {/* Actions */}
+                          <Td align="right">
+                            <Link
+                                to={`/bookings/show/${row.id}`}
+                                className="inline-flex p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
+                                title="View Booking"
+                            >
+                                <FaEye size={14} />
+                            </Link>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+
+                {/* Pagination (Conditionally Rendered) */}
+                {totalPages > 10 && (
+                  <Pagination 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={displayBookings.length}
+                    onPageChange={setCurrentPage}
+                    itemName="Bookings"
+                  />
+                )}
+              </>
+            )}
+          </TableDiv>
+
+        </div>
+      </div>
     </div>
   );
 };

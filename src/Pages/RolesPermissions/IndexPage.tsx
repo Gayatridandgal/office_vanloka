@@ -1,37 +1,58 @@
+// src/components/roles/IndexPage.tsx
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
+// Icons
+import { FaEdit, FaTrash, FaUserShield, FaSearch } from "react-icons/fa";
+import { MdAdminPanelSettings, MdClear } from "react-icons/md";
+
+// Components
 import PageHeader from "../../Components/UI/PageHeader";
-import Table from "../../Components/UI/Table";
+import {
+  TableDiv,
+  TableContainer,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td
+} from "../../Components/Table/Table";
+
+// Logic & Types
 import { useAlert } from "../../Context/AlertContext";
 import adminApi from "../../Services/ApiService";
 import type { Role } from "./RolesPermissions.types";
-
-const columns = [
-  {
-    key: "sno",
-    label: "SNo",
-    render: (_: Role, index: number) => index + 1,
-  },
-  { key: "name", label: "Role Name" },
-  // {
-  //   key: "permissions_count",
-  //   label: "Permissions",
-  //   render: (row: Role) => `${row.permissions_count} permissions assigned`, // A user-friendly display
-  // },
-];
+import { BiLoader } from "react-icons/bi";
+import EmptyState from "../../Components/UI/EmptyState";
+import { Pagination } from "../../Components/Table/Pagination";
 
 const IndexPage = () => {
+  // Data State
   const [roles, setRoles] = useState<Role[]>([]);
+  const [filteredRoles, setFilteredRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Pagination State (Client-Side)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(10);
+
   const { showAlert } = useAlert();
 
-  // Fetch data when the component mounts
+  // 1. Fetch data
   useEffect(() => {
     const fetchRoles = async () => {
+      setLoading(true);
       try {
         const response = await adminApi.get("/roles");
-        setRoles(response.data.data);
+        const data = response.data.data || [];
+        setRoles(data);
+        setFilteredRoles(data);
       } catch (error) {
-        showAlert("Failed to fetch roles. Please try again later.", "error");
+        showAlert("Failed to fetch roles.", "error");
         console.error("Failed to fetch roles:", error);
       } finally {
         setLoading(false);
@@ -39,55 +60,182 @@ const IndexPage = () => {
     };
 
     fetchRoles();
-  }, [showAlert]); // Dependency array includes showAlert as a good practice
+  }, [showAlert]);
 
+  // 2. Filter Logic
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredRoles(roles);
+    } else {
+      const lowerQuery = searchQuery.toLowerCase();
+      const filtered = roles.filter((role) =>
+        role.name.toLowerCase().includes(lowerQuery)
+      );
+      setFilteredRoles(filtered);
+    }
+    setCurrentPage(1);
+  }, [searchQuery, roles]);
+
+  // 3. Pagination Logic
+  const indexOfLastItem = currentPage * perPage;
+  const indexOfFirstItem = indexOfLastItem - perPage;
+  const currentItems = filteredRoles.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredRoles.length / perPage);
+
+  // Handlers
   const handleDelete = async (role: Role) => {
-    // 2. ADD A CONFIRMATION STEP
-    // window.confirm() is a simple but effective way to do this.
-    if (
-      !window.confirm(
-        `Are you sure you want to delete the role "${role.name}"? This action cannot be undone.`
-      )
-    ) {
-      return; // Stop if the user clicks "Cancel"
+    if (!window.confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
+      return;
     }
 
     try {
-      // 3. MAKE THE API CALL
       const response = await adminApi.delete(`/roles/${role.id}`);
 
-      // 4. UPDATE THE UI ON SUCCESS
-      // Filter out the deleted role from the state to instantly update the table
-      setRoles((currentRoles) => currentRoles.filter((r) => r.id !== role.id));
+      const updatedList = roles.filter((r) => r.id !== role.id);
+      setRoles(updatedList); // This will trigger filter effect automatically
 
-      // Show a success message
-      showAlert(
-        response.data.message || "Role deleted successfully.",
-        "success"
-      );
+      showAlert(response.data.message || "Role deleted successfully.", "success");
     } catch (error: any) {
-      // 5. SHOW AN ERROR MESSAGE ON FAILURE
-      const errorMessage =
-        error.response?.data?.message || "Failed to delete the role.";
-      showAlert(errorMessage, "error");
-      console.error("Delete role error:", error);
+      showAlert(error.response?.data?.message || "Failed to delete role.", "error");
     }
   };
 
-  // Show a loading indicator while fetching data
-  if (loading) {
-    return <div className="p-4">Loading roles...</div>;
-  }
   return (
-    <div className="px-4 bg-white min-h-screen">
-      <PageHeader title="Roles" buttonText="Add Role" buttonLink="create" />
+    <div className="min-h-screen bg-white px-2">
+      {/* Header */}
+      <div className="mx-4">
+        <PageHeader
+          title="User Roles"
+          buttonText="Add New Role"
+          buttonLink="create"
+        />
+      </div>
 
-      <Table<Role>
-        list={roles}
-        columns={columns}
-        editUrl="/roles_permissions/edit"
-        onDelete={handleDelete}
-      />
+      <div className="px-4 pb-10">
+        <div className="mx-auto space-y-4">
+
+          {/* Search Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
+                  <FaSearch className="text-white" size={10} />
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 uppercase">Search Roles</h3>
+              </div>
+            </div>
+
+            <div className="mt-4 max-w-md">
+              <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                Search by Name
+              </label>
+              <div className="relative">
+                <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="e.g. Manager, Admin..."
+                  className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-500"
+                  >
+                    <MdClear size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Table Area */}
+          <TableDiv>
+            {loading ? (
+              <div className="py-20">
+                <BiLoader />
+              </div>
+            ) : filteredRoles.length === 0 ? (
+              <EmptyState
+                title="No Roles Found"
+                description="Get started by creating a new user role."
+                icon={<MdAdminPanelSettings className="text-slate-300 text-6xl mb-4" />}
+              />
+            ) : (
+              <>
+                <TableContainer>
+                  <Table>
+                    <Thead>
+                      <Th width="5%">S.No</Th>
+                      <Th>Role Name</Th>
+                      <Th align="right">Actions</Th>
+                    </Thead>
+
+                    <Tbody>
+                      {currentItems.map((role, index) => (
+                        <Tr key={role.id}>
+                          {/* S.No */}
+                          <Td isMono className="font-bold text-slate-500">
+                            {(currentPage - 1) * perPage + index + 1}
+                          </Td>
+
+                          {/* Role Name */}
+                          <Td>
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-purple-100 rounded-lg text-purple-600 shadow-sm">
+                                <FaUserShield size={16} />
+                              </div>
+                              <span className="font-bold text-slate-700 uppercase tracking-wide text-sm">
+                                {role.name}
+                              </span>
+                            </div>
+                          </Td>
+
+                          {/* Actions */}
+                          <Td align="right">
+                            <div className="flex items-center justify-end gap-2">
+                              {/* Edit Button */}
+                              <Link
+                                to={`/roles_permissions/edit/${role.id}`}
+                                className="group p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
+                                title="Edit Role"
+                              >
+                                <FaEdit size={14} />
+                              </Link>
+
+                              {/* Delete Button */}
+                              <button
+                                onClick={() => handleDelete(role)}
+                                className="group p-2 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all duration-200 shadow-sm"
+                                title="Delete Role"
+                              >
+                                <FaTrash size={14} />
+                              </button>
+                            </div>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+
+                {/* Pagination */}
+                {currentItems.length > 10 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={filteredRoles.length}
+                    onPageChange={setCurrentPage}
+                    itemName="Roles"
+                  />
+                )}
+
+              </>
+            )}
+          </TableDiv>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,378 +1,373 @@
 // src/components/staff/StaffIndexPage.tsx
 import { useState, useEffect } from "react";
-import PageHeader from "../../Components/UI/PageHeader";
-import Table from "../../Components/UI/Table";
-import SearchComponent from "../../Components/UI/SearchComponents";
-import { useAlert } from "../../Context/AlertContext";
-import type { Staff } from "./Staff.types";
-import { useToolkit } from "../../Utils/Toolkit";
-import { FcNext, FcPrevious } from "react-icons/fc";
-import tenantApi, { asset } from "../../Services/ApiService";
-import { Loader } from "../../Components/UI/Loader";
+import { Link } from "react-router-dom";
 
-// Column definitions
-const columns = [
-  {
-    key: "sno",
-    label: "SNo",
-    render: (_: Staff, index: number) => index + 1,
-  },
-  {
-    key: "name",
-    label: "Name",
-    render: (row: Staff) => (
-      <div className="flex items-center">
-        {row.photo ? (
-          <img
-            className="h-10 w-10 rounded-full object-cover"
-            src={`${asset}/${row.photo}`}
-            alt={`${row.first_name} ${row.last_name}`}
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-full bg-amber-200 flex items-center justify-center text-black font-semibold">
-            {row.first_name?.charAt(0)}
-            {row.last_name?.charAt(0)}
-          </div>
-        )}
-        <div className="ml-4">
-          <div className="font-medium text-gray-900">
-            {row.first_name} {row.last_name}
-          </div>
-          <div className="text-sm text-gray-500">{row.email}</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: "employee_id",
-    label: "Employee ID",
-    render: (row: Staff) => (
-      <span className="text-sm font-mono text-gray-700">{row.employee_id}</span>
-    ),
-  },
-  {
-    key: "designation",
-    label: "Designation",
-  },
-  {
-    key: "phone",
-    label: "Phone",
-  },
-  {
-    key: "roles",
-    label: "Roles",
-    render: (row: Staff) => (
-      <div className="flex flex-wrap gap-1">
-        {row.roles && row.roles.length > 0 ? (
-          row.roles.map((roleName, index) => (
-            <span
-              key={index}
-              className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 uppercase"
-            >
-              {roleName}
-            </span>
-          ))
-        ) : (
-          <span className="text-xs text-gray-400">No roles assigned</span>
-        )}
-      </div>
-    ),
-  },
-  {
-    key: "status",
-    label: "Status",
-    render: (row: Staff) => {
-      const statusColor =
-        row.status === "Active"
-          ? "bg-green-100 text-green-800"
-          : "bg-red-100 text-red-800";
-      return (
-        <span
-          className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColor}`}
-        >
-          {row.status}
-        </span>
-      );
-    },
-  },
-];
+// Icons
+import {
+  FaSearch,
+  FaFilter,
+  FaEdit,
+  FaUserTie,
+  FaPhoneAlt,
+  FaIdBadge
+} from "react-icons/fa";
+import { MdEmail, MdWork, MdClear } from "react-icons/md";
+
+// Components
+import PageHeader from "../../Components/UI/PageHeader";
+import {
+  TableDiv,
+  TableContainer,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+} from "../../Components/Table/Table";
+
+// Services & Utils
+import tenantApi, { asset } from "../../Services/ApiService";
+import { useAlert } from "../../Context/AlertContext";
+import { useToolkit } from "../../Utils/Toolkit";
+import type { Staff } from "./Staff.types";
+import { Loader } from "../../Components/UI/Loader";
+import EmptyState from "../../Components/UI/EmptyState";
+import { Pagination } from "../../Components/Table/Pagination";
 
 const StaffIndexPage = () => {
   const { can } = useToolkit();
+  const { showAlert } = useAlert();
 
+  // Data State
   const [staffList, setStaffList] = useState<Staff[]>([]);
-  const [filteredStaff, setFilteredStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [perPage, setPerPage] = useState<number>(10);
-  const [total, setTotal] = useState<number>(0);
-
-  // Filter states
+  // Filter State
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [roleFilter, setRoleFilter] = useState<string>("");
 
-  const { showAlert } = useAlert();
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [perPage, setPerPage] = useState<number>(10);
 
-  // Fetch staff data from API
+  // 1. Fetch Data
   const fetchStaff = async () => {
     try {
       setLoading(true);
-      setError(null);
 
       const params: any = {
         page: currentPage,
         per_page: perPage,
+        ...(searchQuery && { search: searchQuery }),
+        ...(statusFilter && { status: statusFilter }),
+        ...(roleFilter && { role: roleFilter }),
       };
 
-      if (searchQuery) params.search = searchQuery;
-      if (statusFilter) params.status = statusFilter;
-      if (roleFilter) params.role = roleFilter;
-
       const response = await tenantApi.get("/employees", { params });
-
-      const { data, current_page, last_page, per_page, total } =
-        response.data.data;
+      const { data, current_page, last_page, total } = response.data.data;
 
       setStaffList(data);
-      setFilteredStaff(data);
       setCurrentPage(current_page);
       setTotalPages(last_page);
-      setPerPage(per_page);
-      setTotal(total);
-      setLoading(false);
+      setTotalItems(total);
     } catch (err: any) {
       console.error("Error fetching staff:", err);
-      setError(err.response?.data?.message || "Failed to load staff data.");
       showAlert("Failed to load staff data.", "error");
+    } finally {
       setLoading(false);
     }
   };
 
-  // Fetch data when dependencies change
   useEffect(() => {
-    fetchStaff();
+    // Debounce search to prevent too many API calls
+    const timer = setTimeout(() => {
+      fetchStaff();
+    }, 500);
+    return () => clearTimeout(timer);
   }, [currentPage, searchQuery, statusFilter, roleFilter, perPage]);
 
-  // Handle search with debouncing
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page on search
-  };
-
-  // Handle status filter change
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status);
+  // 2. Handlers
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("");
+    setRoleFilter("");
     setCurrentPage(1);
   };
 
-  // Handle role filter change
-  const handleRoleFilter = (role: string) => {
-    setRoleFilter(role);
-    setCurrentPage(1);
-  };
-
-  // Handle delete
-  // const handleDelete = async (id: number) => {
-  //   if (!window.confirm("Are you sure you want to delete this staff member?")) {
-  //     return;
-  //   }
-
-  //   try {
-  //     await tenantApi.delete(`/employees/${id}`);
-  //     showAlert("Staff member deleted successfully!", "success");
-  //     fetchStaff(); // Refresh the list
-  //   } catch (err: any) {
-  //     console.error("Error deleting staff:", err);
-  //     showAlert(
-  //       err.response?.data?.message || "Failed to delete staff member.",
-  //       "error"
-  //     );
-  //   }
-  // };
-
-  // Loading state
-  if (loading && staffList.length === 0) {
+  // Helper: Render Avatar
+  const renderAvatar = (row: Staff) => {
+    if (row.photo) {
+      return (
+        <img
+          className="h-10 w-10 rounded-full object-cover border border-slate-200"
+          src={`${asset}/${row.photo}`}
+          alt={`${row.first_name}`}
+        />
+      );
+    }
     return (
-      <Loader />
+      <div className="h-10 w-10 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 font-bold text-sm shadow-sm">
+        {row.first_name?.charAt(0)}
+        {row.last_name?.charAt(0)}
+      </div>
     );
-  }
+  };
 
-  // Error state
-  if (error && staffList.length === 0) {
-    return (
-      <div className="px-4 bg-white min-h-screen">
+  return (
+    <div className="min-h-screen bg-white px-2">
+      {/* Header */}
+      <div className="mx-2">
         <PageHeader
           title="Staff Management"
           buttonText="Add Staff"
           buttonLink="/staff/create"
         />
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="text-red-500 text-xl mb-4">⚠️ Error</div>
-            <p className="text-gray-600">{error}</p>
-            <button
-              onClick={fetchStaff}
-              className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="px-4 bg-white min-h-screen">
-      <PageHeader
-        title="Staff Management"
-        buttonText="Add Staff"
-        buttonLink="/staff/create"
-      />
-
-      {/* Filters Section */}
-      <div className="my-4 space-y-4">
-        {/* Search Component */}
-        <SearchComponent
-          onSearch={handleSearch}
-          placeholder="Search by Name, Email, Employee ID, or Designation..."
-        />
-
-        {/* Filter Row */}
-        <div className="grid grid-cols-1 text-sm md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
-          {/* Status Filter */}
-          <div>
-            <label className="block text-sm uppercase font-medium text-gray-700 mb-1">
-              Filter by Status
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => handleStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-purple-400"
-            >
-              <option value="">All</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-
-          {/* Role Filter */}
-          <div>
-            <label className="block text-sm uppercase font-medium text-gray-700 mb-1">
-              Filter by Role
-            </label>
-            <input
-              type="text"
-              value={roleFilter}
-              onChange={(e) => handleRoleFilter(e.target.value)}
-              placeholder="Enter role name..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-purple-400"
-            />
-          </div>
-
-          {/* Per Page Selector */}
-          <div>
-            <label className="block text-sm uppercase font-medium text-gray-700 mb-1">
-              Items per page
-            </label>
-            <select
-              value={perPage}
-              onChange={(e) => {
-                setPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-purple-400"
-            >
-
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="150">150</option>
-            </select>
-          </div>
-        </div>
       </div>
 
-      {/* Table */}
-      {loading ? (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-          <span className="ml-3 text-gray-600">Loading...</span>
-        </div>
-      ) : filteredStaff.length > 0 ? (
-        <>
-          <Table<Staff>
-            list={filteredStaff}
-            columns={columns}
-            // editUrl="/staff/edit"
-            editUrl={can("edit users") ? "/staff/edit" : undefined}
-          // onDelete={handleDelete}
-          // viewUrl="/staff/show" // Uncomment if you have a show page
-          />
+      <div className="px-4 pb-10">
+        <div className="mx-auto space-y-4">
 
-          {/* Pagination Controls */}
-          <div className="flex justify-center items-center mt-6 space-x-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="py-1 text-black rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              <FcPrevious size={25} />
-            </button>
-
-            {/* Page Numbers */}
-            <div className="flex space-x-1">
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`px-3 py-1 rounded-lg transition ${currentPage === pageNum
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
+          {/* Search & Filter Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
+                <FaSearch className="text-white" size={10} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
             </div>
 
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="py-1 text-black rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              <FcNext size={28} />
-            </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* 1. Search Input */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Search Staff
+                </label>
+                <div className="relative">
+                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    placeholder="Name, Email, ID..."
+                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
+                  />
+                </div>
+              </div>
+
+              {/* 2. Status Filter */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Filter by Status
+                </label>
+                <div className="relative">
+                  <FaFilter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm uppercase transition-all appearance-none bg-white shadow-sm hover:border-blue-400 cursor-pointer"
+                  >
+                    <option value="">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 3. Role Filter */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Filter by Role
+                </label>
+                <div className="relative">
+                  <FaUserTie className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    value={roleFilter}
+                    onChange={(e) => {
+                      setRoleFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    placeholder="Enter Role Name..."
+                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Active Filters Display */}
+            {(searchQuery || statusFilter || roleFilter) && (
+              <div className="flex items-center flex-wrap gap-2 pt-4 mt-2 border-t border-slate-50">
+                {searchQuery && (
+                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
+                    Search: {searchQuery}
+                  </span>
+                )}
+                {statusFilter && (
+                  <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold uppercase border border-green-200">
+                    Status: {statusFilter}
+                  </span>
+                )}
+                {roleFilter && (
+                  <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold uppercase border border-purple-200">
+                    Role: {roleFilter}
+                  </span>
+                )}
+                <button
+                  onClick={handleClearFilters}
+                  className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
+                >
+                  <MdClear /> Clear
+                </button>
+              </div>
+            )}
           </div>
-        </>
-      ) : (
-        <div className="text-center py-20">
-          <p className="text-gray-600 text-md uppercase">No data found..</p>
-          <p className="text-gray-500 uppercase text-xs">
-            Try adjusting your filters or add a new staff member
-          </p>
+
+          {/* Table Section */}
+          <TableDiv>
+            {loading ? (
+              <div className="py-20">
+                <Loader />
+              </div>
+            ) : staffList.length === 0 ? (
+              <EmptyState
+                title="No Staff Found"
+                description="Try adjusting your filters or add a new staff member."
+                icon={<FaUserTie className="text-slate-300 text-6xl mb-4" />}
+              />
+            ) : (
+              <>
+                <TableContainer maxHeight="65vh">
+                  <Table>
+                    <Thead>
+                      <Th width="5%">S.No</Th>
+                      <Th>Staff Details</Th>
+                      <Th>Employee ID</Th>
+                      <Th>Designation</Th>
+                      <Th>Roles</Th>
+                      <Th>Status</Th>
+                      {can("edit users") && <Th align="right">Actions</Th>}
+                    </Thead>
+
+                    <Tbody>
+                      {staffList.map((row, index) => (
+                        <Tr key={row.id}>
+                          {/* S.No */}
+                          <Td isMono className="font-bold text-slate-500">
+                            {(currentPage - 1) * perPage + index + 1}
+                          </Td>
+
+                          {/* Name & Avatar */}
+                          <Td>
+                            <div className="flex items-center gap-3">
+                              {renderAvatar(row)}
+                              <div>
+                                <div className="font-bold text-slate-800 uppercase text-sm">
+                                  {row.first_name} {row.last_name}
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 font-semibold">
+                                  <MdEmail className="text-slate-400" />
+                                  {row.email}
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 md:hidden">
+                                  <FaPhoneAlt className="text-slate-400" />
+                                  {row.phone}
+                                </div>
+                              </div>
+                            </div>
+                          </Td>
+
+                          {/* Employee ID */}
+                          <Td>
+                            <div className="flex items-center gap-2">
+                              <FaIdBadge className="text-slate-300" />
+                              <span className="font-mono font-bold text-slate-700 text-sm">
+                                {row.employee_id}
+                              </span>
+                            </div>
+                          </Td>
+
+                          {/* Designation */}
+                          <Td>
+                            <div className="flex items-center gap-2 text-slate-700 font-semibold uppercase text-xs">
+                              <MdWork className="text-slate-400" />
+                              {row.designation || "-"}
+                            </div>
+                          </Td>
+
+                          {/* Roles */}
+                          <Td>
+                            <div className="flex flex-wrap gap-1.5 max-w-[200px]">
+                              {row.roles && row.roles.length > 0 ? (
+                                row.roles.map((roleName, i) => (
+                                  <span
+                                    key={i}
+                                    className="px-2 py-1 text-[10px] font-bold rounded bg-purple-50 text-purple-700 uppercase border border-purple-100 tracking-wide"
+                                  >
+                                    {roleName}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-400 italic font-semibold">No roles</span>
+                              )}
+                            </div>
+                          </Td>
+
+                          {/* Status */}
+                          <Td>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border shadow-sm
+                                ${row.status === 'Active'
+                                ? 'bg-green-50 text-green-700 border-green-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                              }`}
+                            >
+                              {row.status}
+                            </span>
+                          </Td>
+
+                          {/* Actions */}
+                          {can("edit users") && (
+                            <Td align="right">
+                              <Link
+                                to={`/staff/edit/${row.id}`}
+                                className="inline-flex p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
+                                title="Edit Staff"
+                              >
+                                <FaEdit size={14} />
+                              </Link>
+                            </Td>
+                          )}
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+
+                {/* Pagination (Reusable) */}
+                {staffList.length > 10 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    onPageChange={setCurrentPage}
+                    itemName="Staff"
+                  />
+                )}
+              </>
+            )}
+          </TableDiv>
+
         </div>
-      )}
+      </div>
     </div>
   );
 };
