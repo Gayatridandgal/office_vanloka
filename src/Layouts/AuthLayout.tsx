@@ -4,13 +4,7 @@ import Sidebar from "../Components/Sidebar";
 import IndexPage from "../Pages/RolesPermissions/IndexPage";
 import EditPage from "../Pages/RolesPermissions/EditPage";
 import CreatePage from "../Pages/RolesPermissions/CreatePage";
-import GpsIndexPage from "../Pages/GpsDevices/GpsIndexPage";
-import GpsCreatePage from "../Pages/GpsDevices/GpsCreatePage";
-import GpsEditPage from "../Pages/GpsDevices/GpsEditPage";
 import MobileHeader from "../Components/MobileHeader";
-import BeaconIndexPage from "../Pages/BeaconDevices/BeaconIndexPage";
-import BeaconCreatePage from "../Pages/BeaconDevices/BeaconCreatePage";
-import BeaconEditPage from "../Pages/BeaconDevices/BeaconEditPage";
 import VehicleIndexPage from "../Pages/Vehicles/VehicleIndexPage";
 import VehicleShowPage from "../Pages/Vehicles/VehicleShowPage";
 import VehicleCreatePage from "../Pages/Vehicles/VehicleCreatePage";
@@ -23,9 +17,7 @@ import BookingIndexPage from "../Pages/Bookings/BookingIndexPage";
 import BookingShowPage from "../Pages/Bookings/BookingShowPage";
 import TravelerIndexPage from "../Pages/Travelers/TravelerIndexPage";
 import TravelerShowPage from "../Pages/Travelers/TravelerShowPage";
-import BookingCreatePage from "../Pages/Bookings/BookingCreatePage";
 import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
-import TravelerEditPage from "../Pages/Travelers/TravelerEditPage";
 import StaffIndexPage from "../Pages/Staffs/StaffIndexPage";
 import StaffCreatePage from "../Pages/Staffs/StaffCreatePage";
 import StaffEditPage from "../Pages/Staffs/StaffEditPage";
@@ -81,14 +73,14 @@ const AuthLayout = () => {
               <Route path="staff/edit/:id" element={<StaffEditPage />} />
 
               {/* GPS Device Pages */}
-              <Route path="gps" element={<GpsIndexPage />} />
+              {/* <Route path="gps" element={<GpsIndexPage />} />
               <Route path="gps/create" element={<GpsCreatePage />} />
-              <Route path="gps/edit/:id" element={<GpsEditPage />} />
+              <Route path="gps/edit/:id" element={<GpsEditPage />} /> */}
 
               {/* Beacon Device Pages */}
-              <Route path="beacons" element={<BeaconIndexPage />} />
+              {/* <Route path="beacons" element={<BeaconIndexPage />} />
               <Route path="beacons/create" element={<BeaconCreatePage />} />
-              <Route path="beacons/edit/:id" element={<BeaconEditPage />} />
+              <Route path="beacons/edit/:id" element={<BeaconEditPage />} /> */}
 
               {/* Vehicle Pages */}
               <Route path="vehicles" element={<VehicleIndexPage />} />
@@ -106,12 +98,12 @@ const AuthLayout = () => {
               {/* Booking Pages */}
               <Route path="bookings" element={<BookingIndexPage />} />
               <Route path="bookings/show/:id" element={<BookingShowPage />} />
-              <Route path="bookings/create" element={<BookingCreatePage />} />
+              {/* <Route path="bookings/create" element={<BookingCreatePage />} /> */}
 
               {/* Traveler Pages */}
               <Route path="travellers" element={<TravelerIndexPage />} />
               <Route path="travellers/show/:id" element={<TravelerShowPage />} />
-              <Route path="travellers/Edit/:id" element={<TravelerEditPage />} />
+              {/* <Route path="travellers/Edit/:id" element={<TravelerEditPage />} /> */}
 
               {/* Plan Detail Page */}
               <Route path="plan" element={<MyPlanPage />} />

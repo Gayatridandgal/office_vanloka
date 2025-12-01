@@ -41,7 +41,7 @@ import type { SidebarLinkType } from "../Types/Index";
 
 // Icons
 import { MdDashboard, MdLogout, MdOutlineSupportAgent } from "react-icons/md";
-import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime, FaUserCheck } from "react-icons/fa6";
+import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime} from "react-icons/fa6";
 
 import { GrOrganization } from "react-icons/gr";
 import { FaUsersCog } from "react-icons/fa";
