@@ -38,86 +38,100 @@ import InstructorEditPage from "../Pages/Instructors/InstructorEditpage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
   return (
-    <div className="flex h-screen relative overflow-hidden">
-      {/* Sidebar Component */}
-      <Sidebar isOpen={isSidebarOpen} />
+    <div className="flex h-screen w-full bg-white overflow-hidden">
+      {/* Sidebar - Fixed on desktop */}
+      <Sidebar isOpen={isSidebarOpen} closeSidebar={closeSidebar} />
 
-      {/* Main content area */}
-      <main className="flex-grow flex flex-col transition-all duration-300">
-        {/* Mobile Header with Toggle Button */}
-        <MobileHeader title="Institute Panel" toggleSidebar={toggleSidebar} />
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col h-full w-full relative overflow-hidden transition-all duration-300 ease-in-out">
 
-        <div className="py-4">
-          <Routes>
-            {/* <Route path="dashboard" element={<DashBoardPage />} /> */}
-            <Route path="dashboard" element={<DashBoardPage />} />
+        {/* Mobile Header (Fixed at top inside main) */}
+        <MobileHeader title="Admin Panel" toggleSidebar={toggleSidebar} />
 
-            {/* Roles and Permissions Pages*/}
-            <Route path="roles_permissions" element={<IndexPage />} />
-            <Route path="roles_permissions/create" element={<CreatePage />} />
-            <Route path="roles_permissions/edit/:id" element={<EditPage />} />
+        {/* 
+           Content Container:
+           - overflow-y-auto: Allows the page content (like Forms) to scroll if it gets too long.
+           - h-full: Takes remaining height.
+           - For Table Pages: Because we used 'maxHeight' on tables, they will scroll internally 
+             and likely won't trigger this outer scrollbar, giving you that "Application" feel.
+        */}
+        <div className="flex-1 h-full w-full mt-4">
+          <div className="mx-auto w-full h-full">
+            <Routes>
+              {/* <Route path="dashboard" element={<DashBoardPage />} /> */}
+              <Route path="dashboard" element={<DashBoardPage />} />
 
-            {/* Staff Management */}
-            <Route path="staff" element={<StaffIndexPage />} />
-            <Route path="staff/create" element={<StaffCreatePage />} />
-            <Route path="staff/edit/:id" element={<StaffEditPage />} />
+              {/* Roles and Permissions Pages*/}
+              <Route path="roles_permissions" element={<IndexPage />} />
+              <Route path="roles_permissions/create" element={<CreatePage />} />
+              <Route path="roles_permissions/edit/:id" element={<EditPage />} />
 
-            {/* GPS Device Pages */}
-            <Route path="gps" element={<GpsIndexPage />} />
-            <Route path="gps/create" element={<GpsCreatePage />} />
-            <Route path="gps/edit/:id" element={<GpsEditPage />} />
+              {/* Staff Management */}
+              <Route path="staff" element={<StaffIndexPage />} />
+              <Route path="staff/create" element={<StaffCreatePage />} />
+              <Route path="staff/edit/:id" element={<StaffEditPage />} />
 
-            {/* Beacon Device Pages */}
-            <Route path="beacons" element={<BeaconIndexPage />} />
-            <Route path="beacons/create" element={<BeaconCreatePage />} />
-            <Route path="beacons/edit/:id" element={<BeaconEditPage />} />
+              {/* GPS Device Pages */}
+              <Route path="gps" element={<GpsIndexPage />} />
+              <Route path="gps/create" element={<GpsCreatePage />} />
+              <Route path="gps/edit/:id" element={<GpsEditPage />} />
 
-            {/* Vehicle Pages */}
-            <Route path="vehicles" element={<VehicleIndexPage />} />
-            <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
-            <Route path="vehicles/create" element={<VehicleCreatePage />} />
-            <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
-            <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} />
+              {/* Beacon Device Pages */}
+              <Route path="beacons" element={<BeaconIndexPage />} />
+              <Route path="beacons/create" element={<BeaconCreatePage />} />
+              <Route path="beacons/edit/:id" element={<BeaconEditPage />} />
 
-            {/* Driver Pages */}
-            <Route path="drivers" element={<DriverIndexPage />} />
-            <Route path="drivers/create" element={<DriverCreatePage />} />
-            <Route path="drivers/show/:id" element={<DriverShowPage />} />
-            <Route path="drivers/edit/:id" element={<DriverEditPage />} />
+              {/* Vehicle Pages */}
+              <Route path="vehicles" element={<VehicleIndexPage />} />
+              <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
+              <Route path="vehicles/create" element={<VehicleCreatePage />} />
+              <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
+              <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} />
 
-            {/* Booking Pages */}
-            <Route path="bookings" element={<BookingIndexPage />} />
-            <Route path="bookings/show/:id" element={<BookingShowPage />} />
-            <Route path="bookings/create" element={<BookingCreatePage />} />
+              {/* Driver Pages */}
+              <Route path="drivers" element={<DriverIndexPage />} />
+              <Route path="drivers/create" element={<DriverCreatePage />} />
+              <Route path="drivers/show/:id" element={<DriverShowPage />} />
+              <Route path="drivers/edit/:id" element={<DriverEditPage />} />
 
-            {/* Traveler Pages */}
-            <Route path="travellers" element={<TravelerIndexPage />} />
-            <Route path="travellers/show/:id" element={<TravelerShowPage />} />
-            <Route path="travellers/Edit/:id" element={<TravelerEditPage />} />
+              {/* Booking Pages */}
+              <Route path="bookings" element={<BookingIndexPage />} />
+              <Route path="bookings/show/:id" element={<BookingShowPage />} />
+              <Route path="bookings/create" element={<BookingCreatePage />} />
 
-            {/* Plan Detail Page */}
-            <Route path="plan" element={<MyPlanPage />} />
+              {/* Traveler Pages */}
+              <Route path="travellers" element={<TravelerIndexPage />} />
+              <Route path="travellers/show/:id" element={<TravelerShowPage />} />
+              <Route path="travellers/Edit/:id" element={<TravelerEditPage />} />
 
-            {/*Instructor */}
-            <Route path="instructors" element={<InstructorIndexPage />} />
-            <Route
-              path="instructors/create"
-              element={<InstructorCreatePage />}
-            />
-            <Route
-              path="instructors/show/:id"
-              element={<InstructorShowPage />}
-            />
-            <Route
-              path="instructors/edit/:id"
-              element={<InstructorEditPage />}
-            />
-          </Routes>
+              {/* Plan Detail Page */}
+              <Route path="plan" element={<MyPlanPage />} />
+
+              {/*Instructor */}
+              <Route path="instructors" element={<InstructorIndexPage />} />
+              <Route
+                path="instructors/create"
+                element={<InstructorCreatePage />}
+              />
+              <Route
+                path="instructors/show/:id"
+                element={<InstructorShowPage />}
+              />
+              <Route
+                path="instructors/edit/:id"
+                element={<InstructorEditPage />}
+              />
+            </Routes>
+          </div>
         </div>
       </main>
     </div>
