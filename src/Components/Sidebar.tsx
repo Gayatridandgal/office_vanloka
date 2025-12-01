@@ -75,13 +75,6 @@ const sidebarLinks: SidebarLinkType[] = [
     requiredPermissions: ["view employees"],
   },
 
-  {
-    name: "Attender Management",
-    path: "/attenders",
-    icon: <FaUserShield size={22} />,
-    feature: "MANAGE ATTENDERS",
-    requiredPermissions: ["view attenders"],
-  },
 
   {
     name: "Vehicle Management",
@@ -99,13 +92,7 @@ const sidebarLinks: SidebarLinkType[] = [
     requiredPermissions: ["view drivers"],
   },
 
-  {
-    name: "Instructor Management",
-    path: "/instructors",
-    icon: <FaUserCheck size={22} />,
-    feature: "MANAGE INSTRUCTORS",
-    requiredPermissions: ["view instructors"],
-  },
+
 
   {
     name: "Travellers Management",
@@ -122,6 +109,23 @@ const sidebarLinks: SidebarLinkType[] = [
     feature: "MANAGE BOOKINGS",
     requiredPermissions: ["view bookings"],
   },
+
+  // {
+  //   name: "Attender Management",
+  //   path: "/attenders",
+  //   icon: <FaUserShield size={22} />,
+  //   feature: "MANAGE ATTENDERS",
+  //   requiredPermissions: ["view attenders"],
+  // },
+
+  // {
+  //   name: "Instructor Management",
+  //   path: "/instructors",
+  //   icon: <FaUserCheck size={22} />,
+  //   feature: "MANAGE INSTRUCTORS",
+  //   requiredPermissions: ["view instructors"],
+  // },
+
 
   {
     name: "Vendor Management",

@@ -1,23 +1,29 @@
-import React from "react";
-import { MdErrorOutline } from "react-icons/md";
+import React from 'react';
+import { PiWarningBold } from 'react-icons/pi';
 
 interface EmptyStateProps {
+  title?: string;
+  description?: string;
   icon?: React.ReactNode;
-  message?: string;
-  className?: string;
+  action?: React.ReactNode;
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
-  icon = <MdErrorOutline className="w-8 h-8" />,  
-  message = "Data not found...",                          
-  className,
+  title = 'No Data Found',
+  description = 'We couldn\'t find what you were looking for.',
+  icon,
+  action,
 }) => {
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      <div className="text-red-500 w-8 h-8">{icon}</div>
-      <p className="text-gray-600 text-sm uppercase font-semibold">
-        {message}
-      </p>
+    <div className="flex flex-col items-center justify-center text-center p-12">
+      <div className="text-slate-400 ">
+        {icon || (
+          <PiWarningBold size={40} className='text-red-400'/>
+        )}
+      </div>
+      <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+      <p className="text-slate-500 max-w-sm mb-6">{description}</p>
+      {action && <div>{action}</div>}
     </div>
   );
 };
