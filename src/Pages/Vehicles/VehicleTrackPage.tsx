@@ -9,6 +9,7 @@ import tenantApi from "../../Services/ApiService";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import GoogleMapDisplay from "../../Components/Map/GoogleMapDisplay";
 import EmptyState from "../../Components/UI/EmptyState";
+import { Loader } from "../../Components/UI/Loader";
 
 // Icons
 import {
@@ -24,8 +25,6 @@ import {
 import { MdGpsFixed, MdLocationOn } from "react-icons/md";
 import { LuBus } from "react-icons/lu";
 import type { LiveVehicle } from "../../Types/Index";
-import { Loader } from "../../Components/UI/Loader";
-
 
 const STORAGE_KEY = "vehicle_track_cooldown";
 const COOLDOWN_DURATION = 60; // 1 Minute
@@ -49,7 +48,6 @@ const VehicleTrackPage = () => {
     const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
     // --- 1. Timer Logic ---
-
     const startTimerInterval = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         timerRef.current = setInterval(() => {
@@ -74,7 +72,6 @@ const VehicleTrackPage = () => {
     };
 
     // --- 2. Data Fetching ---
-
     const fetchAddress = async (lat: number, lng: number) => {
         if (!googleMapsApiKey) return;
         try {
@@ -123,7 +120,6 @@ const VehicleTrackPage = () => {
     }, [tenantId, id, googleMapsApiKey]);
 
     // --- 3. Lifecycle ---
-
     useEffect(() => {
         if (!tenantId || !id) return;
 
@@ -136,12 +132,13 @@ const VehicleTrackPage = () => {
                 const remainingSeconds = Math.ceil((endTime - now) / 1000);
 
                 if (remainingSeconds > 0) {
+                    // Restore Timer
                     setCountdown(remainingSeconds);
                     setIsButtonDisabled(true);
                     startTimerInterval();
 
+                    // Silent fetch if we restored timer but have no data
                     if (!vehicle && !hasInitialFetch) {
-                        // Silent fetch if we restored timer but have no data
                         setLoading(true);
                         tenantApi.get(`/vehicles/track/${id}/live/location/${tenantId}`)
                             .then(res => {
@@ -168,13 +165,24 @@ const VehicleTrackPage = () => {
         initializePage();
 
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tenantId, id]);
+
+    // Prevent Refresh Warning
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isButtonDisabled) {
+                e.preventDefault();
+                e.returnValue = "Please wait for timer.";
+            }
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [isButtonDisabled]);
 
     // Helpers
     const drivers = vehicle?.beacons.filter(b => b.type.toLowerCase() === 'driver') || [];
     const passengers = vehicle?.beacons.filter(b => b.type.toLowerCase() === 'traveller') || [];
-    
+
     const formatTime = (isoString?: string) => {
         if (!isoString) return "--:--";
         return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -193,7 +201,7 @@ const VehicleTrackPage = () => {
     return (
         <div className="min-h-screen bg-white px-2">
             <div className="mx-2">
-                <PageHeaderBack title={vehicle ? `Live Track: ${vehicle.vehicleName}` : "Track Vehicle"} buttonLink="/vehicles" />
+                <PageHeaderBack title={"Live Tracking"} buttonLink="/vehicles" />
             </div>
 
             <div className="px-4 pb-10">
@@ -208,14 +216,14 @@ const VehicleTrackPage = () => {
                             <div>
                                 <h2 className="text-sm font-bold text-slate-800 uppercase">Real-Time Monitoring</h2>
                                 <p className="text-xs text-slate-500">
-                                    {vehicle ? `Data synced: ${formatTime(vehicle.gps.timestamp)}` : "Initializing Map..."}
+                                    {vehicle ? `Data synced: ${formatTime(vehicle.gps.timestamp)}` : "Waiting for connection..."}
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-4">
                             {error && <span className="text-xs text-red-500 font-bold flex items-center gap-1"><FaExclamationTriangle /> {error}</span>}
-                            
+
                             <button
                                 onClick={fetchVehicleTracking}
                                 disabled={isButtonDisabled || loading}
@@ -237,22 +245,22 @@ const VehicleTrackPage = () => {
 
                     {/* 2. Main Content Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)] min-h-[600px]">
-                        
-                        {/* Map Area - MOUNTED IMMEDIATELY */}
-                        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden relative">
-                            
-                            {/* Map Component renders immediately (vehicle prop can be null initially) */}
+
+                        {/* Map Area - ALWAYS RENDERED */}
+                        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200  relative">
+
+                            {/* FIX: LoadScript is top-level within this div, so map loads instantly */}
                             <LoadScript googleMapsApiKey={googleMapsApiKey}>
                                 <GoogleMapDisplay
                                     vehicles={vehicle ? [vehicle] : []}
                                     selectedVehicleId={vehicle?.vehicleId || null}
-                                    onVehicleSelect={() => {}}
+                                    onVehicleSelect={() => { }}
                                 />
                             </LoadScript>
 
-                            {/* Loading Overlay - Only transparent, keeps map visible underneath */}
+                            {/* Overlay: Loading */}
                             {loading && (
-                                <div className="absolute inset-0 bg-white/50 z-20 flex items-center justify-center">
+                                <div className="absolute inset-0 bg-white/50 z-20 flex items-center justify-center backdrop-blur-[1px]">
                                     <div className="bg-white px-4 py-2 rounded-full shadow-lg border border-slate-100 flex items-center gap-2">
                                         <Loader />
                                         <span className="text-xs font-bold text-indigo-900 uppercase">Updating Location...</span>
@@ -260,12 +268,12 @@ const VehicleTrackPage = () => {
                                 </div>
                             )}
 
-                            {/* Error Overlay - Allows Retry */}
+                            {/* Overlay: Error */}
                             {error && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-30">
-                                    <EmptyState 
-                                        title="Tracking Unavailable" 
-                                        description={error} 
+                                    <EmptyState
+                                        title="Tracking Unavailable"
+                                        description={error}
                                         icon={<FaExclamationTriangle className="text-red-300 text-6xl mb-4" />}
                                     />
                                 </div>
@@ -273,140 +281,152 @@ const VehicleTrackPage = () => {
                         </div>
 
                         {/* Sidebar Details Panel */}
-                        <div className="lg:col-span-1 flex flex-col gap-4 overflow-hidden">
-                           
-                           {vehicle ? (
-                             <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-                                
-                                {/* Header */}
-                                <div className="bg-slate-50 p-5 border-b border-slate-200">
-                                   <div className="flex items-center justify-between mb-3">
-                                      <div className="flex items-center gap-3">
-                                         <div className="p-2 bg-white border border-slate-200 rounded-full shadow-sm text-indigo-600">
-                                            <LuBus size={20} />
-                                         </div>
-                                         <div>
-                                            <h3 className="text-lg font-extrabold text-slate-800 uppercase leading-none">{vehicle.vehicleName}</h3>
-                                            <span className="text-[10px] text-slate-400 font-mono">ID: {vehicle.vehicleId}</span>
-                                         </div>
-                                      </div>
-                                      <div className="text-right">
-                                         <span className="block text-xs font-bold text-slate-500 uppercase">Reg. Number</span>
-                                         <span className="block text-sm font-bold text-slate-800">{vehicle.registrationNumber || "N/A"}</span>
-                                      </div>
-                                   </div>
-                                   <div className="bg-white p-3 rounded-lg border border-slate-200 flex gap-2">
-                                      <MdLocationOn className="text-red-500 shrink-0 mt-0.5" />
-                                      <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                                         {address}
-                                      </p>
-                                   </div>
-                                </div>
+                        <div className="lg:col-span-1 flex flex-col gap-4">
 
-                                <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
-                                    {/* Telemetry */}
-                                    <div>
-                                       <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Live Telemetry</label>
-                                       <div className="grid grid-cols-2 gap-3">
-                                          <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between">
-                                             <div className="flex items-center gap-2">
-                                                <FaTachometerAlt className="text-blue-400" />
-                                                <span className="text-xs font-bold text-blue-800 uppercase">Speed</span>
-                                             </div>
-                                             <span className="text-sm font-extrabold text-blue-600">{vehicle.gps.speed} <span className="text-[10px]">km/h</span></span>
-                                          </div>
-                                          <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
-                                             <div className="flex items-center gap-2">
-                                                <FaBatteryThreeQuarters className="text-emerald-500" />
-                                                <span className="text-xs font-bold text-emerald-800 uppercase">Battery</span>
-                                             </div>
-                                             <span className="text-sm font-extrabold text-emerald-600">{vehicle.battery}%</span>
-                                          </div>
-                                       </div>
-                                    </div>
+                            {vehicle ? (
+                                <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-slate-200 ">
 
-                                    {/* Drivers */}
-                                    <div>
-                                       <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                          <FaUserTie /> Active Driver
-                                       </label>
-                                       {drivers.length > 0 ? (
-                                         <div className="space-y-2">
-                                           {drivers.map(d => (
-                                             <div key={d.id} className="flex items-center p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-500 font-bold border border-slate-200 shadow-sm mr-3">
-                                                   {d.name.charAt(0)}
+                                    {/* Header */}
+                                    <div className="bg-slate-50 p-5 border-b border-slate-200">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-white border border-slate-200 rounded-full shadow-sm text-indigo-600">
+                                                    <LuBus size={20} />
                                                 </div>
                                                 <div>
-                                                   <p className="text-sm font-bold text-slate-700 uppercase">{d.name}</p>
-                                                   <p className="text-[10px] text-slate-400 font-mono">ID: {d.id}</p>
+                                                    <h3 className="text-lg font-extrabold text-slate-800 uppercase leading-none">{vehicle.vehicleName}</h3>
+                                                    <span className="text-[10px] text-slate-400 font-mono">ID: {vehicle.vehicleId}</span>
                                                 </div>
-                                             </div>
-                                           ))}
-                                         </div>
-                                       ) : (
-                                         <div className="p-3 border border-dashed border-slate-300 rounded-lg text-center text-xs text-slate-400">
-                                            No driver detected
-                                         </div>
-                                       )}
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="block text-xs font-bold text-slate-500 uppercase">Reg. Number</span>
+                                                <span className="block text-sm font-bold text-slate-800">{vehicle.registrationNumber || "N/A"}</span>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-3 rounded-lg border border-slate-200 flex gap-2">
+                                            <MdLocationOn className="text-red-500 shrink-0 mt-0.5" />
+                                            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                                {address}
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    {/* Passengers */}
-                                    <div className="flex flex-col h-full min-h-0">
-                                       <div className="flex items-center justify-between mb-2 shrink-0">
-                                          <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
-                                             <FaUsers /> Passengers
-                                          </label>
-                                          <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
-                                             Total: {passengers.length}
-                                          </span>
-                                       </div>
-                                       <div className="border border-slate-200 rounded-lg bg-white overflow-hidden">
-                                         {passengers.length > 0 ? (
-                                           <div className="divide-y divide-slate-100 max-h-[250px] overflow-y-auto custom-scrollbar">
-                                             {passengers.map(pax => (
-                                               <div key={pax.id} className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors">
-                                                  <div className="flex items-center gap-3">
-                                                     <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold border border-blue-100">
-                                                        {pax.name.charAt(0)}
-                                                     </div>
-                                                     <div>
-                                                        <p className="text-xs font-bold text-slate-700 uppercase">{pax.name}</p>
-                                                        <div className="flex items-center gap-2 mt-0.5">
-                                                           <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded">ID: {pax.id}</span>
+                                    {/* Scrollable Content */}
+                                    <div className="flex-1  p-4 space-y-5 ">
+
+                                        {/* 1. Telemetry */}
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Live Telemetry</label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <FaTachometerAlt className="text-blue-400" />
+                                                        <span className="text-xs font-bold text-blue-800 uppercase">Speed</span>
+                                                    </div>
+                                                    <span className="text-sm font-extrabold text-blue-600">{vehicle.gps.speed} <span className="text-[10px]">km/h</span></span>
+                                                </div>
+                                                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <FaBatteryThreeQuarters className="text-emerald-500" />
+                                                        <span className="text-xs font-bold text-emerald-800 uppercase">Battery</span>
+                                                    </div>
+                                                    <span className="text-sm font-extrabold text-emerald-600">{vehicle.battery}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 2. Driver */}
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                                                <FaUserTie /> Active Driver
+                                            </label>
+                                            {drivers.length > 0 ? (
+                                                <div className="space-y-2">
+                                                    {drivers.map(d => (
+                                                        <div key={d.id} className="flex items-center p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-500 font-bold border border-slate-200 shadow-sm mr-3">
+                                                                {d.name.charAt(0)}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-slate-700 uppercase">{d.name}</p>
+                                                                <p className="text-[10px] text-slate-400 font-mono">ID: {d.id}</p>
+                                                            </div>
                                                         </div>
-                                                     </div>
-                                                  </div>
-                                                  <div className="flex flex-col items-end gap-1">
-                                                     <span className="text-[10px] text-slate-400 flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded" title="Last Seen">
-                                                        <FaClock size={8} /> {formatTime(pax.lastSeen)}
-                                                     </span>
-                                                     {pax.rssi && (
-                                                        <div className="flex items-center gap-1" title="Signal Strength">
-                                                           <FaSignal size={10} className={pax.rssi > -60 ? "text-green-500" : "text-amber-500"} />
-                                                           <span className="text-[10px] text-slate-400 font-mono">{pax.rssi}dBm</span>
-                                                        </div>
-                                                     )}
-                                                  </div>
-                                               </div>
-                                             ))}
-                                           </div>
-                                         ) : (
-                                           <div className="p-6 text-center text-xs text-slate-400 italic">
-                                              No passengers detected
-                                           </div>
-                                         )}
-                                       </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="p-3 border border-dashed border-slate-300 rounded-lg text-center text-xs text-slate-400">
+                                                    No driver detected
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 3. Passengers Info - SCROLLABLE */}
+                                        <div className="flex flex-col h-full min-h-0">
+                                            <div className="flex items-center justify-between mb-2 shrink-0">
+                                                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                                                    <FaUsers /> Passengers
+                                                </label>
+                                                <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                                                    Total: {passengers.length}
+                                                </span>
+                                            </div>
+
+                                            <div className="border border-slate-200 rounded-lg bg-white">
+                                                {passengers.length > 0 ? (
+                                                    <div className="divide-y divide-slate-100 max-h-[250px] overflow-y-auto custom-scrollbar">
+                                                        {passengers.map(pax => (
+                                                            <div key={pax.id} className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold border border-blue-100">
+                                                                        {pax.name.charAt(0)}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs font-bold text-slate-700 uppercase">{pax.name}</p>
+                                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                                            <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded">ID: {pax.id}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col items-end gap-1">
+                                                                    <span className="text-[10px] text-slate-400 flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded" title="Last Seen">
+                                                                        <FaClock size={8} /> {formatTime(pax.lastSeen)}
+                                                                    </span>
+                                                                    {pax.rssi && (
+                                                                        <div className="flex items-center gap-1" title="Signal Strength">
+                                                                            <FaSignal size={10} className={pax.rssi > -60 ? "text-green-500" : "text-amber-500"} />
+                                                                            <span className="text-[10px] text-slate-400 font-mono">{pax.rssi}dBm</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-6 text-center text-xs text-slate-400 italic">
+                                                        No passengers detected
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                             </div>
-                           ) : (
-                             <div className="h-full bg-white rounded-lg shadow-sm border border-slate-200 flex flex-col items-center justify-center p-8 text-center">
-                                <MdGpsFixed size={48} className="text-slate-200 mb-4" />
-                                <h3 className="text-sm font-bold text-slate-800 uppercase">Ready to Track</h3>
-                                <p className="text-xs text-slate-500 mt-2">Connecting to vehicle data...</p>
-                             </div>
-                           )}
+                            ) : (
+                                <div className="h-full bg-white rounded-lg shadow-sm border border-slate-200 flex flex-col items-center justify-center p-8 text-center">
+                                    {loading ? (
+                                        <>
+                                            <Loader />
+                                            <p className="text-xs text-slate-500 mt-4 font-bold uppercase">Connecting to Vehicle...</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <MdGpsFixed size={48} className="text-slate-200 mb-4" />
+                                            <h3 className="text-sm font-bold text-slate-800 uppercase">Ready to Track</h3>
+                                            <p className="text-xs text-slate-500 mt-2">Waiting for connection...</p>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
