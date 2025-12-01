@@ -17,6 +17,7 @@ export interface AuthUser {
 
 export interface AuthState {
   user: AuthUser | null;
+  tenantId: string | null;
   roles: string[];
   permissions: string[];
   status: AuthStatus;
@@ -25,6 +26,7 @@ export interface AuthState {
 export interface AuthContextValue extends AuthState {
   setAuthFromMe: (payload: {
     id: number;
+    tenant_id: string;
     name: string;
     email: string;
     roles: string[];
@@ -38,6 +40,7 @@ const AUTH_STORAGE_KEY = "auth_state";
 
 const initialState: AuthState = {
   user: null,
+  tenantId: null,
   roles: [],
   permissions: [],
   status: "unauthenticated",
@@ -59,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           email: payload.email,
         },
         roles: payload.roles || [],
+        tenantId: payload.tenant_id,
         permissions: payload.permissions || [],
         status: "authenticated",
       };
@@ -99,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           email: res.data.email,
           roles: res.data.roles || [],
           permissions: res.data.permissions || [],
+          tenant_id: res.data.tenant_id,
         });
       }
     } catch (error: any) {
@@ -127,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           roles: cached.roles || [],
           permissions: cached.permissions || [],
           status: "checking",
+          tenantId: cached.tenantId || null,
         });
 
         void refreshMe();

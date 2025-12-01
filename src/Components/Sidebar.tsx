@@ -34,20 +34,20 @@
 // export default Sidebar;
 
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useToolkit } from "../Utils/Toolkit";
 import { app_features } from "../Data/Index";
 import type { SidebarLinkType } from "../Types/Index";
 
 // Icons
 import { MdDashboard, MdLogout, MdOutlineSupportAgent } from "react-icons/md";
-import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime} from "react-icons/fa6";
+import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime } from "react-icons/fa6";
 
-import { GrOrganization } from "react-icons/gr";
 import { FaUsersCog } from "react-icons/fa";
 import { TbReport } from "react-icons/tb";
 import { HiOutlineDocumentReport, HiUsers } from "react-icons/hi";
 import { BsBusFront } from "react-icons/bs";
+import { logout } from "../Services/AuthService";
 
 // --- Link Configuration ---
 const sidebarLinks: SidebarLinkType[] = [
@@ -126,14 +126,13 @@ const sidebarLinks: SidebarLinkType[] = [
   //   requiredPermissions: ["view instructors"],
   // },
 
-
-  {
-    name: "Vendor Management",
-    path: "/vendors",
-    icon: <GrOrganization size={22} />,
-    feature: "MANAGE VENDORS",
-    requiredPermissions: ["view vendors"],
-  },
+  // {
+  //   name: "Vendor Management",
+  //   path: "/vendors",
+  //   icon: <GrOrganization size={22} />,
+  //   feature: "MANAGE VENDORS",
+  //   requiredPermissions: ["view vendors"],
+  // },
 
   {
     name: "Rase Support Ticket",
@@ -211,6 +210,13 @@ const Sidebar = ({ isOpen, closeSidebar }: Props) => {
 
   const handleDropdownToggle = (name: string) => {
     setOpenDropdown((current) => (current === name ? null : name));
+  };
+
+
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -327,7 +333,7 @@ const Sidebar = ({ isOpen, closeSidebar }: Props) => {
         </nav>
 
         {/* Footer / Logout Section */}
-        <div className="p-2 border-t border-slate-200 bg-slate-50">
+        <div className="p-2 border-t border-slate-200 bg-slate-50" onClick={handleLogout} >
           <button className="flex items-center gap-3 w-full px-4 p-2 text-slate-600 hover:bg-white hover:text-red-600 hover:shadow-sm rounded-lg transition-all duration-200 uppercase text-xs font-bold">
             <MdLogout size={18} />
             Log Out

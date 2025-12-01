@@ -16,7 +16,7 @@ interface TableContainerProps {
   maxHeight?: string; // e.g., "60vh", "500px"
 }
 
-export const TableContainer = ({ children, maxHeight = "60vh" }: TableContainerProps) => {
+export const TableContainer = ({ children, maxHeight = "70vh" }: TableContainerProps) => {
   return (
     <div className="overflow-x-auto custom-scrollbar">
       <div 
