@@ -3,15 +3,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // Icons
-import { 
-  FaSearch, 
-  FaFilter, 
-  FaEye, 
-  FaMapMarkerAlt, 
-  FaBus, 
-  FaBuilding, 
+import {
+  FaSearch,
+  FaFilter,
+  FaEye,
+  FaMapMarkerAlt,
+  FaBus,
+  FaBuilding,
   FaUserCircle,
-  FaRegCalendarAlt
 } from "react-icons/fa";
 import { MdClear, MdEventSeat } from "react-icons/md";
 
@@ -65,7 +64,7 @@ const BookingIndexPage = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      
+
       // Fetching 50 as per original logic, but we will paginate client-side for the view
       const response = await tenantApi.get("/bookings", {
         params: {
@@ -123,8 +122,8 @@ const BookingIndexPage = () => {
 
   // Helper: Render Avatar
   const renderAvatar = (row: Booking) => {
-    const imgSrc = row.traveller_profile_photo 
-      ? `http://localhost/storage/${row.traveller_profile_photo}` 
+    const imgSrc = row.traveller_profile_photo
+      ? `http://localhost/storage/${row.traveller_profile_photo}`
       : `https://ui-avatars.com/api/?name=${row.traveller_first_name}+${row.traveller_last_name}&background=random`;
 
     return (
@@ -140,7 +139,7 @@ const BookingIndexPage = () => {
   return (
     <div className="min-h-screen bg-white px-2">
       {/* Header */}
-      <div className="mx-2">
+      <div className="mx-4">
         <PageHeader title="Booking Management" />
       </div>
 
@@ -156,7 +155,7 @@ const BookingIndexPage = () => {
               <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search Input */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
@@ -189,9 +188,7 @@ const BookingIndexPage = () => {
                     <option value="">All</option>
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
+
                   </select>
                 </div>
               </div>
@@ -199,12 +196,19 @@ const BookingIndexPage = () => {
 
             {/* Active Filters */}
             {(searchQuery || statusFilter) && (
-              <div className="flex justify-end mt-4 pt-2 border-t border-slate-50">
+              <div className="flex items-center flex-wrap gap-1 mt-2">
+                {searchQuery && (
+                  <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold uppercase border border-amber-200">
+                    {searchQuery}
+                  </span>
+                )}
+                {statusFilter && <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">{statusFilter}</span>}
+
                 <button
                   onClick={handleClearFilters}
-                  className="text-xs font-bold text-red-600 flex items-center gap-1 hover:text-red-800 uppercase"
+                  className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
                 >
-                  <MdClear /> Clear Filters
+                  <MdClear /> Clear
                 </button>
               </div>
             )}
@@ -215,8 +219,8 @@ const BookingIndexPage = () => {
             {loading ? (
               <div className="py-20"><Loader /></div>
             ) : displayBookings.length === 0 ? (
-              <EmptyState 
-                title="No Bookings Found" 
+              <EmptyState
+                title="No Bookings Found"
                 description="Try adjusting your search filters."
                 icon={<MdEventSeat className="text-slate-300 text-6xl mb-4" />}
               />
@@ -226,12 +230,12 @@ const BookingIndexPage = () => {
                   <Table>
                     <Thead>
                       <Th width="5%">S.No</Th>
-                      <Th>Traveller Details</Th>
+                      <Th>Traveller</Th>
                       <Th>Pickup Info</Th>
-                      <Th>Transport</Th>
+                      <Th>Vehicle</Th>
                       <Th>Status</Th>
-                      <Th>Time</Th>
-                      <Th align="right">Actions</Th>
+
+                      <Th align="center">Actions</Th>
                     </Thead>
 
                     <Tbody>
@@ -252,7 +256,7 @@ const BookingIndexPage = () => {
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold mt-0.5">
                                   <FaUserCircle className="text-slate-400" />
-                                  {row.employee_id || "N/A"}
+                                  {row.employee_id || "--"}
                                 </div>
                               </div>
                             </div>
@@ -261,29 +265,29 @@ const BookingIndexPage = () => {
                           {/* Pickup Info */}
                           <Td>
                             <div className="flex flex-col">
-                                <span className="flex items-center gap-1.5 font-bold text-slate-700 text-sm">
-                                    <FaMapMarkerAlt className="text-red-400 text-xs" />
-                                    {row.pickup_location_name}
-                                </span>
-                                <span className="text-xs text-slate-500 pl-4 uppercase">
-                                    {row.pickup_location_city}
-                                </span>
+                              <span className="flex items-center gap-1.5 font-bold text-slate-700 text-sm">
+                                <FaMapMarkerAlt className="text-red-400 text-xs" />
+                                {row.pickup_location_name}
+                              </span>
+                              <span className="text-xs text-slate-500 pl-4 uppercase">
+                                {row.pickup_location_city}
+                              </span>
                             </div>
                           </Td>
 
                           {/* Transport (Org + Vehicle) */}
                           <Td>
                             <div className="flex flex-col gap-1">
-                                {row.organisation_name && (
-                                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium uppercase">
-                                        <FaBuilding className="text-slate-400" />
-                                        {row.organisation_name}
-                                    </div>
-                                )}
-                                <div className="flex items-center gap-1.5 text-xs text-indigo-700 font-bold uppercase bg-indigo-50 px-2 py-0.5 rounded w-fit">
-                                    <FaBus />
-                                    {row.assigned_vehicle || "Unassigned"}
+                              {row.organisation_name && (
+                                <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium uppercase">
+                                  <FaBuilding className="text-slate-400" />
+                                  {row.organisation_name}
                                 </div>
+                              )}
+                              <div className="flex items-center gap-1.5 text-xs text-indigo-700 font-bold uppercase bg-indigo-50 px-2 py-0.5 rounded w-fit">
+                                <FaBus />
+                                {row.assigned_vehicle || "Unassigned"}
+                              </div>
                             </div>
                           </Td>
 
@@ -294,22 +298,16 @@ const BookingIndexPage = () => {
                             </span>
                           </Td>
 
-                          {/* Time */}
-                          <Td>
-                             <div className="flex items-center gap-1.5 text-slate-700 text-sm font-mono font-medium">
-                                <FaRegCalendarAlt className="text-slate-400" />
-                                {row.pickup_time || "--:--"}
-                             </div>
-                          </Td>
+
 
                           {/* Actions */}
-                          <Td align="right">
+                          <Td align="center">
                             <Link
-                                to={`/bookings/show/${row.id}`}
-                                className="inline-flex p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
-                                title="View Booking"
+                              to={`/bookings/show/${row.id}`}
+                              className="inline-flex p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
+                              title="View Booking"
                             >
-                                <FaEye size={14} />
+                              <FaEye size={14} />
                             </Link>
                           </Td>
                         </Tr>
@@ -320,7 +318,7 @@ const BookingIndexPage = () => {
 
                 {/* Pagination (Conditionally Rendered) */}
                 {totalPages > 10 && (
-                  <Pagination 
+                  <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     totalItems={displayBookings.length}

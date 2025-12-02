@@ -120,7 +120,7 @@ const StaffIndexPage = () => {
   return (
     <div className="min-h-screen bg-white px-2">
       {/* Header */}
-      <div className="mx-2">
+      <div className="mx-4">
         <PageHeader
           title="Staff Management"
           buttonText="Add Staff"
@@ -140,7 +140,7 @@ const StaffIndexPage = () => {
               <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {/* 1. Search Input */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
@@ -206,7 +206,7 @@ const StaffIndexPage = () => {
 
             {/* Active Filters Display */}
             {(searchQuery || statusFilter || roleFilter) && (
-              <div className="flex items-center flex-wrap gap-2 pt-4 mt-2 border-t border-slate-50">
+              <div className="flex items-center flex-wrap gap-1 mt-3">
                 {searchQuery && (
                   <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
                     Search: {searchQuery}
@@ -214,12 +214,12 @@ const StaffIndexPage = () => {
                 )}
                 {statusFilter && (
                   <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold uppercase border border-green-200">
-                    Status: {statusFilter}
+                    {statusFilter}
                   </span>
                 )}
                 {roleFilter && (
                   <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold uppercase border border-purple-200">
-                    Role: {roleFilter}
+                    {roleFilter}
                   </span>
                 )}
                 <button
@@ -255,7 +255,8 @@ const StaffIndexPage = () => {
                       <Th>Designation</Th>
                       <Th>Roles</Th>
                       <Th>Status</Th>
-                      {can("edit users") && <Th align="right">Actions</Th>}
+                      {/* {can("edit users") && <Th align="right">Actions</Th>} */}
+                      <Th align="center">Actions</Th>
                     </Thead>
 
                     <Tbody>
@@ -335,17 +336,17 @@ const StaffIndexPage = () => {
                           </Td>
 
                           {/* Actions */}
-                          {can("edit users") && (
-                            <Td align="right">
-                              <Link
-                                to={`/staff/edit/${row.id}`}
-                                className="inline-flex p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
-                                title="Edit Staff"
-                              >
-                                <FaEdit size={14} />
-                              </Link>
-                            </Td>
-                          )}
+                          {/* {can("edit users") && ( */}
+                          <Td align="center">
+                            <Link
+                              to={`/staff/edit/${row.id}`}
+                              className="inline-flex p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
+                              title="Edit Staff"
+                            >
+                              <FaEdit size={14} />
+                            </Link>
+                          </Td>
+                          {/* )} */}
                         </Tr>
                       ))}
                     </Tbody>

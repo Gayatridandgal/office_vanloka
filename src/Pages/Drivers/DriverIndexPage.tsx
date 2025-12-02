@@ -3,18 +3,17 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // Icons
-import { 
-  FaSearch, 
-  FaFilter, 
-  FaEdit, 
-  FaTrash, 
-  FaEye, 
-  FaUserTie, 
-  FaPhoneAlt, 
-  FaMapMarkerAlt, 
-  FaCheckCircle
+import {
+  FaSearch,
+  FaFilter,
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaUserTie,
+  FaPhoneAlt,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
-import { MdEmail, MdVerified, MdClear } from "react-icons/md";
+import { MdEmail, MdClear } from "react-icons/md";
 
 // Components
 import PageHeader from "../../Components/UI/PageHeader";
@@ -144,8 +143,8 @@ const DriverIndexPage = () => {
   };
 
   const renderAvatar = (driver: Driver) => {
-    const imgSrc = driver.profile_photo 
-      ? `http://localhost/storage/${driver.profile_photo}` 
+    const imgSrc = driver.profile_photo
+      ? `http://localhost/storage/${driver.profile_photo}`
       : `https://ui-avatars.com/api/?name=${driver.first_name}+${driver.last_name}&background=random`;
 
     return (
@@ -160,7 +159,7 @@ const DriverIndexPage = () => {
 
   return (
     <div className="min-h-screen bg-white px-2">
-      <div className="mx-2">
+      <div className="mx-4">
         <PageHeader
           title="Driver Management"
           buttonText="Add Driver"
@@ -190,7 +189,7 @@ const DriverIndexPage = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Name, Phone, ID..."
+                    placeholder="Name, Phone"
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
@@ -225,7 +224,7 @@ const DriverIndexPage = () => {
                     <option value="">All</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
-                    <option value="suspended">Suspended</option>
+
                   </select>
                 </div>
               </div>
@@ -249,9 +248,14 @@ const DriverIndexPage = () => {
 
             {/* Active Filters */}
             {(searchQuery || selectedCity || selectedStatus || selectedEmployment) && (
-              <div className="flex items-center flex-wrap gap-2 pt-4 mt-2 border-t border-slate-50">
-                {selectedCity && <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">City: {selectedCity}</span>}
-                {selectedStatus && <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold uppercase border border-green-200">Status: {selectedStatus}</span>}
+              <div className="flex items-center flex-wrap gap-1 mt-2">
+                {searchQuery && (
+                  <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold uppercase border border-amber-200">
+                    {searchQuery}
+                  </span>
+                )}
+                {selectedCity && <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200"> {selectedCity}</span>}
+                {selectedStatus && <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold uppercase border border-green-200"> {selectedStatus}</span>}
                 <button
                   onClick={handleClearFilters}
                   className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
@@ -267,7 +271,7 @@ const DriverIndexPage = () => {
             {loading ? (
               <div className="py-20"><Loader /></div>
             ) : displayDrivers.length === 0 ? (
-              <EmptyState 
+              <EmptyState
                 title="No Drivers Found"
                 description="Try adjusting your filters or add a new driver."
                 icon={<FaUserTie className="text-slate-300 text-6xl mb-4" />}
@@ -281,8 +285,8 @@ const DriverIndexPage = () => {
                       <Th>Driver Profile</Th>
                       <Th>Contact</Th>
                       <Th>Location</Th>
-                    
-                      <Th>Verification</Th>
+
+
                       <Th>Status</Th>
                       <Th align="center">Actions</Th>
                     </Thead>
@@ -305,7 +309,7 @@ const DriverIndexPage = () => {
                                     {row.first_name} {row.last_name}
                                   </div>
                                   <div className="text-xs text-slate-500 font-semibold mt-0.5">
-                                    {row.employee_id || "N/A"}
+                                    {row.employee_id || ""}
                                   </div>
                                 </div>
                               </div>
@@ -333,21 +337,7 @@ const DriverIndexPage = () => {
                               <div className="text-xs text-slate-500">{row.state}</div>
                             </Td>
 
-                            {/* Verification Badges */}
-                            <Td>
-                              <div className="flex flex-wrap gap-1 w-32">
-                                {row.medical_fitness === "YES" && (
-                                  <span className="text-[10px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded flex items-center gap-1">
-                                    <FaCheckCircle size={8}/> Med
-                                  </span>
-                                )}
-                                {row.police_verification === "YES" && (
-                                  <span className="text-[10px] px-1.5 py-0.5 bg-violet-50 text-violet-700 border border-violet-100 rounded flex items-center gap-1">
-                                    <MdVerified size={10}/> Pol
-                                  </span>
-                                )}
-                              </div>
-                            </Td>
+
 
                             {/* Status */}
                             <Td>
@@ -379,7 +369,7 @@ const DriverIndexPage = () => {
 
                 {/* Pagination (Conditional) */}
                 {totalPages > 10 && (
-                  <Pagination 
+                  <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     totalItems={totalItems}

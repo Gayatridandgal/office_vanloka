@@ -53,7 +53,7 @@ const VehicleIndexPage = () => {
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
   const [displayVehicles, setDisplayVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
   // Filter Options State
   const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
@@ -72,7 +72,7 @@ const VehicleIndexPage = () => {
   const fetchVehicles = async () => {
     try {
       setLoading(true);
-      
+
       const response = await tenantApi.get<PaginatedResponse<Vehicle>>("/vehicles", {
         params: { page: currentPage, per_page: perPage },
       });
@@ -145,7 +145,7 @@ const VehicleIndexPage = () => {
   return (
     <div className="min-h-screen bg-white px-2">
       {/* Header */}
-      <div className="mx-2">
+      <div className="mx-4">
         <PageHeader
           title="Vehicle Management"
           buttonText="Add Vehicle"
@@ -165,7 +165,7 @@ const VehicleIndexPage = () => {
               <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {/* 1. Search Input */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
@@ -226,20 +226,20 @@ const VehicleIndexPage = () => {
 
             {/* Active Filters */}
             {(searchQuery || selectedVehicleType || selectedFuelType) && (
-              <div className="flex items-center flex-wrap gap-2 pt-4 mt-2 border-t border-slate-50">
+              <div className="flex items-center flex-wrap gap-1 mt-3">
                 {searchQuery && (
                   <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
-                    Search: {searchQuery}
+                    {searchQuery}
                   </span>
                 )}
                 {selectedVehicleType && (
                   <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold uppercase border border-purple-200">
-                    Type: {selectedVehicleType}
+                    {selectedVehicleType}
                   </span>
                 )}
                 {selectedFuelType && (
                   <span className="px-3 py-1 bg-orange-50 text-orange-700 rounded-lg text-xs font-bold uppercase border border-orange-200">
-                    Fuel: {selectedFuelType}
+                    {selectedFuelType}
                   </span>
                 )}
                 <button
@@ -259,8 +259,8 @@ const VehicleIndexPage = () => {
                 <Loader />
               </div>
             ) : displayVehicles.length === 0 ? (
-              <EmptyState 
-                title="No Vehicles Found" 
+              <EmptyState
+                title="No Vehicles Found"
                 description="Try adjusting filters or add a new vehicle."
                 icon={<MdDirectionsCar className="text-slate-300 text-6xl mb-4" />}
               />
@@ -274,7 +274,7 @@ const VehicleIndexPage = () => {
                       <Th>Details</Th>
                       <Th>Ownership</Th>
                       <Th>Status</Th>
-                      <Th align="right">Actions</Th>
+                      <Th align="center">Actions</Th>
                     </Thead>
 
                     <Tbody>
@@ -296,7 +296,7 @@ const VehicleIndexPage = () => {
                             <Td>
                               <div className="flex items-center gap-3">
                                 <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
-                                   <FaBusAlt size={16} />
+                                  <FaBusAlt size={16} />
                                 </div>
                                 <span className="font-bold text-slate-800 uppercase text-sm">
                                   {row.vehicle_number}
@@ -318,22 +318,22 @@ const VehicleIndexPage = () => {
 
                             {/* Ownership */}
                             <Td>
-                               <span className="text-sm text-slate-700 font-medium">
-                                  {row.ownership_type}
-                               </span>
+                              <span className="text-sm text-slate-700 font-medium">
+                                {row.ownership_type}
+                              </span>
                             </Td>
 
-                          
+
                             {/* Status */}
                             <Td>
-                               <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border ${statusStyles}`}>
-                                  {status}
-                               </span>
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border ${statusStyles}`}>
+                                {status}
+                              </span>
                             </Td>
 
                             {/* Actions */}
-                            <Td align="right">
-                              <div className="flex items-center justify-end gap-2">
+                            <Td>
+                              <div className="flex items-center justify-center gap-2">
                                 {row.gps_device && (
                                   <Link
                                     to={`/vehicles/track/${row.vehicle_number}`}
@@ -343,7 +343,7 @@ const VehicleIndexPage = () => {
                                     <FaMapMarkerAlt /> Track
                                   </Link>
                                 )}
-                                
+
                                 <Link
                                   to={`/vehicles/show/${row.id}`}
                                   className="p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
@@ -378,12 +378,12 @@ const VehicleIndexPage = () => {
 
                 {/* Pagination */}
                 {totalPages > 10 && (
-                  <Pagination 
-                     currentPage={currentPage}
-                     totalPages={totalPages}
-                     totalItems={allVehicles.length}
-                     onPageChange={setCurrentPage}
-                     itemName="Vehicles"
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={allVehicles.length}
+                    onPageChange={setCurrentPage}
+                    itemName="Vehicles"
                   />
                 )}
               </>

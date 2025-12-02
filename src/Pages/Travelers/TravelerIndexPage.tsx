@@ -3,14 +3,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // Icons
-import { 
-  FaSearch, 
-  FaFilter, 
-  FaEye, 
-  FaUserFriends, 
-  FaIdCard, 
+import {
+  FaSearch,
+  FaFilter,
+  FaEye,
+  FaUserFriends,
+  FaIdCard,
   FaBluetoothB,
-  FaVenusMars 
+  FaVenusMars
 } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
 
@@ -115,8 +115,8 @@ const TravelerIndexPage = () => {
 
   // Helper: Render Avatar
   const renderAvatar = (row: Traveller) => {
-    const imgSrc = row.profile_photo 
-      ? `http://localhost/storage/${row.profile_photo}` 
+    const imgSrc = row.profile_photo
+      ? `http://localhost/storage/${row.profile_photo}`
       : `https://ui-avatars.com/api/?name=${row.first_name}+${row.last_name}&background=random`;
 
     return (
@@ -134,7 +134,7 @@ const TravelerIndexPage = () => {
   return (
     <div className="min-h-screen bg-white px-2">
       {/* Header */}
-      <div className="mx-2">
+      <div className="mx-4">
         <PageHeader title="Traveller Management" />
       </div>
 
@@ -150,7 +150,7 @@ const TravelerIndexPage = () => {
               <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
@@ -191,12 +191,23 @@ const TravelerIndexPage = () => {
 
             {/* Active Filters */}
             {(searchQuery || genderFilter) && (
-              <div className="flex justify-end mt-4 pt-2 border-t border-slate-50">
+              <div className="flex items-center flex-wrap gap-1 mt-3">
+                {searchQuery && (
+                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
+                    {searchQuery}
+                  </span>
+                )}
+                {genderFilter && (
+                  <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold uppercase border border-purple-200">
+                    {genderFilter}
+                  </span>
+                )}
+
                 <button
                   onClick={handleClearFilters}
-                  className="text-xs font-bold text-red-600 flex items-center gap-1 hover:text-red-800 uppercase"
+                  className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
                 >
-                  <MdClear /> Clear Filters
+                  <MdClear /> Clear
                 </button>
               </div>
             )}
@@ -209,7 +220,7 @@ const TravelerIndexPage = () => {
                 <Loader />
               </div>
             ) : displayTravelers.length === 0 ? (
-              <EmptyState 
+              <EmptyState
                 title="No Travellers Found"
                 description="Try adjusting your search or filters."
                 icon={<FaUserFriends className="text-slate-300 text-6xl mb-4" />}
@@ -224,8 +235,8 @@ const TravelerIndexPage = () => {
                       <Th>UID</Th>
                       <Th>Beacon ID</Th>
                       <Th>Gender</Th>
-                      <Th>Aadhaar</Th>
-                      <Th align="right">Actions</Th>
+
+                      <Th align="center">Actions</Th>
                     </Thead>
 
                     <Tbody>
@@ -256,49 +267,45 @@ const TravelerIndexPage = () => {
                           {/* UID */}
                           <Td>
                             <div className="flex items-center gap-2">
-                                <FaIdCard className="text-slate-400" />
-                                <span className="font-mono text-sm text-slate-700 font-medium">
-                                    {row.traveller_uid || "—"}
-                                </span>
+                              <FaIdCard className="text-slate-400" />
+                              <span className="font-mono text-sm text-slate-700 font-medium">
+                                {row.traveller_uid || "—"}
+                              </span>
                             </div>
                           </Td>
 
                           {/* Beacon ID */}
                           <Td>
                             {row.beacon_id ? (
-                                <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                                    <FaBluetoothB size={10} />
-                                    <span className="text-xs font-bold font-mono">
-                                        {row.beacon_id}
-                                    </span>
-                                </div>
+                              <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                                <FaBluetoothB size={10} />
+                                <span className="text-xs font-bold font-mono">
+                                  {row.beacon_id}
+                                </span>
+                              </div>
                             ) : (
-                                <span className="text-slate-400 text-xs italic">Not Assigned</span>
+                              <span className="text-slate-400 text-xs italic">Not Assigned</span>
                             )}
                           </Td>
 
                           {/* Gender */}
                           <Td>
                             <span className="text-sm text-slate-700 capitalize">
-                                {row.gender || "—"}
+                              {row.gender || "—"}
                             </span>
                           </Td>
 
-                          {/* Aadhaar */}
-                          <Td isMono className="text-xs text-slate-600 font-semibold">
-                             {row.aadhaar_number || "—"}
-                          </Td>
 
                           {/* Actions */}
-                          <Td align="right">
-                            <div className="flex items-center justify-end gap-2">
-                                <Link
-                                    to={`/travellers/show/${row.id}`}
-                                    className="p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
-                                    title="View Details"
-                                >
-                                    <FaEye size={14} />
-                                </Link>
+                          <Td>
+                            <div className="flex items-center justify-center gap-2">
+                              <Link
+                                to={`/travellers/show/${row.id}`}
+                                className="p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
+                                title="View Details"
+                              >
+                                <FaEye size={14} />
+                              </Link>
                             </div>
                           </Td>
                         </Tr>
@@ -309,7 +316,7 @@ const TravelerIndexPage = () => {
 
                 {/* Pagination (Conditional) */}
                 {totalPages > 10 && (
-                  <Pagination 
+                  <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     totalItems={totalItems}

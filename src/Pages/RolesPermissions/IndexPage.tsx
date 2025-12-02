@@ -138,15 +138,24 @@ const IndexPage = () => {
                   placeholder="e.g. Manager, Admin..."
                   className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
                 />
-                {searchQuery && (
+              </div>
+              {/* Active Filters */}
+              {(searchQuery) && (
+                <div className="flex items-center flex-wrap gap-1 mt-3">
+                  {searchQuery && (
+                    <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
+                      {searchQuery}
+                    </span>
+                  )}
+
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-500"
+                    className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
                   >
-                    <MdClear size={16} />
+                    <MdClear /> Clear
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
