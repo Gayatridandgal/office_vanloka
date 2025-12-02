@@ -6,13 +6,13 @@ import type { LiveVehicle } from "../../Types/Index";
 
 interface GoogleMapProps {
   vehicles: LiveVehicle[];
-  selectedVehicleId: string | null;
-  onVehicleSelect: (vehicleId: string) => void;
+  selectedVehicleNumber: string | null;
+  onVehicleSelect: (vehicle_number: string) => void;
 }
 
 const GoogleMapDisplay: React.FC<GoogleMapProps> = ({
   vehicles,
-  selectedVehicleId,
+  selectedVehicleNumber,
   onVehicleSelect,
 }) => {
   const carIcon = {
@@ -54,21 +54,21 @@ const GoogleMapDisplay: React.FC<GoogleMapProps> = ({
     >
       {vehicles.map((vehicle) => (
         <MarkerF
-          key={vehicle.vehicleId}
+          key={vehicle.vehicle_number}
           position={vehicle.gps}
           icon={
-            vehicle.vehicleId === selectedVehicleId ? selectedIcon : defaultIcon
+            vehicle.vehicle_number === selectedVehicleNumber ? selectedIcon : defaultIcon
           }
           onClick={() => {
-            onVehicleSelect(vehicle.vehicleId);
+            onVehicleSelect(vehicle.vehicle_number);
           }}
         >
-          {/* {vehicle.vehicleId === selectedVehicleId && (
+          {/* {vehicle.vehicle_number === selectedVehicleNumber && (
             <InfoWindowF
             
               position={vehicle.gps}
               onCloseClick={() => {
-                onVehicleSelect(vehicle.vehicleId);
+                onVehicleSelect(vehicle.vehicle_number);
               }}
             >
               <div className="">

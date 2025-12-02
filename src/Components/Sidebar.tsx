@@ -234,7 +234,7 @@ const Sidebar = ({ isOpen, closeSidebar }: Props) => {
           }`}
       >
         {/* Logo Section */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100 bg-white">
+        <div className="h-16 flex items-center px-6 border-b border-slate-200 bg-slate-50">
           <div>
             <h3 className="text-xl font-extrabold uppercase tracking-wide text-purple-900 leading-none">
               Vanloka

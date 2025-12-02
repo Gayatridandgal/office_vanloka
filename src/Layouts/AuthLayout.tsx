@@ -86,7 +86,7 @@ const AuthLayout = () => {
               <Route path="vehicles/show/:id" element={<VehicleShowPage />} />
               <Route path="vehicles/create" element={<VehicleCreatePage />} />
               <Route path="vehicles/edit/:id" element={<VehicleEditPage />} />
-              <Route path="/vehicles/track/:id" element={<VehicleTrackPage />} />
+              <Route path="/vehicles/track/:vehicleNumber" element={<VehicleTrackPage />} />
 
               {/* Driver Pages */}
               <Route path="drivers" element={<DriverIndexPage />} />
