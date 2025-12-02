@@ -25,28 +25,8 @@ import {
 import { MdGpsFixed, MdSignalCellularAlt } from "react-icons/md";
 import { LuBus } from "react-icons/lu";
 import { Loader } from "../Components/UI/Loader";
+import type { LiveVehicle } from "../Types/Index";
 
-// Interface Definition
-export interface LiveVehicle {
-  vehicleId: string;
-  vehicleName: string;
-  registrationNumber?: string;
-  orgId: string;
-  gps: {
-    lat: number;
-    lng: number;
-    speed: number;
-    timestamp: string;
-  };
-  beacons: Array<{
-    id: string;
-    name: string;
-    type: string; // 'driver' | 'traveller'
-    lastSeen: string;
-    rssi?: number;
-  }>;
-  battery?: number;
-}
 
 const STORAGE_KEY = "dashboard_cooldown_timestamp";
 const COOLDOWN_DURATION = 300; // 5 Minutes
@@ -56,7 +36,7 @@ const DashBoardPage = () => {
 
   // State
   const [vehicles, setVehicles] = useState<LiveVehicle[]>([]);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [selectedVehicleNumber, setSelectedVehicleNumber] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasInitialFetch, setHasInitialFetch] = useState(false);
@@ -191,11 +171,11 @@ const DashBoardPage = () => {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const handleVehicleSelect = (vehicleId: string) => {
-    setSelectedVehicleId((prevId) => (prevId === vehicleId ? null : vehicleId));
+  const handleVehicleSelect = (vehicle_number: string) => {
+    setSelectedVehicleNumber((prevId) => (prevId === vehicle_number ? null : vehicle_number));
   };
 
-  const selectedVehicle = vehicles.find((v) => v.vehicleId === selectedVehicleId) || null;
+  const selectedVehicle = vehicles.find((v) => v.vehicle_number === selectedVehicleNumber) || null;
   const drivers = selectedVehicle?.beacons.filter(b => b.type.toLowerCase() === 'driver') || [];
   const passengers = selectedVehicle?.beacons.filter(b => b.type.toLowerCase() === 'traveller') || [];
 
@@ -288,13 +268,13 @@ const DashBoardPage = () => {
 
               {/* <GoogleMapDisplay
                 vehicles={vehicles}
-                selectedVehicleId={selectedVehicleId}
+                selectedVehicleNumber={selectedVehicleNumber}
                 onVehicleSelect={handleVehicleSelect}
               /> */}
               <LoadScript googleMapsApiKey={googleMapsApiKey}>
                 <GoogleMapDisplay
                   vehicles={vehicles}
-                  selectedVehicleId={selectedVehicleId}
+                  selectedVehicleNumber={selectedVehicleNumber}
                   onVehicleSelect={handleVehicleSelect}
                 />
               </LoadScript>
@@ -331,12 +311,12 @@ const DashBoardPage = () => {
                   {/* Header */}
                   <div className="bg-slate-50 p-4 border-b border-slate-200 flex items-center justify-between shrink-0">
                     <div>
-                      <h3 className="text-lg font-extrabold text-slate-800 uppercase">{selectedVehicle.vehicleName}</h3>
+                      <h3 className="text-lg font-extrabold text-slate-800 uppercase">{selectedVehicle.vehicle_name}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-slate-500 font-bold bg-white border border-slate-200 px-2 py-0.5 rounded">
-                          {selectedVehicle.registrationNumber || "NO REG"}
+                          {selectedVehicle.vehicle_number || "-"}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono">ID: {selectedVehicle.vehicleId}</span>
+
                       </div>
                     </div>
                     <div className="p-2 bg-blue-100 text-blue-600 rounded-full shadow-sm">
@@ -454,7 +434,7 @@ const DashBoardPage = () => {
                           </div>
                         ) : (
                           <div className="text-center p-6 bg-slate-50/50">
-                            <p className="text-xs text-slate-400 italic">No passengers onboard</p>
+                            <p className="text-xs text-slate-400 italic">No passengers onboarded</p>
                           </div>
                         )}
                       </div>

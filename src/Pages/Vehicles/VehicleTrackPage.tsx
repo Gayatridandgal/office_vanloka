@@ -30,7 +30,7 @@ const STORAGE_KEY = "vehicle_track_cooldown";
 const COOLDOWN_DURATION = 60; // 1 Minute
 
 const VehicleTrackPage = () => {
-    const { id } = useParams<{ id: string }>();
+    const { vehicleNumber } = useParams<{ vehicleNumber:any }>();
     const { tenantId } = useAuth();
 
     // State
@@ -90,14 +90,14 @@ const VehicleTrackPage = () => {
     };
 
     const fetchVehicleTracking = useCallback(async () => {
-        if (!tenantId || !id) return;
+        if (!tenantId || !vehicleNumber) return;
 
         setLoading(true);
         setError(null);
         setAddress("Updating address...");
 
         try {
-            const response = await tenantApi.get(`/vehicles/track/${id}/live/location/${tenantId}`);
+            const response = await tenantApi.get(`/vehicles/track/${vehicleNumber}/live/location/${tenantId}`);
 
             if (response.data.success && response.data.data) {
                 const data = response.data.data;
@@ -117,11 +117,11 @@ const VehicleTrackPage = () => {
             setLoading(false);
             setHasInitialFetch(true);
         }
-    }, [tenantId, id, googleMapsApiKey]);
+    }, [tenantId, vehicleNumber, googleMapsApiKey]);
 
     // --- 3. Lifecycle ---
     useEffect(() => {
-        if (!tenantId || !id) return;
+        if (!tenantId || !vehicleNumber) return;
 
         const initializePage = () => {
             const storedTimestamp = localStorage.getItem(STORAGE_KEY);
@@ -140,7 +140,7 @@ const VehicleTrackPage = () => {
                     // Silent fetch if we restored timer but have no data
                     if (!vehicle && !hasInitialFetch) {
                         setLoading(true);
-                        tenantApi.get(`/vehicles/track/${id}/live/location/${tenantId}`)
+                        tenantApi.get(`/vehicles/track/${vehicleNumber}/live/location/${tenantId}`)
                             .then(res => {
                                 if (res.data.success) {
                                     setVehicle(res.data.data);
@@ -165,7 +165,7 @@ const VehicleTrackPage = () => {
         initializePage();
 
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [tenantId, id]);
+    }, [tenantId, vehicleNumber]);
 
     // Prevent Refresh Warning
     useEffect(() => {
@@ -253,7 +253,7 @@ const VehicleTrackPage = () => {
                             <LoadScript googleMapsApiKey={googleMapsApiKey}>
                                 <GoogleMapDisplay
                                     vehicles={vehicle ? [vehicle] : []}
-                                    selectedVehicleId={vehicle?.vehicleId || null}
+                                    selectedVehicleNumber={vehicle?.vehicle_number || null}
                                     onVehicleSelect={() => { }}
                                 />
                             </LoadScript>
@@ -294,13 +294,12 @@ const VehicleTrackPage = () => {
                                                     <LuBus size={20} />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-lg font-extrabold text-slate-800 uppercase leading-none">{vehicle.vehicleName}</h3>
-                                                    <span className="text-[10px] text-slate-400 font-mono">ID: {vehicle.vehicleId}</span>
+                                                    <h3 className="text-lg font-extrabold text-slate-800 uppercase leading-none">{vehicle.vehicle_name}</h3>
                                                 </div>
                                             </div>
                                             <div className="text-right">
                                                 <span className="block text-xs font-bold text-slate-500 uppercase">Reg. Number</span>
-                                                <span className="block text-sm font-bold text-slate-800">{vehicle.registrationNumber || "N/A"}</span>
+                                                <span className="block text-sm font-bold text-slate-800">{vehicle.vehicle_number || "N/A"}</span>
                                             </div>
                                         </div>
                                         <div className="bg-white p-3 rounded-lg border border-slate-200 flex gap-2">
