@@ -15,7 +15,6 @@ import {
 import { MdGpsFixed, MdWarning } from "react-icons/md";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import tenantApi from "../../Services/ApiService";
-import useAsset from "../../Hooks/useAsset";
 import DetailItem from "../../Components/UI/DetailItem";
 import DocumentItem from "../../Components/UI/DocumentItem";
 import type { Vehicle } from "./Vehicle.types";

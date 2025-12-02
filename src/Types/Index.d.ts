@@ -94,9 +94,8 @@ export interface oldLiveVehicle {
 }
 
 export interface LiveVehicle {
-  vehicleId: string;
-  vehicleName: string;
-  registrationNumber?: string;
+  vehicle_name: string;
+  vehicle_number: string;
   orgId: string;
   gps: {
     lat: number;
@@ -108,6 +107,8 @@ export interface LiveVehicle {
     id: string;
     name: string;
     type: string;
+    mobile_number:string;
+    profile_photo:string;
     lastSeen: string;
     rssi?: number;
   }>;

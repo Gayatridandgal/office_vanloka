@@ -54,7 +54,7 @@ export interface Driver {
   license_insurance?: LicenseInsurance[];
 
   // Tracking & Assignment
-  beacon?: string;
+  beacon_id?: string;
   vehicle?: string;
 
   // Documents

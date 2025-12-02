@@ -25,21 +25,6 @@ import { useAlert } from "../../Context/AlertContext";
 import type { Vehicle } from "./Vehicle.types";
 import type { FormDropdown, GpsDevice } from "../../Types/Index";
 
-type FormInputs = Vehicle & {
-  insurance_doc?: FileList;
-  rc_book_doc?: FileList;
-  puc_doc?: FileList;
-  fitness_certificate?: FileList;
-  permit_copy?: FileList;
-  gps_installation_proof?: FileList;
-  vendor_pan?: FileList;
-  vendor_adhaar?: FileList;
-  vendor_bank_proof?: FileList;
-  vendor_contract_proof?: FileList;
-  vedor_company_registration_doc?: FileList;
-  saftey_certificate?: FileList;
-};
-
 const VehicleEditPage = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
@@ -51,7 +36,7 @@ const VehicleEditPage = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormInputs>();
+  } = useForm<Vehicle>();
 
   // State for dropdown data
   const [vehicleTypes, setVehicleTypes] = useState<FormDropdown[]>([]);
@@ -85,6 +70,8 @@ const VehicleEditPage = () => {
         const response = await tenantApi.get<{ success: boolean; data: Vehicle }>(
           `/vehicles/${id}`
         );
+
+        console.log(response);
 
         if (response.data.success) {
           const vehicle = response.data.data;
@@ -180,7 +167,7 @@ const VehicleEditPage = () => {
     fetchInitialData();
   }, [showAlert]);
 
-  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+  const onSubmit: SubmitHandler<Vehicle> = async (data) => {
     try {
       const formData = new FormData();
 
@@ -204,7 +191,7 @@ const VehicleEditPage = () => {
       ];
 
       basicFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
+        const value = data[field as keyof Vehicle];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(field, String(value));
         }
@@ -213,7 +200,7 @@ const VehicleEditPage = () => {
       // Tracking
       const trackingFields = ["gps_device", "gps_installation_date"];
       trackingFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
+        const value = data[field as keyof Vehicle];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(field, String(value));
         }
@@ -227,7 +214,7 @@ const VehicleEditPage = () => {
         "permit_expiry_date",
       ];
       permitFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
+        const value = data[field as keyof Vehicle];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(field, String(value));
         }
@@ -243,7 +230,7 @@ const VehicleEditPage = () => {
         "vendor_organization_name",
       ];
       ownershipFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
+        const value = data[field as keyof Vehicle];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(field, String(value));
         }
@@ -263,7 +250,7 @@ const VehicleEditPage = () => {
         "pollution_expiry_date",
       ];
       insuranceFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
+        const value = data[field as keyof Vehicle];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(field, String(value));
         }
@@ -277,7 +264,7 @@ const VehicleEditPage = () => {
         "battery_replacement_due_date",
       ];
       serviceFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
+        const value = data[field as keyof Vehicle];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(field, String(value));
         }
@@ -291,7 +278,7 @@ const VehicleEditPage = () => {
         "panic_button_installed",
       ];
       safetyFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
+        const value = data[field as keyof Vehicle];
         if (value !== undefined && value !== null && value !== "") {
           formData.append(field, String(value));
         }
@@ -302,7 +289,7 @@ const VehicleEditPage = () => {
       if (data.remarks) formData.append("vehicle_remarks", data.remarks);
 
       // File uploads - only append if new files are selected
-      const fileFields: Array<keyof FormInputs> = [
+      const fileFields: Array<keyof Vehicle> = [
         "insurance_doc",
         "rc_book_doc",
         "puc_doc",
@@ -523,7 +510,7 @@ const VehicleEditPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               <div>
-                <span className="text-sm uppercase font-semibold text-purple-950">Currently Assigned : <span className="text-sm uppercase text-green-700 font-semibold">{vehicleData?.gps_device}</span></span>
+                <span className="text-sm uppercase font-semibold text-purple-950">Assigned GPS <span className="text-sm uppercase text-green-700 font-semibold">{vehicleData?.gps_device}</span></span>
                 <SelectInputField
                 label=""
                 name="gps_device"

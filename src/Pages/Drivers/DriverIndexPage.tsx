@@ -12,7 +12,6 @@ import {
   FaUserTie, 
   FaPhoneAlt, 
   FaMapMarkerAlt, 
-  FaIdCard,
   FaCheckCircle
 } from "react-icons/fa";
 import { MdEmail, MdVerified, MdClear } from "react-icons/md";
@@ -47,26 +46,6 @@ const getStatusStyles = (status?: string) => {
     case "suspended": return "bg-red-50 text-red-700 border-red-200";
     default: return "bg-blue-50 text-blue-700 border-blue-200";
   }
-};
-
-const getLicenseInfo = (licenseInsurance?: any[]) => {
-  if (!licenseInsurance?.length) return null;
-  const license = licenseInsurance.find(item => item.type === 'license');
-  if (license?.exp_date) {
-    return new Date(license.exp_date).toLocaleDateString("en-IN");
-  }
-  return null;
-};
-
-const isLicenseExpiring = (licenseInsurance?: any[]) => {
-  if (!licenseInsurance?.length) return false;
-  const today = new Date();
-  const thirtyDays = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-  return licenseInsurance.some(item => {
-    if (!item.exp_date) return false;
-    const expiry = new Date(item.exp_date);
-    return expiry <= thirtyDays && expiry >= today;
-  });
 };
 
 const DriverIndexPage = () => {
@@ -302,16 +281,14 @@ const DriverIndexPage = () => {
                       <Th>Driver Profile</Th>
                       <Th>Contact</Th>
                       <Th>Location</Th>
-                      <Th>License Info</Th>
+                    
                       <Th>Verification</Th>
                       <Th>Status</Th>
-                      <Th align="right">Actions</Th>
+                      <Th align="center">Actions</Th>
                     </Thead>
 
                     <Tbody>
                       {displayDrivers.map((row, index) => {
-                        const expiryDate = getLicenseInfo(row.license_insurance);
-                        const isExpiring = isLicenseExpiring(row.license_insurance);
 
                         return (
                           <Tr key={row.id}>
@@ -356,18 +333,6 @@ const DriverIndexPage = () => {
                               <div className="text-xs text-slate-500">{row.state}</div>
                             </Td>
 
-                            {/* License */}
-                            <Td>
-                              {expiryDate ? (
-                                <div className={`inline-flex flex-col px-2 py-1 rounded border text-xs font-semibold
-                                  ${isExpiring ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
-                                  <div className="flex items-center gap-1">
-                                    <FaIdCard /> Exp: {expiryDate}
-                                  </div>
-                                </div>
-                              ) : <span className="text-slate-400">-</span>}
-                            </Td>
-
                             {/* Verification Badges */}
                             <Td>
                               <div className="flex flex-wrap gap-1 w-32">
@@ -392,8 +357,8 @@ const DriverIndexPage = () => {
                             </Td>
 
                             {/* Actions */}
-                            <Td align="right">
-                              <div className="flex items-center justify-end gap-2">
+                            <Td>
+                              <div className="flex items-center justify-center gap-2">
                                 <Link to={`/drivers/show/${row.id}`} className="p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm">
                                   <FaEye size={14} />
                                 </Link>

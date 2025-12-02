@@ -336,7 +336,7 @@ const VehicleIndexPage = () => {
                               <div className="flex items-center justify-end gap-2">
                                 {row.gps_device && (
                                   <Link
-                                    to={`/vehicles/track/${row.id}`}
+                                    to={`/vehicles/track/${row.vehicle_number}`}
                                     className="flex items-center gap-1 px-2 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg text-xs font-bold uppercase hover:bg-yellow-100 transition-colors mr-2"
                                     title="Track Vehicle"
                                   >
