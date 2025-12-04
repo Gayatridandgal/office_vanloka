@@ -469,7 +469,7 @@ const VehicleCreatePage = () => {
             </div>
 
             {/* Conditional Vendor Fields */}
-            {ownershipType === "contract" && (
+            {ownershipType === "Contract" && (
               <>
                 <h3 className="text-sm font-bold text-indigo-700 uppercase mt-6 mb-4 flex items-center gap-2">
                   <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>

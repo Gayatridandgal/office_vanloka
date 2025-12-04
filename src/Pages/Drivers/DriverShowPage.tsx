@@ -15,8 +15,7 @@ import {
 } from "react-icons/fa";
 import { MdWarning } from "react-icons/md";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import tenantApi from "../../Services/ApiService";
-import useAsset from "../../Hooks/useAsset";
+import tenantApi, { asset } from "../../Services/ApiService";
 import DetailItem from "../../Components/UI/DetailItem";
 import DocumentItem from "../../Components/UI/DocumentItem";
 import type { Driver } from "./Driver.types";
@@ -110,8 +109,6 @@ const DriverShowPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const asset = useAsset();
-
   useEffect(() => {
     fetchDriver();
   }, [id]);
@@ -162,7 +159,7 @@ const DriverShowPage = () => {
             <div className="flex items-start gap-4">
               {driver.profile_photo ? (
                 <img
-                  src={asset(driver.profile_photo) || ""}
+                  src={`${asset}${driver.profile_photo}`}
                   alt={`${driver.first_name} ${driver.last_name}`}
                   className="h-24 w-24 rounded-lg object-cover border-4 border-purple-200 shadow-md"
                   onError={(e) => {
@@ -280,14 +277,14 @@ const DriverShowPage = () => {
         </div>
 
         {/* Assignment Information */}
-        {(driver.beacon || driver.vehicle) && (
+        {(driver.beacon_id || driver.vehicle) && (
           <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <SectionHeader
               icon={<FaExclamationTriangle size={20} />}
               title="Tracking & Assignment"
             />
             <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 gap-6">
-              <DetailItem label="Beacon Assigned" value={driver.beacon} />
+              <DetailItem label="Beacon Assigned" value={driver.beacon_id} />
               <DetailItem label="Vehicle Assigned" value={driver.vehicle} />
             </div>
           </div>

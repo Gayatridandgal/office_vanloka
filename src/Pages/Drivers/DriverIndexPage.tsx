@@ -31,7 +31,7 @@ import {
 } from "../../Components/Table/Table";
 
 // Services & Utils
-import tenantApi from "../../Services/ApiService";
+import tenantApi, { asset } from "../../Services/ApiService";
 import type { Driver } from "./Driver.types";
 import type { PaginatedResponse } from "../../Types/Index";
 import { Loader } from "../../Components/UI/Loader";
@@ -77,6 +77,7 @@ const DriverIndexPage = () => {
         params: { page: currentPage, per_page: perPage },
       });
 
+      console.log(response.data.data);
       if (response.data.success && response.data.data) {
         const drivers = response.data.data.data || [];
         setAllDrivers(drivers);
@@ -144,7 +145,7 @@ const DriverIndexPage = () => {
 
   const renderAvatar = (driver: Driver) => {
     const imgSrc = driver.profile_photo
-      ? `http://localhost/storage/${driver.profile_photo}`
+      ? `${asset}${driver.profile_photo}`
       : `https://ui-avatars.com/api/?name=${driver.first_name}+${driver.last_name}&background=random`;
 
     return (
