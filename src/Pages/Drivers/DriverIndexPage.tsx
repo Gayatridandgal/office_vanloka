@@ -30,11 +30,10 @@ import {
   Td,
 } from "../../Components/Table/Table";
 
-// Services & Utils
-import tenantApi, { asset } from "../../Services/ApiService";
 import type { Driver } from "./Driver.types";
 import type { PaginatedResponse } from "../../Types/Index";
 import { Loader } from "../../Components/UI/Loader";
+import tenantApi, { tenantAsset } from "../../Services/ApiService";
 
 // --- Helpers ---
 
@@ -145,7 +144,7 @@ const DriverIndexPage = () => {
 
   const renderAvatar = (driver: Driver) => {
     const imgSrc = driver.profile_photo
-      ? `${asset}${driver.profile_photo}`
+      ? `${tenantAsset}${driver.profile_photo}`
       : `https://ui-avatars.com/api/?name=${driver.first_name}+${driver.last_name}&background=random`;
 
     return (

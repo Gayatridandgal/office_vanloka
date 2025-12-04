@@ -6,10 +6,10 @@ import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import SaveButton from "../../Components/Form/SaveButton";
 import FileInputField from "../../Components/Form/FileInputField";
 import { useAlert } from "../../Context/AlertContext";
-import tenantApi, { asset } from "../../Services/ApiService";
 import { Loader } from "../../Components/UI/Loader";
 import { useAuth } from "../../Context/AuthContext";
 import InputField from "../../Components/Form/InputField";
+import tenantApi, { tenantAsset } from "../../Services/ApiService";
 
 interface Role {
   id: number;
@@ -193,7 +193,7 @@ const StaffEditPage = () => {
         {currentPhoto && (
           <div className="mb-6 flex items-center">
             <img
-              src={`${asset}${currentPhoto}`}
+              src={`${tenantAsset}${currentPhoto}`}
 
               className="w-24 h-24 rounded-full object-cover border-4 border-purple-100"
             />

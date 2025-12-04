@@ -27,7 +27,7 @@ import {
 } from "../../Components/Table/Table";
 
 // Services & Utils
-import tenantApi, { asset } from "../../Services/ApiService";
+import tenantApi, { tenantAsset } from "../../Services/ApiService";
 import { useAlert } from "../../Context/AlertContext";
 import { useToolkit } from "../../Utils/Toolkit";
 import type { Staff } from "./Staff.types";
@@ -104,7 +104,7 @@ const StaffIndexPage = () => {
       return (
         <img
           className="h-10 w-10 rounded-full object-cover border border-slate-200"
-          src={`${asset}/${row.photo}`}
+          src={`${tenantAsset}${row.photo}`}
           alt={`${row.first_name}`}
         />
       );

@@ -1,4 +1,4 @@
-import { asset } from "../../Services/ApiService";
+import { tenantAsset } from "../../Services/ApiService";
 
 interface DocumentItemProps {
   label: string;
@@ -6,7 +6,7 @@ interface DocumentItemProps {
 }
 
 const DocumentItem = ({ label, path }: DocumentItemProps) => {
-  const fileUrl = `${asset}/${path}`;
+  const fileUrl = `${tenantAsset}${path}`;
 
   // Get file extension
   const getFileExtension = (filePath: string): string => {

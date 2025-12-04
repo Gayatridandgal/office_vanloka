@@ -15,12 +15,12 @@ import {
 } from "react-icons/fa";
 import { MdWarning } from "react-icons/md";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import tenantApi, { asset } from "../../Services/ApiService";
 import DetailItem from "../../Components/UI/DetailItem";
 import DocumentItem from "../../Components/UI/DocumentItem";
 import type { Driver } from "./Driver.types";
 import { SectionHeader } from "../../Components/UI/SectionHeader";
 import { Loader } from "../../Components/UI/Loader";
+import tenantApi, { tenantAsset } from "../../Services/ApiService";
 
 // Utility function for date formatting
 const formatDate = (dateString: string | null | undefined) => {
@@ -159,7 +159,7 @@ const DriverShowPage = () => {
             <div className="flex items-start gap-4">
               {driver.profile_photo ? (
                 <img
-                  src={`${asset}${driver.profile_photo}`}
+                  src={`${tenantAsset}${driver.profile_photo}`}
                   alt={`${driver.first_name} ${driver.last_name}`}
                   className="h-24 w-24 rounded-lg object-cover border-4 border-purple-200 shadow-md"
                   onError={(e) => {
