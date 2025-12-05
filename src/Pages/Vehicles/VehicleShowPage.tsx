@@ -110,7 +110,7 @@ const VehicleShowPage = () => {
     <div className="min-h-screen bg-white pb-12">
 
       {/* 1. Sticky Header */}
-      <div className="bg-white border-b border-slate-100 px-4 py-1 sticky top-0 z-20 shadow-sm">
+      <div className="bg-white px-4 py-1 sticky top-0 z-20 shadow-sm">
         <PageHeaderBack title="Back" buttonLink="/vehicles" />
       </div>
 
@@ -303,9 +303,9 @@ const VehicleShowPage = () => {
 
           {/* Documents - Takes 2 cols */}
           <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2 mb-4 pb-2">
               <FaFileAlt className="text-slate-400" />
-              <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Attached Documents</h3>
+              <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Documents</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -325,7 +325,7 @@ const VehicleShowPage = () => {
             {/* Empty State for Docs */}
             {!vehicle.insurance_doc && !vehicle.rc_book_doc && !vehicle.permit_copy && (
               <div className="text-center py-8">
-                <p className="text-xs font-bold text-slate-300 uppercase">No Documents Attached</p>
+                <p className="text-xs font-bold text-slate-300 uppercase">No Documents Found..</p>
               </div>
             )}
           </div>

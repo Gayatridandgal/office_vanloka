@@ -322,7 +322,7 @@ const VehicleEditPage = () => {
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-            
+
             {/* Header */}
             <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
               <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
@@ -336,26 +336,26 @@ const VehicleEditPage = () => {
             </div>
 
             <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
-              
+
               {/* 1. Basic Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaTruck className="text-slate-400" />
+                  <FaTruck className="text-blue-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <InputField label="Vehicle Number" name="vehicle_number" register={register} errors={errors} required="Required" />
                     <SelectInputField label="Vehicle Type" name="vehicle_type" register={register} errors={errors} options={vehicleTypes.map(d => ({ label: d.value, value: d.value }))} required />
-                    
+
                     <InputField label="RC Number" name="rc_number" register={register} errors={errors} required="Required" />
                     <InputField label="RC Issued Date" name="rc_isued_date" type="date" register={register} errors={errors} required="Required" />
                     <InputField label="RC Expiry Date" name="rc_expiry_date" type="date" register={register} errors={errors} required="Required" />
-                    
+
                     <InputField label="Manufacturer" name="manufacturer" register={register} errors={errors} required="Required" />
                     <InputField label="Vehicle Model" name="vehicle_model" register={register} errors={errors} />
                     <InputField label="Mfg Year" name="manufacturing_year" type="number" register={register} errors={errors} />
-                    
+
                     <SelectInputField label="Fuel Type" name="fuel_type" register={register} errors={errors} options={fuelTypes.map(d => ({ label: d.value, value: d.value }))} />
                     <InputField label="Seating Capacity" name="seating_capacity" type="number" register={register} errors={errors} />
                     <InputField label="Color" name="vehicle_color" register={register} errors={errors} />
@@ -368,18 +368,18 @@ const VehicleEditPage = () => {
               {/* 2. Device Assignment */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <MdGpsFixed className="text-slate-400" />
+                  <MdGpsFixed className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Device Assignment</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                     <div>
-                        {vehicleData?.gps_device && (
-                            <div className="mb-2 text-xs font-semibold text-purple-900 bg-purple-100 px-3 py-1 rounded inline-block">
-                                Currently Assigned: {vehicleData.gps_device}
-                            </div>
-                        )}
-                        <SelectInputField label="Change GPS Device" name="gps_device" register={register} errors={errors} options={gps.map(d => ({ label: `${d.device_id} (${d.imei_number})`, value: d.imei_number }))} />
+                      {vehicleData?.gps_device && (
+                        <div className="mb-2 text-xs font-semibold text-purple-900 bg-purple-100 px-3 py-1 rounded inline-block">
+                          Currently Assigned: {vehicleData.gps_device}
+                        </div>
+                      )}
+                      <SelectInputField label="Change GPS Device" name="gps_device" register={register} errors={errors} options={gps.map(d => ({ label: `${d.device_id} (${d.imei_number})`, value: d.imei_number }))} />
                     </div>
                     <InputField label="Installation Date" name="gps_installation_date" type="date" register={register} errors={errors} />
                   </div>
@@ -389,26 +389,26 @@ const VehicleEditPage = () => {
               {/* 3. Ownership */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaUserTie className="text-slate-400" />
+                  <FaUserTie className="text-indigo-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Ownership Details</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     <SelectInputField label="Ownership Type" name="ownership_type" register={register} errors={errors} options={ownershipTypes.map(d => ({ label: d.value, value: d.value }))} />
                   </div>
 
                   {(ownershipType === "Contract" || ownershipType === "contract") && (
                     <div className="mt-6 border-t border-slate-200 pt-6">
-                        <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
-                           <FaCircle size={8} /> Vendor Information
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                           <InputField label="Vendor Name" name="vendor_name" register={register} errors={errors} />
-                           <InputField label="Organization Name" name="vendor_organization_name" register={register} errors={errors} />
-                           <InputField label="Aadhaar Number" name="vendor_aadhar_number" register={register} errors={errors} />
-                           <InputField label="PAN Number" name="vendor_pan_number" register={register} errors={errors} />
-                           <InputField label="Contact Number" name="vendor_contact_number" register={register} errors={errors} />
-                        </div>
+                      <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
+                        <FaCircle size={8} /> Vendor Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InputField label="Vendor Name" name="vendor_name" register={register} errors={errors} />
+                        <InputField label="Organization Name" name="vendor_organization_name" register={register} errors={errors} />
+                        <InputField label="Aadhaar Number" name="vendor_aadhar_number" register={register} errors={errors} />
+                        <InputField label="PAN Number" name="vendor_pan_number" register={register} errors={errors} />
+                        <InputField label="Contact Number" name="vendor_contact_number" register={register} errors={errors} />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -417,57 +417,52 @@ const VehicleEditPage = () => {
               {/* 4. Permits & Compliance */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaClipboardCheck className="text-slate-400" />
+                  <FaClipboardCheck className="text-blue-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Permits & Compliance</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100 space-y-6">
-                  
+
                   {/* Permit */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <SelectInputField label="Permit Type" name="permit_type" register={register} errors={errors} options={permitTypes.map(d => ({ label: d.value, value: d.value }))} />
                     <InputField label="Permit Number" name="permit_number" register={register} errors={errors} />
                     <InputField label="Issue Date" name="permit_issue_date" type="date" register={register} errors={errors} />
                     <InputField label="Expiry Date" name="permit_expiry_date" type="date" register={register} errors={errors} />
                   </div>
 
-                  <div className="border-t border-slate-200"></div>
 
                   {/* Insurance */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <InputField label="Insurance Provider" name="insurance_provider_name" register={register} errors={errors} />
                     <InputField label="Policy Number" name="insurance_policy_number" register={register} errors={errors} />
                     <InputField label="Ins. Issue Date" name="insurance_issued_date" type="date" register={register} errors={errors} />
                     <InputField label="Ins. Expiry Date" name="insurance_expiry_date" type="date" register={register} errors={errors} />
                   </div>
 
-                  <div className="border-t border-slate-200"></div>
-
-                   {/* Fitness & PUC */}
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Fitness & PUC */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">                    
                       <InputField label="Fitness Cert No." name="fitness_certificate_number" register={register} errors={errors} />
-                      <div className="grid grid-cols-2 gap-2">
-                         <InputField label="Fit. Issued" name="fitness_issued_date" type="date" register={register} errors={errors} />
-                         <InputField label="Fit. Expiry" name="fitness_expiry_date" type="date" register={register} errors={errors} />
-                      </div>
-                      
-                      <InputField label="PUC Number" name="pollution_certificate_number" register={register} errors={errors} />
-                      <div className="grid grid-cols-2 gap-2">
-                         <InputField label="PUC Issued" name="pollution_issued_date" type="date" register={register} errors={errors} />
-                         <InputField label="PUC Expiry" name="pollution_expiry_date" type="date" register={register} errors={errors} />
-                      </div>
-                      <InputField label="Tax Renewal Date" name="tax_renewable_date" type="date" register={register} errors={errors} />
-                   </div>
+                      <InputField label="Fit. Issued" name="fitness_issued_date" type="date" register={register} errors={errors} />
+                      <InputField label="Fit. Expiry" name="fitness_expiry_date" type="date" register={register} errors={errors} />                 
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2">
+                    <InputField label="PUC Number" name="pollution_certificate_number" register={register} errors={errors} />
+                    <InputField label="PUC Issued" name="pollution_issued_date" type="date" register={register} errors={errors} />
+                    <InputField label="PUC Expiry" name="pollution_expiry_date" type="date" register={register} errors={errors} />
+                    <InputField label="Tax Renewal Date" name="tax_renewable_date" type="date" register={register} errors={errors} />
+                  </div>
                 </div>
               </div>
 
               {/* 5. Service & Maintenance */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaCog className="text-slate-400" />
+                  <FaCog className="text-yellow-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Service & Maintenance</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <InputField label="Last Service Date" name="last_service_date" type="date" register={register} errors={errors} />
                     <InputField label="Next Service Due" name="next_service_due_date" type="date" register={register} errors={errors} />
                     <InputField label="Tyre Replacement Due" name="tyre_replacement_due_date" type="date" register={register} errors={errors} />
@@ -479,11 +474,11 @@ const VehicleEditPage = () => {
               {/* 6. Safety Features */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaShieldAlt className="text-slate-400" />
+                  <FaShieldAlt className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Safety Features</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <SelectInputField label="Fire Extinguisher" name="fire_extinguisher" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
                     <SelectInputField label="First Aid Kit" name="first_aid_kit" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
                     <SelectInputField label="CCTV Installed" name="cctv_installed" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
@@ -495,71 +490,71 @@ const VehicleEditPage = () => {
               {/* 7. Documents */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaFileAlt className="text-slate-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Documents (Optional Update)</h3>
+                  <FaFileAlt className="text-green-600" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Documents</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <p className="text-xs text-slate-500 mb-4 italic">Leave fields empty to keep existing documents.</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <FileInputField label="Insurance Document" name="insurance_doc" register={register} errors={errors} />
-                        <FileStatus hasFile={vehicleData?.insurance_doc} />
+                      <FileInputField label="Insurance Document" name="insurance_doc" register={register} errors={errors} />
+                      <FileStatus hasFile={vehicleData?.insurance_doc} />
                     </div>
                     <div>
-                        <FileInputField label="RC Book" name="rc_book_doc" register={register} errors={errors} />
-                        <FileStatus hasFile={vehicleData?.rc_book_doc} />
+                      <FileInputField label="RC Book" name="rc_book_doc" register={register} errors={errors} />
+                      <FileStatus hasFile={vehicleData?.rc_book_doc} />
                     </div>
                     <div>
-                        <FileInputField label="PUC Document" name="puc_doc" register={register} errors={errors} />
-                        <FileStatus hasFile={vehicleData?.puc_doc} />
+                      <FileInputField label="PUC Document" name="puc_doc" register={register} errors={errors} />
+                      <FileStatus hasFile={vehicleData?.puc_doc} />
                     </div>
                     <div>
-                        <FileInputField label="Fitness Certificate" name="fitness_certificate" register={register} errors={errors} />
-                        <FileStatus hasFile={vehicleData?.fitness_certificate} />
+                      <FileInputField label="Fitness Certificate" name="fitness_certificate" register={register} errors={errors} />
+                      <FileStatus hasFile={vehicleData?.fitness_certificate} />
                     </div>
                     <div>
-                        <FileInputField label="Permit Copy" name="permit_copy" register={register} errors={errors} />
-                        <FileStatus hasFile={vehicleData?.permit_copy} />
+                      <FileInputField label="Permit Copy" name="permit_copy" register={register} errors={errors} />
+                      <FileStatus hasFile={vehicleData?.permit_copy} />
                     </div>
                     <div>
-                        <FileInputField label="Safety Certificate" name="saftey_certificate" register={register} errors={errors} />
-                        <FileStatus hasFile={vehicleData?.saftey_certificate} />
+                      <FileInputField label="Safety Certificate" name="saftey_certificate" register={register} errors={errors} />
+                      <FileStatus hasFile={vehicleData?.saftey_certificate} />
                     </div>
                     <div>
-                        <FileInputField label="GPS Install Proof" name="gps_installation_proof" register={register} errors={errors} />
-                        <FileStatus hasFile={vehicleData?.gps_installation_proof} />
+                      <FileInputField label="GPS Install Proof" name="gps_installation_proof" register={register} errors={errors} />
+                      <FileStatus hasFile={vehicleData?.gps_installation_proof} />
                     </div>
                   </div>
 
                   {(ownershipType === "Contract" || ownershipType === "contract") && (
-                     <div className="mt-6 border-t border-slate-200 pt-6">
-                        <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
-                           <FaCircle size={8} /> Vendor Documents
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <FileInputField label="Vendor PAN" name="vendor_pan" register={register} errors={errors} />
-                                <FileStatus hasFile={vehicleData?.vendor_pan} />
-                            </div>
-                            <div>
-                                <FileInputField label="Vendor Aadhaar" name="vendor_adhaar" register={register} errors={errors} />
-                                <FileStatus hasFile={vehicleData?.vendor_adhaar} />
-                            </div>
-                            <div>
-                                <FileInputField label="Bank Proof" name="vendor_bank_proof" register={register} errors={errors} />
-                                <FileStatus hasFile={vehicleData?.vendor_bank_proof} />
-                            </div>
-                            <div>
-                                <FileInputField label="Contract Agreement" name="vendor_contract_proof" register={register} errors={errors} />
-                                <FileStatus hasFile={vehicleData?.vendor_contract_proof} />
-                            </div>
-                            <div>
-                                <FileInputField label="Company Reg. Doc" name="vedor_company_registration_doc" register={register} errors={errors} />
-                                <FileStatus hasFile={vehicleData?.vedor_company_registration_doc} />
-                            </div>
+                    <div className="mt-6 border-t border-slate-200 pt-6">
+                      <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
+                        <FaCircle size={8} /> Vendor Documents
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                          <FileInputField label="Vendor PAN" name="vendor_pan" register={register} errors={errors} />
+                          <FileStatus hasFile={vehicleData?.vendor_pan} />
                         </div>
-                     </div>
+                        <div>
+                          <FileInputField label="Vendor Aadhaar" name="vendor_adhaar" register={register} errors={errors} />
+                          <FileStatus hasFile={vehicleData?.vendor_adhaar} />
+                        </div>
+                        <div>
+                          <FileInputField label="Bank Proof" name="vendor_bank_proof" register={register} errors={errors} />
+                          <FileStatus hasFile={vehicleData?.vendor_bank_proof} />
+                        </div>
+                        <div>
+                          <FileInputField label="Contract Agreement" name="vendor_contract_proof" register={register} errors={errors} />
+                          <FileStatus hasFile={vehicleData?.vendor_contract_proof} />
+                        </div>
+                        <div>
+                          <FileInputField label="Company Reg. Doc" name="vedor_company_registration_doc" register={register} errors={errors} />
+                          <FileStatus hasFile={vehicleData?.vedor_company_registration_doc} />
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -567,7 +562,7 @@ const VehicleEditPage = () => {
               {/* 8. Remarks & Status */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaStickyNote className="text-slate-400" />
+                  <FaStickyNote className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Status & Remarks</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -587,7 +582,6 @@ const VehicleEditPage = () => {
               </div>
 
             </div>
-
             {/* Footer */}
             <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row justify-start items-center gap-4">
               <CancelButton label="Cancel" onClick={() => navigate("/vehicles")} />

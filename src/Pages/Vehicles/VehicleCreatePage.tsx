@@ -253,10 +253,10 @@ const VehicleCreatePage = () => {
       {/* 2. Main Container */}
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          
+
           {/* 3. The Form Card */}
           <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-            
+
             {/* Card Header */}
             <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
               <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
@@ -264,7 +264,7 @@ const VehicleCreatePage = () => {
               </div>
               <div>
                 <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-wide">
-                  Vehicle Registration
+                  Add Vehicle Details
                 </h2>
               </div>
             </div>
@@ -275,22 +275,22 @@ const VehicleCreatePage = () => {
               {/* SECTION: Basic Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaTruck className="text-slate-400" />
+                  <FaTruck className="text-blue-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <InputField label="Vehicle Number" name="vehicle_number" register={register} errors={errors} required="Required" />
                     <SelectInputField label="Vehicle Type" name="vehicle_type" register={register} errors={errors} options={vehicleTypes.map(d => ({ label: d.value, value: d.value }))} required />
-                    
+
                     <InputField label="RC Number" name="rc_number" register={register} errors={errors} required="Required" />
                     <InputField label="RC Issued Date" name="rc_isued_date" type="date" register={register} errors={errors} required="Required" />
                     <InputField label="RC Expiry Date" name="rc_expiry_date" type="date" register={register} errors={errors} required="Required" />
-                    
+
                     <InputField label="Manufacturer" name="manufacturer" register={register} errors={errors} required="Required" />
                     <InputField label="Vehicle Model" name="vehicle_model" register={register} errors={errors} />
                     <InputField label="Mfg Year" name="manufacturing_year" type="number" register={register} errors={errors} />
-                    
+
                     <SelectInputField label="Fuel Type" name="fuel_type" register={register} errors={errors} options={fuelTypes.map(d => ({ label: d.value, value: d.value }))} />
                     <InputField label="Seating Capacity" name="seating_capacity" type="number" register={register} errors={errors} />
                     <InputField label="Color" name="vehicle_color" register={register} errors={errors} />
@@ -303,11 +303,11 @@ const VehicleCreatePage = () => {
               {/* SECTION: Device Assignment */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <MdGpsFixed className="text-slate-400" />
+                  <MdGpsFixed className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Device Assignment</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <SelectInputField label="GPS Device" name="gps_device" register={register} errors={errors} options={gps.map(d => ({ label: `${d.device_id} (${d.imei_number})`, value: d.imei_number }))} />
                     <InputField label="Installation Date" name="gps_installation_date" type="date" register={register} errors={errors} />
                   </div>
@@ -317,27 +317,27 @@ const VehicleCreatePage = () => {
               {/* SECTION: Ownership */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaUserTie className="text-slate-400" />
+                  <FaUserTie className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Ownership Details</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     <SelectInputField label="Ownership Type" name="ownership_type" register={register} errors={errors} options={ownershipTypes.map(d => ({ label: d.value, value: d.value }))} />
                   </div>
 
                   {/* Conditional Vendor Fields */}
                   {(ownershipType === "Contract" || ownershipType === "contract") && (
                     <div className="mt-6 border-t border-slate-200 pt-6">
-                       <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
-                         <FaCircle size={8} /> Vendor Information
-                       </h4>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <InputField label="Vendor Name" name="vendor_name" register={register} errors={errors} />
-                         <InputField label="Organization Name" name="vendor_organization_name" register={register} errors={errors} />
-                         <InputField label="Aadhaar Number" name="vendor_aadhar_number" register={register} errors={errors} />
-                         <InputField label="PAN Number" name="vendor_pan_number" register={register} errors={errors} />
-                         <InputField label="Contact Number" name="vendor_contact_number" register={register} errors={errors} />
-                       </div>
+                      <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
+                        <FaCircle size={8} /> Vendor Information
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <InputField label="Vendor Name" name="vendor_name" register={register} errors={errors} />
+                        <InputField label="Organization Name" name="vendor_organization_name" register={register} errors={errors} />
+                        <InputField label="Aadhaar Number" name="vendor_aadhar_number" register={register} errors={errors} />
+                        <InputField label="PAN Number" name="vendor_pan_number" register={register} errors={errors} />
+                        <InputField label="Contact Number" name="vendor_contact_number" register={register} errors={errors} />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -346,57 +346,51 @@ const VehicleCreatePage = () => {
               {/* SECTION: Permits & Compliance */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaClipboardCheck className="text-slate-400" />
+                  <FaClipboardCheck className="text-purple-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Permits & Compliance</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100 space-y-6">
-                  
+
                   {/* Permit */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <SelectInputField label="Permit Type" name="permit_type" register={register} errors={errors} options={permitTypes.map(d => ({ label: d.value, value: d.value }))} />
                     <InputField label="Permit Number" name="permit_number" register={register} errors={errors} />
                     <InputField label="Issue Date" name="permit_issue_date" type="date" register={register} errors={errors} />
                     <InputField label="Expiry Date" name="permit_expiry_date" type="date" register={register} errors={errors} />
                   </div>
 
-                  <div className="border-t border-slate-200"></div>
 
                   {/* Insurance */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <InputField label="Insurance Provider" name="insurance_provider_name" register={register} errors={errors} />
                     <InputField label="Policy Number" name="insurance_policy_number" register={register} errors={errors} />
                     <InputField label="Ins. Issue Date" name="insurance_issued_date" type="date" register={register} errors={errors} />
                     <InputField label="Ins. Expiry Date" name="insurance_expiry_date" type="date" register={register} errors={errors} />
                   </div>
 
-                   <div className="border-t border-slate-200"></div>
+                  {/* Fitness & PUC */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <InputField label="Fitness Cert No." name="fitness_certificate_number" register={register} errors={errors} />
+                    <InputField label="Fit. Issued" name="fitness_issued_date" type="date" register={register} errors={errors} />
+                    <InputField label="Fit. Expiry" name="fitness_expiry_date" type="date" register={register} errors={errors} />
+                  </div>
 
-                   {/* Fitness & PUC */}
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <InputField label="Fitness Cert No." name="fitness_certificate_number" register={register} errors={errors} />
-                      <div className="grid grid-cols-2 gap-2">
-                         <InputField label="Fit. Issued" name="fitness_issued_date" type="date" register={register} errors={errors} />
-                         <InputField label="Fit. Expiry" name="fitness_expiry_date" type="date" register={register} errors={errors} />
-                      </div>
-                      
-                      <InputField label="PUC Number" name="pollution_certificate_number" register={register} errors={errors} />
-                      <div className="grid grid-cols-2 gap-2">
-                         <InputField label="PUC Issued" name="pollution_issued_date" type="date" register={register} errors={errors} />
-                         <InputField label="PUC Expiry" name="pollution_expiry_date" type="date" register={register} errors={errors} />
-                      </div>
-                      <InputField label="Tax Renewal Date" name="tax_renewable_date" type="date" register={register} errors={errors} />
-                   </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <InputField label="PUC Number" name="pollution_certificate_number" register={register} errors={errors} />
+                    <InputField label="PUC Issued" name="pollution_issued_date" type="date" register={register} errors={errors} />
+                    <InputField label="PUC Expiry" name="pollution_expiry_date" type="date" register={register} errors={errors} />
+                  </div>
                 </div>
               </div>
 
               {/* SECTION: Service & Maintenance */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaCog className="text-slate-400" />
+                  <FaCog className="text-indigo-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Service & Maintenance</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <InputField label="Last Service Date" name="last_service_date" type="date" register={register} errors={errors} />
                     <InputField label="Next Service Due" name="next_service_due_date" type="date" register={register} errors={errors} />
                     <InputField label="Tyre Replacement Due" name="tyre_replacement_due_date" type="date" register={register} errors={errors} />
@@ -408,11 +402,11 @@ const VehicleCreatePage = () => {
               {/* SECTION: Safety Features */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaShieldAlt className="text-slate-400" />
+                  <FaShieldAlt className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Safety Features</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <SelectInputField label="Fire Extinguisher" name="fire_extinguisher" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
                     <SelectInputField label="First Aid Kit" name="first_aid_kit" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
                     <SelectInputField label="CCTV Installed" name="cctv_installed" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
@@ -424,11 +418,11 @@ const VehicleCreatePage = () => {
               {/* SECTION: Documents */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaFileAlt className="text-slate-400" />
+                  <FaFileAlt className="text-green-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Required Documents</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FileInputField label="Insurance Document" name="insurance_doc" register={register} errors={errors} required="Required" />
                     <FileInputField label="RC Book" name="rc_book_doc" register={register} errors={errors} required="Required" />
                     <FileInputField label="PUC Document" name="puc_doc" register={register} errors={errors} />
@@ -438,19 +432,19 @@ const VehicleCreatePage = () => {
                     <FileInputField label="GPS Install Proof" name="gps_installation_proof" register={register} errors={errors} />
                   </div>
 
-                  {(ownershipType === "Contract" || ownershipType === "contract") && (
-                     <div className="mt-6 border-t border-slate-200 pt-6">
-                        <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
-                           <FaCircle size={8} /> Vendor Documents
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                           <FileInputField label="Vendor PAN" name="vendor_pan" register={register} errors={errors} />
-                           <FileInputField label="Vendor Aadhaar" name="vendor_adhaar" register={register} errors={errors} />
-                           <FileInputField label="Bank Proof" name="vendor_bank_proof" register={register} errors={errors} />
-                           <FileInputField label="Contract Agreement" name="vendor_contract_proof" register={register} errors={errors} />
-                           <FileInputField label="Company Reg. Doc" name="vedor_company_registration_doc" register={register} errors={errors} />
-                        </div>
-                     </div>
+                  {(ownershipType === "Contract") && (
+                    <div className="mt-6 border-t border-slate-200 pt-6">
+                      <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
+                        <FaCircle size={8} /> Vendor Documents
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <FileInputField label="Vendor PAN" name="vendor_pan" register={register} errors={errors} />
+                        <FileInputField label="Vendor Aadhaar" name="vendor_adhaar" register={register} errors={errors} />
+                        <FileInputField label="Bank Proof" name="vendor_bank_proof" register={register} errors={errors} />
+                        <FileInputField label="Contract Agreement" name="vendor_contract_proof" register={register} errors={errors} />
+                        <FileInputField label="Company Reg. Doc" name="vedor_company_registration_doc" register={register} errors={errors} />
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -458,7 +452,7 @@ const VehicleCreatePage = () => {
               {/* SECTION: Remarks & Status */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaStickyNote className="text-slate-400" />
+                  <FaStickyNote className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Status & Remarks</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
