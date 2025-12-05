@@ -2,13 +2,30 @@
 import { useState, useEffect } from "react";
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
+
+// Icons
+import {
+  FaUserEdit,
+  FaIdCard,
+  FaMapMarkerAlt,
+  FaShieldAlt,
+  FaCamera,
+  FaCheck,
+  FaUserCircle
+} from "react-icons/fa";
+
+// Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import SaveButton from "../../Components/Form/SaveButton";
-import FileInputField from "../../Components/Form/FileInputField";
-import { useAlert } from "../../Context/AlertContext";
-import { Loader } from "../../Components/UI/Loader";
-import { useAuth } from "../../Context/AuthContext";
+import CancelButton from "../../Components/Form/CancelButton";
 import InputField from "../../Components/Form/InputField";
+import SelectInputField from "../../Components/Form/SelectInputField";
+import FileInputField from "../../Components/Form/FileInputField";
+import LoadingSpinner from "../../Components/UI/LoadingSpinner";
+
+// Services & Context
+import { useAlert } from "../../Context/AlertContext";
+import { useAuth } from "../../Context/AuthContext";
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
 
 interface Role {
@@ -35,20 +52,19 @@ const StaffEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  const [allRoles, setAllRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [currentPhoto, setCurrentPhoto] = useState<string | null>(null);
-  const [fullName, setFullName] = useState<string>("");
   const { refreshMe } = useAuth();
 
+  const [allRoles, setAllRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPhoto, setCurrentPhoto] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string>("");
 
   const {
     register,
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<StaffFormData>({
     defaultValues: {
       status: "Active",
@@ -63,19 +79,19 @@ const StaffEditPage = () => {
       try {
         setLoading(true);
 
-        // Fetch roles
-        const rolesResponse = await tenantApi.get("/roles");
+        // Fetch roles & employee in parallel
+        const [rolesResponse, employeeResponse] = await Promise.all([
+          tenantApi.get("/roles"),
+          tenantApi.get(`/employees/${id}`)
+        ]);
+
         setAllRoles(rolesResponse.data.data || []);
 
-        // Fetch employee data
-        const employeeResponse = await tenantApi.get(`/employees/${id}`);
         const employee = employeeResponse.data;
-
-        // Set current photo
         setCurrentPhoto(employee.photo);
         setFullName(`${employee.first_name} ${employee.last_name}`);
 
-        // Populate form with employee data
+        // Populate form
         reset({
           employee_id: employee.employee_id,
           first_name: employee.first_name,
@@ -91,10 +107,8 @@ const StaffEditPage = () => {
         });
       } catch (err: any) {
         console.error("Error fetching data:", err);
-        showAlert(
-          err.response?.data?.message || "Failed to load employee data.",
-          "error"
-        );
+        showAlert(err.response?.data?.message || "Failed to load employee data.", "error");
+        navigate("/staff");
       } finally {
         setLoading(false);
       }
@@ -103,7 +117,7 @@ const StaffEditPage = () => {
     if (id) {
       fetchData();
     }
-  }, [id, reset, showAlert]);
+  }, [id, reset, showAlert, navigate]);
 
   const onSubmit: SubmitHandler<StaffFormData> = async (data) => {
     if (data.roles.length === 0) {
@@ -111,10 +125,7 @@ const StaffEditPage = () => {
       return;
     }
 
-    setSubmitting(true);
-
     try {
-      // Create FormData for file upload
       const formData = new FormData();
 
       // Add text fields
@@ -142,242 +153,228 @@ const StaffEditPage = () => {
       // Add method spoofing for Laravel PUT
       formData.append("_method", "PUT");
 
-      console.log("📤 Updating staff with FormData");
-
       const response = await tenantApi.post(`/employees/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("✅ Update response:", response.data);
-
-      showAlert(
-        response.data.message || "Staff member updated successfully!",
-        "success"
-      );
+      showAlert(response.data.message || "Staff member updated successfully!", "success");
       await refreshMe();
       navigate("/staff");
     } catch (err: any) {
       console.error("❌ Error updating staff:", err);
-      console.error("Response data:", err.response?.data);
-
       if (err.response?.status === 422) {
         const errors = err.response.data.errors;
-        const errorMessages = Object.values(errors)
-          .flat()
-          .join(", ");
+        const errorMessages = Object.values(errors).flat().join(", ");
         showAlert(`Validation failed: ${errorMessages}`, "error");
       } else {
-        showAlert(
-          err.response?.data?.message || "Failed to update staff member.",
-          "error"
-        );
+        showAlert(err.response?.data?.message || "Failed to update staff member.", "error");
       }
-    } finally {
-      setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <Loader />
-    );
-  }
+  if (loading) return <LoadingSpinner fullScreen />;
 
   return (
-    <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Edit Staff" buttonLink="/staff" />
-      <div className="p-10 mx-auto max-w-6xl rounded-lg shadow-lg bg-white border border-gray-200">
-        {/* Current Photo Preview */}
-        {currentPhoto && (
-          <div className="mb-6 flex items-center">
-            <img
-              src={`${tenantAsset}${currentPhoto}`}
+    <div className="min-h-screen bg-white pb-12">
+      {/* 1. Sticky Header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
+        <PageHeaderBack title="back" buttonLink="/staff" />
+      </div>
 
-              className="w-24 h-24 rounded-full object-cover border-4 border-purple-100"
-            />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-700">{fullName}</p>
-              <p className="text-xs text-gray-500">
-                Upload a new photo to replace it
-              </p>
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-6">
-              Staff Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <InputField
-                label="Emp ID"
-                name="employee_id"
-                register={register}
-                errors={errors}
-                required
-              />
-              <InputField
-                label="First Name"
-                name="first_name"
-                register={register}
-                errors={errors}
-                required
-              />
-              <InputField
-                label="Last Name"
-                name="last_name"
-                register={register}
-                errors={errors}
-                required
-              />
-              <InputField
-                label="Email"
-                name="email"
-                type="email"
-                register={register}
-                errors={errors}
-                required
-              />
-              <InputField
-                label="Phone"
-                name="phone"
-                type="tel"
-                register={register}
-                errors={errors}
-                required
-              />
-              <InputField
-                label="Designation"
-                name="designation"
-                register={register}
-                errors={errors}
-                required
-              />
-              <InputField
-                label="Address"
-                name="address"
-                register={register}
-                errors={errors}
-                required
-              />
-              <InputField
-                label="Joining Date"
-                name="joining_date"
-                type="date"
-                register={register}
-                errors={errors}
-                required
-              />
-
-              <div>
-                <label
-                  htmlFor="gender"
-                  className="block text-sm text-purple-950 uppercase font-bold mb-2"
-                >
-                  Gender <span className="text-red-600">*</span>
-                </label>
-                <select
-                  id="gender"
-                  {...register("gender", { required: "Gender is required" })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-                {errors.gender && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.gender.message}
-                  </p>
-                )}
+      {/* 2. Main Container */}
+      <div className="max-w-5xl mx-auto px-4 mt-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          
+          {/* 3. The Form Card */}
+          <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+            
+            {/* Card Header */}
+            <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
+              <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
+                <FaUserEdit size={20} />
               </div>
-
               <div>
-                <label
-                  htmlFor="status"
-                  className="block text-sm text-purple-950 uppercase font-bold mb-2"
-                >
-                  Status <span className="text-red-600">*</span>
-                </label>
-                <select
-                  id="status"
-                  {...register("status")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-2">
-                <FileInputField
-                  label="Update Photo"
-                  name="photo"
-                  register={register}
-                  errors={errors}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Leave empty to keep the current photo. JPG, PNG format only. Max 2MB
-                </p>
+                <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-wide">
+                  Edit Profile
+                </h2>
               </div>
             </div>
-          </section>
 
-          <section>
-            <h2 className="text-sm uppercase bg-purple-50 p-2 font-bold text-black rounded-md mb-4">
-              Assign Roles<span className="text-red-600">*</span>
-            </h2>
-            <Controller
-              name="roles"
-              control={control}
-              rules={{ required: "At least one role must be selected." }}
-              render={({ field }) => (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {allRoles.map((role) => (
-                    <div key={role.id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`role-${role.id}`}
-                        className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                        checked={field.value?.includes(role.name)}
-                        onChange={(e) => {
-                          const selectedRoles = field.value || [];
-                          const newSelection = e.target.checked
-                            ? [...selectedRoles, role.name]
-                            : selectedRoles.filter((r) => r !== role.name);
-                          field.onChange(newSelection);
-                        }}
-                      />
-                      <label
-                        htmlFor={`role-${role.id}`}
-                        className="ml-3 text-sm text-gray-700 uppercase"
-                      >
-                        {role.name}
-                      </label>
-                    </div>
-                  ))}
+            {/* Scrollable Area */}
+            <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
+              
+              {/* SECTION: Basic Information */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FaIdCard className="text-slate-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
-              )}
-            />
-            {errors.roles && (
-              <p className="text-red-500 text-sm mt-2">{errors.roles.message}</p>
-            )}
-          </section>
+                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label="Employee ID" name="employee_id" register={register} errors={errors} required />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField label="First Name" name="first_name" register={register} errors={errors} required />
+                      <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
+                    </div>
 
-          <div className="flex justify-between items-center">
-            <button
-              type="button"
-              onClick={() => navigate("/staff")}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-            >
-              Cancel
-            </button>
-            <SaveButton
-              label={submitting ? "saving..." : "save"}
-            />
+                    <InputField label="Email Address" name="email" type="email" register={register} errors={errors} required />
+                    <InputField label="Phone Number" name="phone" type="tel" register={register} errors={errors} required />
+                    
+                    <SelectInputField
+                      label="Gender"
+                      name="gender"
+                      register={register}
+                      errors={errors}
+                      options={[
+                        { label: "Male", value: "Male" },
+                        { label: "Female", value: "Female" },
+                        { label: "Other", value: "Other" },
+                      ]}
+                      required
+                    />
+
+                    <InputField label="Date of Joining" name="joining_date" type="date" register={register} errors={errors} required />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: Professional Details */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FaMapMarkerAlt className="text-slate-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Professional & Contact</h3>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label="Designation" name="designation" register={register} errors={errors} required />
+                    <InputField label="Full Address" name="address" register={register} errors={errors} required />
+                    
+                    <SelectInputField
+                      label="Account Status"
+                      name="status"
+                      register={register}
+                      errors={errors}
+                      options={[
+                        { label: "Active", value: "Active" },
+                        { label: "Inactive", value: "Inactive" },
+                      ]}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: Roles */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FaShieldAlt className="text-slate-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">System Roles <span className="text-red-500">*</span></h3>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
+                  <Controller
+                    name="roles"
+                    control={control}
+                    rules={{ required: "At least one role must be selected." }}
+                    render={({ field }) => (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {allRoles.map((role) => {
+                          const isSelected = field.value?.includes(role.name);
+                          return (
+                            <label 
+                              key={role.id} 
+                              className={`
+                                relative flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all
+                                ${isSelected 
+                                  ? 'bg-purple-50 border-purple-200 shadow-sm' 
+                                  : 'bg-white border-slate-200 hover:border-purple-200 hover:bg-slate-50'}
+                              `}
+                            >
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    const selectedRoles = field.value || [];
+                                    const newSelection = e.target.checked
+                                      ? [...selectedRoles, role.name]
+                                      : selectedRoles.filter((r) => r !== role.name);
+                                    field.onChange(newSelection);
+                                  }}
+                                />
+                                <span className={`text-xs font-bold uppercase ${isSelected ? 'text-purple-700' : 'text-slate-600'}`}>
+                                  {role.name}
+                                </span>
+                              </div>
+                              {isSelected && <FaCheck className="text-purple-600 text-[10px]" />}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  />
+                  {errors.roles && (
+                    <p className="text-red-500 text-xs mt-3 font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                      {errors.roles.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION: Photo */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FaCamera className="text-slate-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Profile Picture</h3>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
+                   
+                   {/* Current Photo Preview */}
+                   <div className="flex items-center gap-6 mb-6 pb-6 border-b border-slate-200">
+                     <div className="relative">
+                        {currentPhoto ? (
+                          <img
+                            src={`${tenantAsset}${currentPhoto}`}
+                            alt="Current Profile"
+                            className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center border-4 border-white shadow-md text-slate-400">
+                            <FaUserCircle size={48} />
+                          </div>
+                        )}
+                        <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+                     </div>
+                     <div>
+                       <h4 className="text-sm font-bold text-slate-700 uppercase">Current Photo</h4>
+                       <p className="text-xs uppercase text-slate-500 mt-1">
+                         This is the image currently displayed on employee profile.
+                       </p>
+                     </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <FileInputField
+                       label="Photo"
+                       name="photo"
+                       register={register}
+                       errors={errors}
+                     />
+                     
+                   </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row justify-start items-center gap-4">
+              <CancelButton label="Cancel" onClick={() => navigate("/staff")} />
+              <SaveButton label="save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
+            </div>
+
           </div>
         </form>
       </div>

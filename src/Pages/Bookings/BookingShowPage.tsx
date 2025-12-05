@@ -1,108 +1,51 @@
+// src/components/bookings/BookingShowPage.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams} from "react-router-dom";
+import { useForm } from "react-hook-form";
+
+// Icons
 import {
   FaUser,
-  FaMapMarkerAlt,
-  FaBuilding,
-  FaClock,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaCalendarAlt,
-  FaIdCard,
-  FaEdit,
+  FaBus,
+  FaBluetoothB,
+  FaRoad,
+  FaCheckCircle
 } from "react-icons/fa";
-import { MdLocationOn, MdSettingsCell, MdWarning } from "react-icons/md";
-import { ImCross } from "react-icons/im";
-import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import DetailItem from "../../Components/UI/DetailItem";
-import type { Booking } from "./Booking.types";
-import tenantApi from "../../Services/ApiService";
-import useAsset from "../../Hooks/useAsset";
-import { useForm } from "react-hook-form";
-import { SectionHeader } from "../../Components/UI/SectionHeader";
-import { Loader } from "../../Components/UI/Loader";
-import { useAlert } from "../../Context/AlertContext";
-import type { Vehicle } from "../Vehicles/Vehicle.types";
-import type { BeaconDevice } from "../../Types/Index";
-import SelectInputField from "../../Components/Form/SelectInputField";
-import { formatDate, formatDateTime } from "../../Utils/Toolkit";
-import { GiSettingsKnobs } from "react-icons/gi";
-import { CiSettings } from "react-icons/ci";
+import { MdLocationOn, MdWarning, MdInfoOutline } from "react-icons/md";
 import { IoSettings } from "react-icons/io5";
 
-// Status Badge Component
-const StatusBadge = ({ status }: { status: string }) => {
-  const getStatusConfig = () => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return {
-          label: "Active",
-          color: "bg-green-100 text-green-800 border-green-200",
-          icon: <FaCheckCircle size={12} />,
-        };
-      case "approved":
-        return {
-          label: "Approved",
-          color: "bg-blue-100 text-blue-800 border-blue-200",
-          icon: <FaCheckCircle size={12} />,
-        };
-      case "completed":
-        return {
-          label: "Completed",
-          color: "bg-purple-100 text-purple-800 border-purple-200",
-          icon: <FaCheckCircle size={12} />,
-        };
-      case "cancelled":
-        return {
-          label: "Cancelled",
-          color: "bg-red-100 text-red-800 border-red-200",
-          icon: <FaTimesCircle size={12} />,
-        };
-      case "pending":
-        return {
-          label: "Pending",
-          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-          icon: <FaClock size={12} />,
-        };
-      default:
-        return {
-          label: status,
-          color: "bg-gray-100 text-gray-800 border-gray-200",
-          icon: null,
-        };
-    }
-  };
+// Components
+import PageHeaderBack from "../../Components/UI/PageHeaderBack";
+import { Loader } from "../../Components/UI/Loader";
+import EmptyState from "../../Components/UI/EmptyState";
+import SelectInputField from "../../Components/Form/SelectInputField";
 
-  const config = getStatusConfig();
+// Services & Utils
+import tenantApi from "../../Services/ApiService";
+import { useAlert } from "../../Context/AlertContext";
+import { formatDate, formatDateTime } from "../../Utils/Toolkit";
 
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold uppercase border-2 ${config.color}`}
-    >
-      {config.icon}
-      {config.label}
-    </span>
-  );
-};
+// Types
+import type { Booking } from "./Booking.types";
+import type { Vehicle } from "../Vehicles/Vehicle.types";
+import type { BeaconDevice } from "../../Types/Index";
+import DetailItem, { InfoCard } from "../../Components/UI/DetailItem";
+import SaveButton from "../../Components/Form/SaveButton";
+import CancelButton from "../../Components/Form/CancelButton";
 
-// Beacon Status Badge
-const BeaconStatusBadge = ({ beaconId }: { beaconId?: string | null }) => {
-  if (beaconId) {
-    return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-green-100 text-green-800 border-2 border-green-200">
-        <FaCheckCircle size={12} />
-        Beacon Assigned
-      </span>
-    );
+// --- Helpers ---
+const getStatusStyles = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
+    case "completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
+    case "cancelled": return "bg-red-50 text-red-700 border-red-200 ring-red-100";
+    case "pending": return "bg-yellow-50 text-yellow-700 border-yellow-200 ring-yellow-100";
+    default: return "bg-slate-50 text-slate-700 border-slate-200 ring-slate-100";
   }
-  return (
-    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-red-100 text-red-800 border-2 border-red-200">
-      <FaTimesCircle size={12} />
-      Beacon Not Assigned
-    </span>
-  );
 };
 
+
+// --- Form Types ---
 type UpdateFormInputs = {
   pickup_time: string;
   drop_time: string;
@@ -114,403 +57,313 @@ type UpdateFormInputs = {
 const BookingShowPage = () => {
   const { id } = useParams<{ id: string }>();
   const { showAlert } = useAlert();
+
+  // State
   const [booking, setBooking] = useState<Booking | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [beacons, setBeacons] = useState<BeaconDevice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'overview' | 'operations'>('overview');
 
-  const asset = useAsset();
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<UpdateFormInputs>();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<UpdateFormInputs>();
-
+  // Fetch Data
   useEffect(() => {
-    fetchInitialData();
-    fetchBooking();
-  }, [id]);
+    const initData = async () => {
+      try {
+        setLoading(true);
+        // Parallel Fetching
+        const [bookingRes, beaconsRes] = await Promise.all([
+          tenantApi.get<{ success: boolean; data: { booking: Booking; vehicles: Vehicle[] } }>(`/bookings/${id}`),
+          tenantApi.get(`/beacon-device/for/dropdown`)
+        ]);
 
-  const fetchInitialData = async () => {
-    try {
-      // setLoading(true);
-      const [beaconsResponse] = await Promise.all([
-        tenantApi.get(`/beacon-device/for/dropdown`),
-        // Add more dropdown APIs here if needed
-      ]);
+        if (bookingRes.data.success) {
+          const bData = bookingRes.data.data.booking;
+          setBooking(bData);
+          setVehicles(bookingRes.data.data.vehicles);
 
-      setBeacons(beaconsResponse.data || []);
-    } catch (error) {
-      console.error("Error fetching dropdown data:", error);
-      showAlert("Failed to load dropdown data. Please refresh.", "error");
-    } finally {
-      // setLoading(false);
-    }
-  };
+          // Init Form
+          reset({
+            pickup_time: bData.pickup_time || "",
+            drop_time: bData.drop_time || "",
+            assigned_vehicle: bData.assigned_vehicle || "",
+            status: bData.status || "pending",
+            beacon_id: bData.traveller?.beacon_id || "",
+          });
+        }
 
-  const fetchBooking = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+        if (beaconsRes.data) setBeacons(beaconsRes.data);
 
-      const response = await tenantApi.get<{
-        success: boolean;
-        data: {
-          booking: Booking;
-          vehicles: Vehicle[];
-        };
-      }>(`/bookings/${id}`);
-
-      if (response.data.success) {
-        const bookingData = response.data.data.booking;
-        const vehiclesData = response.data.data.vehicles;
-
-        setBooking(bookingData);
-        setVehicles(vehiclesData);
-
-        // Set form default values
-        reset({
-          pickup_time: bookingData.pickup_time || "",
-          drop_time: bookingData.drop_time || "",
-          assigned_vehicle: bookingData.assigned_vehicle || "",
-          status: bookingData.status || "pending",
-          beacon_id: bookingData.traveller?.beacon_id || "",
-        });
+      } catch (err: any) {
+        console.error(err);
+        showAlert("Failed to load booking details.", "error");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch booking details";
-      setError(errorMessage);
-      console.error("Error fetching booking:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
+    if (id) initData();
+  }, [id, reset, showAlert]);
+
+  // Handle Update
   const onSubmit = async (data: UpdateFormInputs) => {
     try {
       const response = await tenantApi.put(`/bookings/${id}`, data);
-
       if (response.data.success) {
         showAlert("Booking updated successfully!", "success");
-        setIsEditing(false);
-        fetchBooking(); // Refresh data
+        // Update local state without full reload
+        setBooking(prev => prev ? ({ ...prev, ...data, status: data.status }) : null);
+        setActiveTab('overview'); // Switch back to view mode
       }
     } catch (err) {
-      console.error("Error updating booking:", err);
-      showAlert("Failed to update booking", "error");
+      showAlert("Failed to update booking.", "error");
     }
   };
 
-  if (loading) {
-    return <Loader />;
-  }
-
-  if (error || !booking) {
-    return <Loader />;
-  }
+  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader /></div>;
+  if (!booking) return <div className="h-screen flex items-center justify-center bg-slate-50"><EmptyState title="Booking Not Found" /></div>;
 
   const hasBeacon = booking.traveller?.beacon_id;
-  const availableBeacons = beacons.filter(
-    (beacon) =>
-      beacon.status === "available" ||
-      beacon.device_id === booking.traveller?.beacon_id
-  );
+  const availableBeacons = beacons.filter(b => b.status === "available" || b.device_id === booking.traveller?.beacon_id);
 
   return (
-    <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Booking Details" buttonLink="/bookings" />
+    <div className="min-h-screen bg-slate-50 pb-12">
+      {/* 1. Sticky Back Navigation */}
+      <div className="bg-white border-b border-slate-100 px-4 py-1 sticky top-0 z-20 shadow-sm">
+        <div className="">
+          <PageHeaderBack title="Back" buttonLink="/bookings" />
+        </div>
+      </div>
 
-      <div className="space-y-4 mt-4 pb-10 mx-auto max-w-7xl">
-        {/* Header Card with Traveller Info and Status */}
-        <div className="bg-white border  border-gray-200 rounded-lg p-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex items-start gap-4">
-              {booking.traveller_profile_photo ? (
-                <img
-                  src={asset(booking.traveller_profile_photo) || ""}
-                  alt={`${booking.traveller_first_name} ${booking.traveller_last_name}`}
-                  className="h-24 w-24 rounded-lg object-cover border-4 border-purple-300 shadow-md"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="h-24 w-24 rounded-lg bg-purple-200 flex items-center justify-center border-4 border-purple-300 shadow-md">
-                  <FaUser className="text-purple-600" size={40} />
-                </div>
-              )}
-              <div className="uppercase">
-                <h1 className="text-xl font-bold text-gray-900 uppercase mb-1">
-                  {booking.traveller_first_name} {booking.traveller_last_name}
-                </h1>
+      {/* 2. Hero Section */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
 
-                {booking.employee_id && (
-                  <p className="text-sm text-gray-600  font-semibold flex items-center gap-2 mb-1">
-                    <FaIdCard size={14} className="text-gray-600" />
-                    Employee ID{" "}
-                    <span className="font-mono font-semibold">
-                      {booking.employee_id}
-                    </span>
-                  </p>
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="w-20 h-20 rounded-full bg-slate-100 border-4 border-white shadow-lg overflow-hidden">
+                {booking.traveller_profile_photo ? (
+                  <img src={`/user.jpeg`} alt="User" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-300"><FaUser size={32} /></div>
                 )}
-                <p className="text-sm text-gray-600 font-semibold flex items-center gap-2">
-                  <FaCalendarAlt size={14} className="text-gray-600" />
-                  Booked On {formatDate(booking.created_at)}
-                </p>
+              </div>
+              <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full border-4 border-white flex items-center justify-center text-[10px] text-white shadow-sm ${booking.status === 'approved' ? 'bg-green-500' : 'bg-slate-400'}`}>
+                {booking.status === 'approved' && <FaCheckCircle className="" />}
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <BeaconStatusBadge beaconId={booking.traveller?.beacon_id} />
-              <StatusBadge status={booking.status} />
+
+            {/* Main Info */}
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-sm font-extrabold text-slate-800 uppercase">
+                Booking <span className="text-indigo-600">#{booking.id}</span>
+              </h1>
+              <p className="text-sm font-bold text-slate-500 uppercase mt-1">
+                {booking.traveller_first_name} {booking.traveller_last_name}
+                <span className="mx-2 text-slate-300">|</span>
+                <span className="font-mono text-slate-400">EMP: {booking.employee_id || "-"}</span>
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
+                <span className={`px-3 py-1 rounded-full text-sm font-bold uppercase border ${getStatusStyles(booking.status)}`}>
+                  {booking.status}
+                </span>
+                {hasBeacon ? (
+                  <span className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-bold uppercase border border-blue-100">
+                    <FaBluetoothB />Beacon - {booking.traveller?.beacon_id}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm font-bold uppercase border border-red-100">
+                    <MdWarning />Beacon Not Assigned
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="overflow-y-auto max-h-[70vh] space-y-4 border border-gray-200 p-6 rounded-lg">
-          {/* Booking Information */}
-          <div className="grid grid-cols-2 gap-4 ">
-            <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-              <SectionHeader icon={<FaCalendarAlt size={20} />} title="Booking Information" />
-              <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 gap-6">
-                <DetailItem label="Booking ID" value={booking.id} />
+        {/* Tabs */}
+        <div className="max-w-6xl mx-auto px-6 flex gap-8 mt-4">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`pb-4 text-sm font-bold uppercase tracking-wide border-b-[3px] transition-all ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          >
+            Booking Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('operations')}
+            className={`pb-4 text-sm font-bold uppercase tracking-wide border-b-[3px] transition-all ${activeTab === 'operations' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          >
+            Manage Request
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Content Area */}
+      <div className="max-w-6xl mx-auto px-6 py-8 overflow-y-auto max-h-80 lg:max-h-[80vh] xl:max-h-[80vh]">
+
+        {/* TAB 1: OVERVIEW */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {/* Card 1: Trip Info */}
+            <InfoCard title="Booking Details" icon={<FaRoad />}>
+              <div className="flex items-start gap-3 mb-4">
+                <div className="mt-1 p-2 bg-red-50 text-red-500 rounded-full shrink-0">
+                  <MdLocationOn size={16} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-400 uppercase">Pickup Location</p>
+                  <p className="text-sm font-bold text-slate-800 uppercase leading-snug">{booking.pickup_location_name}</p>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {booking.pickup_location_city}, {booking.pickup_location_state} - {booking.pickup_location_pin_code}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                <DetailItem label="Pickup Time" value={booking.pickup_time} />
+                <DetailItem label="Drop Time" value={booking.drop_time} />
                 <DetailItem label="Purpose" value={booking.purpose} />
-                <DetailItem label="Traveller Age" value={booking.traveller_age} />
                 <DetailItem label="Booked On" value={formatDate(booking.created_at)} />
               </div>
-            </div>
+            </InfoCard>
 
-            <div>
-              <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <SectionHeader icon={<FaMapMarkerAlt size={20} />} title="Traveller Address" />
-                <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
-                  <DetailItem label="Address Line 1" value={booking.address_line_1} />
-                  <DetailItem label="City" value={booking.city} />
-                  <DetailItem label="District" value={booking.district} />
-                  <DetailItem label="State" value={booking.state} />
-                  <DetailItem label="PIN Code" value={booking.pin_code} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Pickup Location */}
-            <div>
-              <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <SectionHeader icon={<MdLocationOn size={20} />} title="Pickup Location" />
-                <div className="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-6">
-                  <DetailItem
-                    label="Location Name"
-                    value={booking.pickup_location_name}
-                  />
-                  <DetailItem label="City" value={booking.pickup_location_city} />
-                  <DetailItem label="District" value={booking.pickup_location_district} />
-                  <DetailItem label="State" value={booking.pickup_location_state} />
-                  <DetailItem
-                    label="PIN Code"
-                    value={booking.pickup_location_pin_code}
-                  />
-                  <DetailItem
-                    label="Latitude"
-                    value={booking.pickup_location_latitude}
-                  />
-                  <DetailItem
-                    label="Longitude"
-                    value={booking.pickup_location_longitude}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Admin Operations Section */}
-            <div>
-              <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-center  bg-purple-50 p-2 mb-6 rounded-lg">
-
-                  <div className="flex items-center gap-2">
-                    <div className="p-1 bg-blue-100 rounded-lg text-blue-700 shadow-sm">
-                      <IoSettings />
-                    </div>
-                    <label htmlFor="hdfbdk" className="text-sm uppercase font-bold text-purple-950">Operational Section</label>
+            {/* Card 2: Transport & Traveller */}
+            <InfoCard title="Transport & Identity" icon={<FaBus />}>
+              <div className="space-y-4">
+                <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-indigo-400 uppercase">Assigned Vehicle</p>
+                    <p className="text-sm font-bold text-indigo-900 uppercase flex items-center gap-2">
+                      <FaBus /> {booking.assigned_vehicle || "Pending"}
+                    </p>
                   </div>
-                  {!isEditing && (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className=" p-1 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 uppercase flex items-center gap-1"
-                    >
-                      <FaEdit size={14} />
-                      Edit Details
-                    </button>
+                  <div className="h-8 w-8 bg-white rounded-full flex items-center justify-center text-indigo-300">
+                    <FaBus />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <DetailItem label="Traveller Age" value={`${booking.traveller_age} Yrs`} />
+                  <DetailItem label="Traveller UID" value={booking.traveller?.beacon_id} />
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <p className="text-sm font-bold text-slate-400 uppercase mb-1">Traveller Address</p>
+                  <p className="text-sm text-slate-600 leading-relaxed uppercase">
+                    {booking.address_line_1}, {booking.city}
+                  </p>
+                </div>
+              </div>
+            </InfoCard>
+
+            {/* Card 3: Approval Log */}
+            <InfoCard title="System Metadata" icon={<MdInfoOutline />}>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-100 rounded-lg">
+                  <div className="p-1.5 bg-white text-green-600 rounded-full shadow-sm">
+                    <FaCheckCircle size={12} />
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="text-[10px] font-bold text-green-700 uppercase">Approved By</p>
+                    <p className="text-sm font-bold text-slate-800 truncate">{booking.approver?.name || "-"}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{booking.approver?.email}</p>
+                  </div>
+                </div>
+
+                <div className="pt-2 space-y-6">
+                  <DetailItem label="Last Updated" value={formatDateTime(booking.updated_at ?? "")} />
+                  <DetailItem label="Created At" value={formatDateTime(booking.created_at ?? "")} />
+                </div>
+              </div>
+            </InfoCard>
+
+          </div>
+        )}
+
+        {/* TAB 2: OPERATIONS (Edit Form) */}
+        {activeTab === 'operations' && (
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+              <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex items-center gap-3">
+                <div className="p-2 bg-white text-indigo-600 rounded-lg shadow-sm"><IoSettings size={20} /></div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-800 uppercase">Update Booking</h3>
+                  <p className="text-sm uppercase text-slate-500">Modify schedule, vehicle assignment, or status.</p>
+                </div>
+              </div>
+
+              <form className="p-6 md:p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Time Inputs */}
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 uppercase mb-2">Pickup Time</label>
+                    <input type="time" {...register("pickup_time")} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-700" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 uppercase mb-2">Drop Time</label>
+                    <input type="time" {...register("drop_time")} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-700" />
+                  </div>
+
+                  {/* Vehicle Assignment */}
+                  <div className="">
+                    <label className=" text-sm font-bold text-slate-700 uppercase mb-2 flex items-center gap-2">
+                      <FaBus className="text-indigo-400" /> Assign Vehicle
+                    </label>
+                    <select {...register("assigned_vehicle")} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-700 uppercase cursor-pointer">
+                      <option value="">-- Select Vehicle --</option>
+                      {vehicles.map(v => (
+                        <option key={v.id} value={v.vehicle_number}>
+                          {v.vehicle_number} ({v.vehicle_type})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Beacon Assignment (If missing) */}
+                  {!hasBeacon && (
+                    <div className="md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <label className=" text-sm font-bold text-amber-800 uppercase mb-2 flex items-center gap-2">
+                        <MdWarning /> Assign Beacon
+                      </label>
+                      <SelectInputField
+                        label=""
+                        name="beacon_id"
+                        register={register}
+                        errors={errors}
+                        options={availableBeacons.map(b => ({ label: `${b.device_id} (${b.imei_number})`, value: b.imei_number }))}
+                      />
+                    </div>
                   )}
+
+                  {/* Status */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-slate-700 uppercase mb-2">Booking Status</label>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      {['pending', 'approved', 'active', 'completed', 'cancelled'].map(status => (
+                        <label key={status} className="cursor-pointer">
+                          <input type="radio" value={status} {...register("status")} className="peer sr-only" />
+                          <div className="px-3 py-2 rounded-lg border border-slate-200 text-center text-sm font-bold uppercase text-slate-500 peer-checked:bg-indigo-500 peer-checked:text-white hover:peer-checked:text-black peer-checked:border-indigo-300 transition-all hover:bg-slate-50">
+                            {status}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                {isEditing ? (
-                  /* Edit Form */
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-                    <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/* Beacon ID - Only show if doesn't exist */}
-                        {!hasBeacon && (
-                          <div>
-                            <SelectInputField
-                              label="Assign Beacon"
-                              name="beacon_id"
-                              register={register}
-                              errors={errors}
-                              options={availableBeacons.map((data) => ({
-                                label: data.device_id,
-                                value: data.imei_number,
-                              }))}
-                              disabled={loading}
-                            />
-                            <div className="mt-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded-r">
-                              <p className="text-xs text-amber-700 flex items-center gap-1">
-                                <MdWarning size={14} />
-                                Traveller doesn't have a beacon assigned yet
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Pickup Time */}
-                        <div>
-                          <label className="block text-gray-700 uppercase text-sm font-bold mb-2">
-                            Pickup Time
-                          </label>
-                          <input
-                            type="time"
-                            {...register("pickup_time")}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-
-                        {/* Drop Time */}
-                        <div>
-                          <label className="block text-gray-700 uppercase text-sm font-bold mb-2">
-                            Drop Time
-                          </label>
-                          <input
-                            type="time"
-                            {...register("drop_time")}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-
-                        {/* Assign Vehicle */}
-                        <div>
-                          <label className="block text-gray-700 uppercase text-sm font-bold mb-2">
-                            Assign Vehicle
-                          </label>
-                          <select
-                            {...register("assigned_vehicle")}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                          >
-                            <option value="">Select Vehicle</option>
-                            {vehicles.map((vehicle) => (
-                              <option key={vehicle.vehicle_number} value={vehicle.vehicle_number}>
-                                {vehicle.vehicle_number} - {vehicle.vehicle_type}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Status */}
-                        <div>
-                          <label className="block text-gray-700 uppercase text-sm font-bold mb-2">
-                            Status <span className="text-red-600">*</span>
-                          </label>
-                          <select
-                            {...register("status", {
-                              required: "Status is required",
-                            })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="active">Active</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                          {errors.status && (
-                            <p className="text-red-500 text-xs mt-1">
-                              {errors.status.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-4 mt-6">
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="px-6 py-2 bg-green-600 text-white font-bold text-sm rounded-lg hover:bg-green-700 uppercase disabled:opacity-50 flex items-center gap-2"
-                        >
-                          <FaCheckCircle size={14} />
-                          {isSubmitting ? "Saving..." : "Save Changes"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsEditing(false);
-                            reset();
-                          }}
-                          className="px-6 py-2 bg-gray-500 text-white font-bold text-sm rounded-lg hover:bg-gray-600 uppercase flex items-center gap-2"
-                        >
-                          <ImCross size={12} />
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                ) : (
-                  /* View Mode */
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 space-y-2">
-                    {/* Show Beacon Status */}
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
-                        Beacon ID
-                      </h4>
-                      {hasBeacon ? (
-                        <p className="text-sm text-gray-900 uppercase font-semibold flex items-center gap-2">
-                          <span className="text-green-600">
-                            <FaCheckCircle size={14} />
-                          </span>
-                          {booking.traveller?.beacon_id}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-red-600 uppercase font-semibold flex items-center gap-2">
-                          <FaTimesCircle size={14} />
-                          Not Assigned
-                        </p>
-                      )}
-                    </div>
-                    <DetailItem
-                      label="Assigned Vehicle"
-                      value={booking.assigned_vehicle || "Not Assigned"}
-                    />
-                    <DetailItem label="Pickup Time" value={booking.pickup_time || "-"} />
-                    <DetailItem label="Drop Time" value={booking.drop_time || "-"} />
-                    <DetailItem
-                      label="Approved By"
-                      value={booking.approver?.name || "-"}
-                    />
-                    <DetailItem label="Email" value={booking.approver?.email || "-"} />
-                    <DetailItem
-                      label="Approved On"
-                      value={formatDateTime(booking.updated_at ?? "-")}
-                    />
-                  </div>
-                )}
-              </div>
+                <div className="pt-6 border-t border-slate-100 flex  gap-3">
+                  <CancelButton onClick={() => setActiveTab('overview')} label="cancel" />
+                  <SaveButton label="save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
+                </div>
+              </form>
             </div>
           </div>
-        </div>
+        )}
+
       </div>
     </div>
   );

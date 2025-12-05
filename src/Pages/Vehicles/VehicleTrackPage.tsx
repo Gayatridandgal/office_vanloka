@@ -247,11 +247,11 @@ const VehicleTrackPage = () => {
 
                             {/* FIX: LoadScript is top-level within this div, so map loads instantly */}
                             <LoadScript googleMapsApiKey={googleMapsApiKey}>
-                            <GoogleMapDisplay
-                                vehicles={vehicle ? [vehicle] : []}
-                                selectedVehicleNumber={vehicle?.vehicle_number || null}
-                                onVehicleSelect={() => { }}
-                            />
+                                <GoogleMapDisplay
+                                    vehicles={vehicle ? [vehicle] : []}
+                                    selectedVehicleNumber={vehicle?.vehicle_number || null}
+                                    onVehicleSelect={() => { }}
+                                />
                             </LoadScript>
 
                             {/* Overlay: Loading */}

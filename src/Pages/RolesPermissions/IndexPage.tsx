@@ -177,8 +177,8 @@ const IndexPage = () => {
                   <Table>
                     <Thead>
                       <Th width="5%">S.No</Th>
-                      <Th>Role Name</Th>
-                      <Th align="right">Actions</Th>
+                      <Th align="center">Role Name</Th>
+                      <Th align="center">Actions</Th>
                     </Thead>
 
                     <Tbody>
@@ -191,7 +191,7 @@ const IndexPage = () => {
 
                           {/* Role Name */}
                           <Td>
-                            <div className="flex items-center gap-3">
+                            <div className="flex justify-center items-center gap-3">
                               <div className="p-2 bg-purple-100 rounded-lg text-purple-600 shadow-sm">
                                 <FaUserShield size={16} />
                               </div>
@@ -202,8 +202,8 @@ const IndexPage = () => {
                           </Td>
 
                           {/* Actions */}
-                          <Td align="right">
-                            <div className="flex items-center justify-end gap-2">
+                          <Td>
+                            <div className="flex items-center justify-center gap-2">
                               {/* Edit Button */}
                               <Link
                                 to={`/roles_permissions/edit/${role.id}`}

@@ -134,29 +134,29 @@ const sidebarLinks: SidebarLinkType[] = [
   //   requiredPermissions: ["view vendors"],
   // },
 
-  {
-    name: "Rase Support Ticket",
-    path: "/support_tickets",
-    icon: <MdOutlineSupportAgent size={22} />,
-    feature: "MANAGE SUPPORT TICKETS",
-    requiredPermissions: ["view support tickets"],
-  },
+  // {
+  //   name: "Rase Support Ticket",
+  //   path: "/support_tickets",
+  //   icon: <MdOutlineSupportAgent size={22} />,
+  //   feature: "MANAGE SUPPORT TICKETS",
+  //   requiredPermissions: ["view support tickets"],
+  // },
 
-  {
-    name: "Basic Reports",
-    path: "/basic_reports",
-    icon: <HiOutlineDocumentReport size={22} />,
-    feature: "VIEW BASIC REPORTS",
-    requiredPermissions: ["view basic reports"],
-  },
+  // {
+  //   name: "Basic Reports",
+  //   path: "/basic_reports",
+  //   icon: <HiOutlineDocumentReport size={22} />,
+  //   feature: "VIEW BASIC REPORTS",
+  //   requiredPermissions: ["view basic reports"],
+  // },
 
-  {
-    name: "compliance Reports",
-    path: "/complience_reports",
-    icon: <TbReport size={22} />,
-    feature: "VIEW COMPLIANCE REPORTS",
-    requiredPermissions: ["view compliance reports"],
-  },
+  // {
+  //   name: "compliance Reports",
+  //   path: "/complience_reports",
+  //   icon: <TbReport size={22} />,
+  //   feature: "VIEW COMPLIANCE REPORTS",
+  //   requiredPermissions: ["view compliance reports"],
+  // },
 
   // drop down link example
   // {

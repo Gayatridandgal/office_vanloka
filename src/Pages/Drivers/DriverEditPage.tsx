@@ -225,8 +225,8 @@ const DriverEditPage = () => {
   if (loading) return <LoadingSpinner fullScreen />;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12">
-      <div className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-10">
+    <div className="min-h-screen bg-white-50 pb-12">
+      <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
         <PageHeaderBack title="Edit Driver" buttonLink="/drivers" />
       </div>
 

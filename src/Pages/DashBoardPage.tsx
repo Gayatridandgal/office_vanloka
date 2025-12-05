@@ -8,6 +8,7 @@ import tenantApi from "../Services/ApiService";
 import GoogleMapDisplay from "../Components/Map/GoogleMapDisplay";
 import PageHeader from "../Components/UI/PageHeader";
 import EmptyState from "../Components/UI/EmptyState";
+import { Loader } from "../Components/UI/Loader";
 
 // Icons
 import {
@@ -24,10 +25,8 @@ import {
 } from "react-icons/fa";
 import { MdGpsFixed, MdLocationOn, MdSignalCellularAlt } from "react-icons/md";
 import { LuBus } from "react-icons/lu";
-import { Loader } from "../Components/UI/Loader";
 import type { LiveVehicle } from "../Types/Index";
 import { formatTime } from "../Utils/Toolkit";
-
 
 const STORAGE_KEY = "dashboard_cooldown_timestamp";
 const COOLDOWN_DURATION = 300; // 5 Minutes
@@ -41,30 +40,30 @@ const DashBoardPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasInitialFetch, setHasInitialFetch] = useState(false);
+  const [address, setAddress] = useState<string>("Select a vehicle to view location");
+  const [addressLoading, setAddressLoading] = useState(false);
 
   // Timer State
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [address, setAddress] = useState<string>("Fetching location...");
-
 
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   // --- 1. Timer Logic ---
-
   const startTimerInterval = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          localStorage.removeItem(STORAGE_KEY);
-          setIsButtonDisabled(false);
-          return 0;
-        }
-        return prev - 1;
-      });
+      const endTime = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
+      const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+
+      setCountdown(remaining);
+
+      if (remaining <= 0) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        localStorage.removeItem(STORAGE_KEY);
+        setIsButtonDisabled(false);
+      }
     }, 1000);
   };
 
@@ -76,26 +75,44 @@ const DashBoardPage = () => {
     startTimerInterval();
   };
 
-
-  const fetchAddress = async (lat: number, lng: number) => {
+  // --- 2. Address Fetching ---
+  const fetchAddress = useCallback(async (lat: number, lng: number) => {
     if (!googleMapsApiKey) return;
+
+    setAddressLoading(true);
+    setAddress("Fetching location...");
+
     try {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${googleMapsApiKey}`
       );
       const data = await response.json();
+
       if (data.results && data.results[0]) {
         setAddress(data.results[0].formatted_address);
       } else {
         setAddress("Address not found");
       }
     } catch (error) {
+      console.error("Address fetch error:", error);
       setAddress("Location info unavailable");
+    } finally {
+      setAddressLoading(false);
     }
-  };
+  }, [googleMapsApiKey]);
 
-  // --- 2. Data Fetching ---
+  // --- 3. Fetch address when vehicle is selected ---
+  useEffect(() => {
+    const selectedVehicle = vehicles.find(v => v.vehicle_number === selectedVehicleNumber);
 
+    if (selectedVehicle && selectedVehicle.gps) {
+      fetchAddress(selectedVehicle.gps.lat, selectedVehicle.gps.lng);
+    } else {
+      setAddress("Select a vehicle to view location");
+    }
+  }, [selectedVehicleNumber, vehicles, fetchAddress]);
+
+  // --- 4. Data Fetching ---
   const fetchLiveVehicles = useCallback(async () => {
     if (!tenantId) return;
 
@@ -104,12 +121,9 @@ const DashBoardPage = () => {
 
     try {
       const response = await tenantApi.get(`/vehicles/live/location/${tenantId}`);
+
       if (response.data.success && response.data.data) {
-        const data = response.data.data;
-        setVehicles(data);
-        if (data.gps) {
-          fetchAddress(data.gps.lat, data.gps.lng);
-        }
+        setVehicles(response.data.data); // This is an array of vehicles
         initCooldown();
       } else {
         setError("Vehicle tracking data not available.");
@@ -117,15 +131,14 @@ const DashBoardPage = () => {
     } catch (err: any) {
       console.error("Failed to fetch vehicles:", err);
       setError(err.response?.data?.message || "Connection error. Please try again.");
-      initCooldown(); // Start timer even on error to prevent spam
+      initCooldown();
     } finally {
       setLoading(false);
       setHasInitialFetch(true);
     }
   }, [tenantId]);
 
-  // --- 3. Initial Lifecycle ---
-
+  // --- 5. Initial Lifecycle ---
   useEffect(() => {
     if (!tenantId) return;
 
@@ -133,7 +146,6 @@ const DashBoardPage = () => {
       const storedTimestamp = localStorage.getItem(STORAGE_KEY);
 
       if (storedTimestamp) {
-        // Timer Exists
         const endTime = parseInt(storedTimestamp, 10);
         const now = Date.now();
         const remainingSeconds = Math.ceil((endTime - now) / 1000);
@@ -144,13 +156,14 @@ const DashBoardPage = () => {
           setIsButtonDisabled(true);
           startTimerInterval();
 
-          // If timer active but no data (e.g. reload), fetch silently without resetting timer
+          // Silent fetch if no data
           if (vehicles.length === 0 && !hasInitialFetch) {
             setLoading(true);
             tenantApi.get(`/vehicles/live/location/${tenantId}`)
               .then(res => {
-                if (res.data.success) setVehicles(res.data.data);
-                if (res.data.data.gps) fetchAddress(res.data.data.gps.lat, res.data.data.gps.lng);
+                if (res.data.success) {
+                  setVehicles(res.data.data);
+                }
               })
               .catch(() => setError("Failed to restore data."))
               .finally(() => {
@@ -159,12 +172,10 @@ const DashBoardPage = () => {
               });
           }
         } else {
-          // Timer Expired
           localStorage.removeItem(STORAGE_KEY);
           fetchLiveVehicles();
         }
       } else {
-        // First Load
         fetchLiveVehicles();
       }
     };
@@ -174,8 +185,7 @@ const DashBoardPage = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId]);
+  }, [tenantId, fetchLiveVehicles]);
 
   // Prevent Refresh Warning
   useEffect(() => {
@@ -190,7 +200,6 @@ const DashBoardPage = () => {
   }, [isButtonDisabled]);
 
   // --- Helpers ---
-
   const formatCountdown = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -205,8 +214,6 @@ const DashBoardPage = () => {
   const drivers = selectedVehicle?.beacons.filter(b => b.type.toLowerCase() === 'driver') || [];
   const passengers = selectedVehicle?.beacons.filter(b => b.type.toLowerCase() === 'traveller') || [];
 
- 
-
   if (!googleMapsApiKey) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -218,7 +225,7 @@ const DashBoardPage = () => {
   return (
     <div className="min-h-screen bg-white px-2">
       <div className="mx-4">
-        <PageHeader title="Live Fleet Dashboard" />
+        <PageHeader title="Dashboard" />
       </div>
 
       <div className="px-4 pb-10">
@@ -270,7 +277,7 @@ const DashBoardPage = () => {
                 ) : (
                   <FaSync className={isButtonDisabled ? "" : "group-hover:rotate-180 transition-transform"} />
                 )}
-                {loading ? "Loading..." : isButtonDisabled ? `Wait ${formatCountdown(countdown)} for next refresh` : "Refresh"}
+                {loading ? "Loading..." : isButtonDisabled ? `Wait ${formatCountdown(countdown)}` : "Refresh"}
               </button>
             </div>
 
@@ -283,16 +290,11 @@ const DashBoardPage = () => {
           </div>
 
           {/* 2. Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-280px)] min-h-[78vh]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-280px)] min-h-[80vh]">
 
-            {/* Map Area - ALWAYS RENDERED */}
+            {/* Map Area */}
             <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200 relative">
 
-              {/* <GoogleMapDisplay
-                vehicles={vehicles}
-                selectedVehicleNumber={selectedVehicleNumber}
-                onVehicleSelect={handleVehicleSelect}
-              /> */}
               <LoadScript googleMapsApiKey={googleMapsApiKey}>
                 <GoogleMapDisplay
                   vehicles={vehicles}
@@ -300,7 +302,6 @@ const DashBoardPage = () => {
                   onVehicleSelect={handleVehicleSelect}
                 />
               </LoadScript>
-
 
               {/* Loading Overlay */}
               {loading && (
@@ -312,7 +313,7 @@ const DashBoardPage = () => {
                 </div>
               )}
 
-              {/* Empty State (Only if loaded and no vehicles) */}
+              {/* Empty State */}
               {!loading && vehicles.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center bg-slate-50/80 z-10 pointer-events-none">
                   <EmptyState
@@ -324,7 +325,7 @@ const DashBoardPage = () => {
               )}
             </div>
 
-            {/* Details Panel (Takes 1/3 width) */}
+            {/* Details Panel */}
             <div className="lg:col-span-1 flex flex-col gap-4">
 
               {selectedVehicle ? (
@@ -338,28 +339,31 @@ const DashBoardPage = () => {
                         <span className="text-xs text-slate-500 font-bold bg-white border border-slate-200 px-2 py-0.5 rounded">
                           {selectedVehicle.vehicle_number || "-"}
                         </span>
-
                       </div>
                     </div>
                     <div className="p-2 bg-blue-100 text-blue-600 rounded-full shadow-sm">
                       <LuBus size={25} />
                     </div>
-
-
                   </div>
 
-                  <div className="bg-white p-3 mt-2 flex gap-2">
+                  {/* Address Section */}
+                  <div className="bg-white p-3 mx-4 mt-2 rounded-lg border border-slate-200 flex gap-2">
                     <MdLocationOn className="text-red-500 shrink-0 mt-0.5" />
                     <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                      {address}
+                      {addressLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="animate-pulse">Loading address...</span>
+                        </span>
+                      ) : (
+                        address
+                      )}
                     </p>
                   </div>
 
-                  <div className="flex-1 p-4 space-y-6 ">
+                  <div className="flex-1 p-4 space-y-6 overflow-y-auto">
 
-                    {/* 1. Telemetry Pills */}
+                    {/* Telemetry */}
                     <div className="grid grid-cols-2 gap-3">
-                      {/* Speed */}
                       <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-xl">
                         <div className="flex items-center gap-2">
                           <FaTachometerAlt className="text-blue-400" />
@@ -370,7 +374,6 @@ const DashBoardPage = () => {
                         </span>
                       </div>
 
-                      {/* Battery */}
                       <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
                         <div className="flex items-center gap-2">
                           <FaBatteryThreeQuarters className="text-emerald-500" />
@@ -382,13 +385,13 @@ const DashBoardPage = () => {
                       </div>
                     </div>
 
-                    {/* Last Update Info */}
+                    {/* Last Update */}
                     <div className="flex items-center justify-center gap-2 text-xs text-slate-400 font-mono bg-slate-50 p-2 rounded-lg border border-slate-100">
                       <FaClock />
-                      Updated: {new Date(selectedVehicle.gps.timestamp).toLocaleString()}
+                      Updated: {formatTime(selectedVehicle.gps.timestamp)}
                     </div>
 
-                    {/* 2. Driver Info - Scrollable if many */}
+                    {/* Driver Info */}
                     <div>
                       <label className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
                         <FaUserTie /> Driver
@@ -409,9 +412,7 @@ const DashBoardPage = () => {
                                   </p>
                                 </div>
                               </div>
-                              <div className="text-right">
-                                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase">On Board</span>
-                              </div>
+                              <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase">On Board</span>
                             </div>
                           ))}
                         </div>
@@ -422,18 +423,18 @@ const DashBoardPage = () => {
                       )}
                     </div>
 
-                    {/* 3. Passengers Info - Scrollable Container */}
-                    <div className="flex flex-col h-full min-h-0">
+                    {/* Passengers */}
+                    <div className="flex flex-col min-h-0">
                       <div className="flex items-center justify-between mb-3 shrink-0">
                         <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
                           <FaUsers /> Passengers
                         </label>
                         <span className="text-[10px] uppercase font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
-                          Total : {passengers.length}
+                          Total: {passengers.length}
                         </span>
                       </div>
 
-                      <div className=" border border-slate-200 rounded-lg bg-white ">
+                      <div className="border border-slate-200 rounded-lg bg-white">
                         {passengers.length > 0 ? (
                           <div className="divide-y divide-slate-100 max-h-[250px] overflow-y-auto custom-scrollbar">
                             {passengers.map(pax => (
@@ -444,17 +445,15 @@ const DashBoardPage = () => {
                                   </div>
                                   <div>
                                     <p className="text-xs font-bold text-slate-700 uppercase">{pax.name}</p>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                      <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded">ID: {pax.id}</span>
-                                    </div>
+                                    <span className="text-[10px] text-slate-400 font-mono bg-slate-50 px-1 rounded">ID: {pax.id}</span>
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
-                                  <span className="text-[10px] text-slate-400 flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded" title="Last Seen">
+                                  <span className="text-[10px] text-slate-400 flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded">
                                     <FaClock size={8} /> {formatTime(pax.lastSeen)}
                                   </span>
                                   {pax.rssi && (
-                                    <div className="flex items-center gap-1" title="Signal Strength">
+                                    <div className="flex items-center gap-1">
                                       <FaSignal size={10} className={pax.rssi > -60 ? "text-green-500" : "text-amber-500"} />
                                       <span className="text-[10px] text-slate-400 font-mono">{pax.rssi}dBm</span>
                                     </div>
@@ -480,7 +479,7 @@ const DashBoardPage = () => {
                   </div>
                   <h3 className="text-sm font-bold text-slate-800 uppercase">Select a Vehicle</h3>
                   <p className="text-xs uppercase text-slate-500 max-w-[200px]">
-                    Click on a vehicle marker on the map to view details.
+                    Click on a vehicle  on the map to view details.
                   </p>
                 </div>
               )}
