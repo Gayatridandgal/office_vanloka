@@ -22,10 +22,11 @@ import {
   FaClock,
   FaExclamationTriangle
 } from "react-icons/fa";
-import { MdGpsFixed, MdSignalCellularAlt } from "react-icons/md";
+import { MdGpsFixed, MdLocationOn, MdSignalCellularAlt } from "react-icons/md";
 import { LuBus } from "react-icons/lu";
 import { Loader } from "../Components/UI/Loader";
 import type { LiveVehicle } from "../Types/Index";
+import { formatTime } from "../Utils/Toolkit";
 
 
 const STORAGE_KEY = "dashboard_cooldown_timestamp";
@@ -45,6 +46,8 @@ const DashBoardPage = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [address, setAddress] = useState<string>("Fetching location...");
+
 
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -73,6 +76,24 @@ const DashBoardPage = () => {
     startTimerInterval();
   };
 
+
+  const fetchAddress = async (lat: number, lng: number) => {
+    if (!googleMapsApiKey) return;
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${googleMapsApiKey}`
+      );
+      const data = await response.json();
+      if (data.results && data.results[0]) {
+        setAddress(data.results[0].formatted_address);
+      } else {
+        setAddress("Address not found");
+      }
+    } catch (error) {
+      setAddress("Location info unavailable");
+    }
+  };
+
   // --- 2. Data Fetching ---
 
   const fetchLiveVehicles = useCallback(async () => {
@@ -83,11 +104,15 @@ const DashBoardPage = () => {
 
     try {
       const response = await tenantApi.get(`/vehicles/live/location/${tenantId}`);
-      if (response.data.success) {
-        setVehicles(response.data.data);
-        initCooldown(); // Start timer on success
+      if (response.data.success && response.data.data) {
+        const data = response.data.data;
+        setVehicles(data);
+        if (data.gps) {
+          fetchAddress(data.gps.lat, data.gps.lng);
+        }
+        initCooldown();
       } else {
-        setError("Failed to load vehicle data.");
+        setError("Vehicle tracking data not available.");
       }
     } catch (err: any) {
       console.error("Failed to fetch vehicles:", err);
@@ -125,6 +150,7 @@ const DashBoardPage = () => {
             tenantApi.get(`/vehicles/live/location/${tenantId}`)
               .then(res => {
                 if (res.data.success) setVehicles(res.data.data);
+                if (res.data.data.gps) fetchAddress(res.data.data.gps.lat, res.data.data.gps.lng);
               })
               .catch(() => setError("Failed to restore data."))
               .finally(() => {
@@ -179,11 +205,7 @@ const DashBoardPage = () => {
   const drivers = selectedVehicle?.beacons.filter(b => b.type.toLowerCase() === 'driver') || [];
   const passengers = selectedVehicle?.beacons.filter(b => b.type.toLowerCase() === 'traveller') || [];
 
-  const formatTime = (isoString: string) => {
-    try {
-      return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch (e) { return "--:--"; }
-  };
+ 
 
   if (!googleMapsApiKey) {
     return (
@@ -322,6 +344,15 @@ const DashBoardPage = () => {
                     <div className="p-2 bg-blue-100 text-blue-600 rounded-full shadow-sm">
                       <LuBus size={25} />
                     </div>
+
+
+                  </div>
+
+                  <div className="bg-white p-3 mt-2 flex gap-2">
+                    <MdLocationOn className="text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      {address}
+                    </p>
                   </div>
 
                   <div className="flex-1 p-4 space-y-6 ">
@@ -360,7 +391,7 @@ const DashBoardPage = () => {
                     {/* 2. Driver Info - Scrollable if many */}
                     <div>
                       <label className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
-                        <FaUserTie /> Driver Crew
+                        <FaUserTie /> Driver
                       </label>
 
                       {drivers.length > 0 ? (
@@ -397,8 +428,8 @@ const DashBoardPage = () => {
                         <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
                           <FaUsers /> Passengers
                         </label>
-                        <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
-                          Total: {passengers.length}
+                        <span className="text-[10px] uppercase font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                          Total : {passengers.length}
                         </span>
                       </div>
 
@@ -448,8 +479,8 @@ const DashBoardPage = () => {
                     <MdGpsFixed size={32} />
                   </div>
                   <h3 className="text-sm font-bold text-slate-800 uppercase">Select a Vehicle</h3>
-                  <p className="text-xs text-slate-500 mt-2 max-w-[200px]">
-                    Click on a vehicle marker on the map to view live telemetry and manifest.
+                  <p className="text-xs uppercase text-slate-500 max-w-[200px]">
+                    Click on a vehicle marker on the map to view details.
                   </p>
                 </div>
               )}

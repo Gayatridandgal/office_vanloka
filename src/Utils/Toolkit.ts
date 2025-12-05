@@ -164,3 +164,10 @@ export const formatDateTime = (dateString: string | null) => {
     hour12: true
   }).toUpperCase();
 };
+
+
+export  const formatTime = (isoString: string) => {
+    try {
+      return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return "--:--"; }
+  };

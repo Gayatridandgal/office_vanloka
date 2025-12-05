@@ -25,12 +25,13 @@ import {
 import { MdGpsFixed, MdLocationOn } from "react-icons/md";
 import { LuBus } from "react-icons/lu";
 import type { LiveVehicle } from "../../Types/Index";
+import { formatTime } from "../../Utils/Toolkit";
 
 const STORAGE_KEY = "vehicle_track_cooldown";
 const COOLDOWN_DURATION = 60; // 1 Minute
 
 const VehicleTrackPage = () => {
-    const { vehicleNumber } = useParams<{ vehicleNumber:any }>();
+    const { vehicleNumber } = useParams<{ vehicleNumber: any }>();
     const { tenantId } = useAuth();
 
     // State
@@ -183,11 +184,6 @@ const VehicleTrackPage = () => {
     const drivers = vehicle?.beacons.filter(b => b.type.toLowerCase() === 'driver') || [];
     const passengers = vehicle?.beacons.filter(b => b.type.toLowerCase() === 'traveller') || [];
 
-    const formatTime = (isoString?: string) => {
-        if (!isoString) return "--:--";
-        return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
     const formatCountdownStr = (seconds: number) => `${seconds}s`;
 
     if (!googleMapsApiKey) {
@@ -200,11 +196,11 @@ const VehicleTrackPage = () => {
 
     return (
         <div className="min-h-screen bg-white px-2">
-            <div className="mx-2">
-                <PageHeaderBack title={"Live Tracking"} buttonLink="/vehicles" />
+            <div className="mx-4">
+                <PageHeaderBack title={"Back"} buttonLink="/vehicles" />
             </div>
 
-            <div className="px-4 pb-10">
+            <div className="px-4 mt-4 pb-10">
                 <div className="space-y-4">
 
                     {/* 1. Control Bar */}
@@ -244,18 +240,18 @@ const VehicleTrackPage = () => {
                     </div>
 
                     {/* 2. Main Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)] min-h-[600px]">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-220px)] min-h-[80vh]">
 
                         {/* Map Area - ALWAYS RENDERED */}
                         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200  relative">
 
                             {/* FIX: LoadScript is top-level within this div, so map loads instantly */}
                             <LoadScript googleMapsApiKey={googleMapsApiKey}>
-                                <GoogleMapDisplay
-                                    vehicles={vehicle ? [vehicle] : []}
-                                    selectedVehicleNumber={vehicle?.vehicle_number || null}
-                                    onVehicleSelect={() => { }}
-                                />
+                            <GoogleMapDisplay
+                                vehicles={vehicle ? [vehicle] : []}
+                                selectedVehicleNumber={vehicle?.vehicle_number || null}
+                                onVehicleSelect={() => { }}
+                            />
                             </LoadScript>
 
                             {/* Overlay: Loading */}
@@ -298,8 +294,7 @@ const VehicleTrackPage = () => {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <span className="block text-xs font-bold text-slate-500 uppercase">Reg. Number</span>
-                                                <span className="block text-sm font-bold text-slate-800">{vehicle.vehicle_number || "N/A"}</span>
+                                                <span className="block text-sm font-bold text-slate-800">{vehicle.vehicle_number || "-"}</span>
                                             </div>
                                         </div>
                                         <div className="bg-white p-3 rounded-lg border border-slate-200 flex gap-2">
