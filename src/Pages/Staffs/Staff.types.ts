@@ -23,7 +23,7 @@ export interface Staff {
 
 
   roles: string[]; // Changed from role: Role[] to roles: string[]
-  status: "Active" | "Inactive";
+  status:string
   created_at: string;
   updated_at: string;
 }

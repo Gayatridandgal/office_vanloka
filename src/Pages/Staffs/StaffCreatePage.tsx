@@ -1,7 +1,8 @@
 // src/components/staff/StaffCreatePage.tsx
 import { useState, useEffect } from "react";
-import { useForm, type SubmitHandler, Controller } from "react-hook-form";
+import { useForm, type SubmitHandler, Controller, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // Icons
 import {
@@ -24,8 +25,9 @@ import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 
 // Services & Context
 import { useAlert } from "../../Context/AlertContext";
-import tenantApi from "../../Services/ApiService";
+import tenantApi, { centralUrl } from "../../Services/ApiService";
 import type { Staff } from "./Staff.types";
+import type { FormDropdown, StateDistrict } from "../../Types/Index";
 
 interface Role {
   id: number;
@@ -35,13 +37,22 @@ interface Role {
 const StaffCreatePage = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  const [allRoles, setAllRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Unified dropdown state (similar to DriverCreatePage)
+  const [dropdowns, setDropdowns] = useState({
+    genders: [] as FormDropdown[],
+    statuses: [] as FormDropdown[],
+    states: [] as StateDistrict[],
+    roles: [] as Role[],
+  });
+  const [districts, setDistricts] = useState<StateDistrict[]>([]);
 
   const {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Staff>({
     defaultValues: {
@@ -51,21 +62,54 @@ const StaffCreatePage = () => {
     },
   });
 
+  // Watch state changes for district dropdown
+  const selectedState = useWatch({ control, name: "state" });
+
+  // 1. Initial Data Fetch (using Promise.all like DriverCreatePage)
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await tenantApi.get("/roles");
-        setAllRoles(response.data.data || []);
-      } catch (err) {
-        showAlert("Failed to load roles.", "error");
-        console.error(err);
+        setLoading(true);
+        const [genders, statuses, states, roles] = await Promise.all([
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=gender`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=status`),
+          axios.get(`${centralUrl}/masters/forms/dropdowns/states`),
+          tenantApi.get("/roles"),
+        ]);
+
+        setDropdowns({
+          genders: genders.data || [],
+          statuses: statuses.data || [],
+          states: states.data || [],
+          roles: roles.data.data || [],
+        });
+      } catch (error) {
+        console.error("Error fetching form data:", error);
+        showAlert("Failed to load form data.", "error");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchRoles();
+    fetchInitialData();
   }, [showAlert]);
+
+  // 2. Fetch Districts on State Change
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (!selectedState) {
+        setDistricts([]);
+        setValue('district', ''); // Reset district
+        return;
+      }
+      try {
+        const response = await axios.get(`${centralUrl}/masters/forms/dropdowns/districts/${selectedState}`);
+        setDistricts(response.data || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchDistricts();
+  }, [selectedState, setValue]);
 
   const onSubmit: SubmitHandler<Staff> = async (data) => {
     if (data.roles.length === 0) {
@@ -82,7 +126,6 @@ const StaffCreatePage = () => {
       formData.append("last_name", data.last_name);
       formData.append("designation", data.designation);
       formData.append("gender", data.gender);
-
       formData.append("joining_date", data.joining_date);
       formData.append("email", data.email);
       formData.append("phone", data.phone);
@@ -102,15 +145,13 @@ const StaffCreatePage = () => {
         formData.append("roles[]", role);
       });
 
-      // Add SINGLE photo
+      // Add photo
       if (data.photo) {
         formData.append("photo", data.photo[0]);
       }
 
       const response = await tenantApi.post("/employees", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       showAlert(response.data.message || "Staff member created successfully!", "success");
@@ -131,18 +172,14 @@ const StaffCreatePage = () => {
 
   return (
     <div className="min-h-screen bg-white pb-12">
-      {/* 1. Sticky Header */}
       <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
         <PageHeaderBack title="Back" buttonLink="/staff" />
       </div>
 
-      {/* 2. Main Container */}
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-          {/* 3. The Form Card */}
           <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-
+            
             {/* Card Header */}
             <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
               <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
@@ -167,34 +204,28 @@ const StaffCreatePage = () => {
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <InputField label="Employee ID" name="employee_id" register={register} errors={errors} required />
-
-
                     <InputField label="First Name" name="first_name" register={register} errors={errors} required />
                     <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
-
-
                     <InputField label="Email" name="email" type="email" register={register} errors={errors} required />
                     <InputField label="Phone Number" name="phone" type="tel" register={register} errors={errors} required />
 
+                    {/* Dynamic Gender Dropdown from Central DB */}
                     <SelectInputField
                       label="Gender"
                       name="gender"
                       register={register}
                       errors={errors}
-                      options={[
-                        { label: "Male", value: "Male" },
-                        { label: "Female", value: "Female" },
-                        { label: "Other", value: "Other" },
-                      ]}
+                      options={dropdowns.genders.map(d => ({ label: d.value, value: d.value }))}
                       required
                     />
+                    
                     <InputField label="Designation" name="designation" register={register} errors={errors} required />
                     <InputField label="Date of Joining" name="joining_date" type="date" register={register} errors={errors} required />
                   </div>
                 </div>
               </div>
 
-              {/* SECTION: Professional Details */}
+              {/* SECTION: Address Details */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <FaMapMarkerAlt className="text-green-400" />
@@ -205,19 +236,36 @@ const StaffCreatePage = () => {
                     <InputField label="Address Line 1" name="address_line_1" register={register} errors={errors} />
                     <InputField label="Address Line 2" name="address_line_2" register={register} errors={errors} />
                     <InputField label="Landmark" name="landmark" register={register} errors={errors} />
-                    <InputField label="state" name="state" register={register} errors={errors} />
-                    <InputField label="district" name="district" register={register} errors={errors} />
-                    <InputField label="city" name="city" register={register} errors={errors} />
-                    <InputField label="pincode" name="pincode" register={register} errors={errors} />
+                    
+                    {/* Dynamic State Dropdown from Central DB */}
+                    <SelectInputField
+                      label="State"
+                      name="state"
+                      register={register}
+                      errors={errors}
+                      options={dropdowns.states.map(s => ({ label: s.state, value: s.state }))}
+                    />
+                    
+                    {/* Dynamic District Dropdown (depends on State) */}
+                    <SelectInputField
+                      label="District"
+                      name="district"
+                      register={register}
+                      errors={errors}
+                      options={districts.map(d => ({ label: d.district, value: d.district }))}
+                      disabled={!selectedState}
+                    />
+                    
+                    <InputField label="City" name="city" register={register} errors={errors} />
+                    <InputField label="Pincode" name="pincode" register={register} errors={errors} />
+                    
+                    {/* Dynamic Status Dropdown from Central DB */}
                     <SelectInputField
                       label="Status"
                       name="status"
                       register={register}
                       errors={errors}
-                      options={[
-                        { label: "Active", value: "Active" },
-                        { label: "Inactive", value: "Inactive" },
-                      ]}
+                      options={dropdowns.statuses.map(d => ({ label: d.value, value: d.value }))}
                       required
                     />
                   </div>
@@ -237,7 +285,7 @@ const StaffCreatePage = () => {
                     rules={{ required: "At least one role must be selected." }}
                     render={({ field }) => (
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {allRoles.map((role) => {
+                        {dropdowns.roles.map((role) => {
                           const isSelected = field.value?.includes(role.name);
                           return (
                             <label
@@ -296,7 +344,6 @@ const StaffCreatePage = () => {
                       register={register}
                       errors={errors}
                     />
-
                   </div>
                 </div>
               </div>

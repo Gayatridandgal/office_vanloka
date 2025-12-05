@@ -29,14 +29,13 @@ import {
 // Services & Utils
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
 import { useAlert } from "../../Context/AlertContext";
-import { useToolkit } from "../../Utils/Toolkit";
 import type { Staff } from "./Staff.types";
 import { Loader } from "../../Components/UI/Loader";
 import EmptyState from "../../Components/UI/EmptyState";
 import { Pagination } from "../../Components/Table/Pagination";
 
 const StaffIndexPage = () => {
-  const { can } = useToolkit();
+  // const { can } = useToolkit();
   const { showAlert } = useAlert();
 
   // Data State
@@ -209,7 +208,7 @@ const StaffIndexPage = () => {
               <div className="flex items-center flex-wrap gap-1 mt-3">
                 {searchQuery && (
                   <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
-                    Search: {searchQuery}
+                    {searchQuery}
                   </span>
                 )}
                 {statusFilter && (
@@ -249,7 +248,7 @@ const StaffIndexPage = () => {
                 <TableContainer maxHeight="65vh">
                   <Table>
                     <Thead>
-                      <Th width="5%">S.No</Th>
+                      <Th >S.No</Th>
                       <Th>Staff Details</Th>
                       <Th>Employee ID</Th>
                       <Th>Designation</Th>
@@ -326,7 +325,7 @@ const StaffIndexPage = () => {
                           {/* Status */}
                           <Td>
                             <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border shadow-sm
-                                ${row.status === 'Active'
+                                ${row.status === 'active'
                                 ? 'bg-green-50 text-green-700 border-green-200'
                                 : 'bg-red-50 text-red-700 border-red-200'
                               }`}
