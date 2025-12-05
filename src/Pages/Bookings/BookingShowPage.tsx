@@ -1,6 +1,6 @@
 // src/components/bookings/BookingShowPage.tsx
 import { useEffect, useState } from "react";
-import { useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 
 // Icons
@@ -21,7 +21,7 @@ import EmptyState from "../../Components/UI/EmptyState";
 import SelectInputField from "../../Components/Form/SelectInputField";
 
 // Services & Utils
-import tenantApi from "../../Services/ApiService";
+import tenantApi, { centralAsset } from "../../Services/ApiService";
 import { useAlert } from "../../Context/AlertContext";
 import { formatDate, formatDateTime } from "../../Utils/Toolkit";
 
@@ -145,7 +145,7 @@ const BookingShowPage = () => {
             <div className="relative shrink-0">
               <div className="w-20 h-20 rounded-full bg-slate-100 border-4 border-white shadow-lg overflow-hidden">
                 {booking.traveller_profile_photo ? (
-                  <img src={`/user.jpeg`} alt="User" className="w-full h-full object-cover" />
+                  <img src={`${centralAsset}${booking.traveller_profile_photo}`} alt="User" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-300"><FaUser size={32} /></div>
                 )}
@@ -285,13 +285,13 @@ const BookingShowPage = () => {
 
         {/* TAB 2: OPERATIONS (Edit Form) */}
         {activeTab === 'operations' && (
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-xl mx-auto">
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
               <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex items-center gap-3">
                 <div className="p-2 bg-white text-indigo-600 rounded-lg shadow-sm"><IoSettings size={20} /></div>
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-800 uppercase">Update Booking</h3>
-                  <p className="text-sm uppercase text-slate-500">Modify schedule, vehicle assignment, or status.</p>
+                  <p className="text-xs uppercase text-slate-500">Modify schedule, vehicle assignment, or status.</p>
                 </div>
               </div>
 
@@ -342,7 +342,7 @@ const BookingShowPage = () => {
                   {/* Status */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-bold text-slate-700 uppercase mb-2">Booking Status</label>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {['pending', 'approved', 'active', 'completed', 'cancelled'].map(status => (
                         <label key={status} className="cursor-pointer">
                           <input type="radio" value={status} {...register("status")} className="peer sr-only" />

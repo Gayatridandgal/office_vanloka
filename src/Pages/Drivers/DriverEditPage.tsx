@@ -15,7 +15,8 @@ import {
   FaExclamationTriangle,
   FaStickyNote,
   FaTrash,
-  FaPlus
+  FaPlus,
+  FaUserCircle
 } from "react-icons/fa";
 
 // Components
@@ -27,7 +28,7 @@ import CancelButton from "../../Components/Form/CancelButton";
 import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 
 // Services & Context
-import tenantApi, { centralUrl } from "../../Services/ApiService";
+import tenantApi, { centralUrl, tenantAsset } from "../../Services/ApiService";
 import { useAlert } from "../../Context/AlertContext";
 
 // Types
@@ -89,6 +90,9 @@ const DriverEditPage = () => {
   const hasMedicalFitness = watch("medical_fitness");
   const hasPoliceVerification = watch("police_verification");
 
+  const [currentPhoto, setCurrentPhoto] = useState<string | null>(null);
+
+
   // 1. Initial Data Fetch
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -113,6 +117,7 @@ const DriverEditPage = () => {
         const driver = driverRes.data.data || driverRes.data;
         console.log(driver);
         setDriverData(driver);
+        setCurrentPhoto(driver.profile_photo);
         reset(driver);
 
         if (driver.license_insurance && Array.isArray(driver.license_insurance)) {
@@ -249,13 +254,51 @@ const DriverEditPage = () => {
 
             <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
 
+              <div>
+                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
+
+                  {/* Current Photo Preview */}
+                  <div className="flex items-center gap-6 mb-6 pb-6 border-b border-slate-200">
+                    <div className="relative">
+                      {currentPhoto ? (
+                        <img
+                          src={`${tenantAsset}${currentPhoto}`}
+                          alt="Current Profile"
+                          className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center border-4 border-white shadow-md text-blue-400">
+                          <FaUserCircle size={48} />
+                        </div>
+                      )}
+                      <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-700 uppercase">Current Photo</h4>
+                      <p className="text-xs uppercase text-slate-500 mt-1">
+                        This is the image currently displayed on driver profile.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FileInputField
+                      label="Photo"
+                      name="photo"
+                      register={register}
+                      errors={errors}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* 1. Basic Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaUser className="text-slate-400" />
+                  <FaUser className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
                   <InputField label="First Name" name="first_name" register={register} errors={errors} required />
                   <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
                   <InputField label="Email" name="email" type="email" register={register} errors={errors} />
@@ -285,24 +328,21 @@ const DriverEditPage = () => {
                     options={dropdowns.maritalStatuses.map(d => ({ label: d.value, value: d.value }))}
                   />
 
-                  <div>
-                    <FileInputField label="Profile Photo" name="profile_photo" register={register} errors={errors} />
-                    {driverData?.profile_photo && <p className="text-xs text-green-600 mt-1">✓ Current file exists</p>}
-                  </div>
+                  <InputField label="Number of Dependants" name="number_of_dependents" type="text" register={register} errors={errors} />
+
                 </div>
               </div>
 
               {/* 2. Address Details */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaMapMarkerAlt className="text-slate-400" />
+                  <FaMapMarkerAlt className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Address Details</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
                   <InputField label="Address Line 1" name="address_line_1" register={register} errors={errors} />
                   <InputField label="Address Line 2" name="address_line_2" register={register} errors={errors} />
                   <InputField label="Landmark" name="landmark" register={register} errors={errors} />
-                  <InputField label="City" name="city" register={register} errors={errors} />
 
                   <SelectInputField
                     label="State"
@@ -319,6 +359,8 @@ const DriverEditPage = () => {
                     options={districts.map(d => ({ label: d.district, value: d.district }))}
                     disabled={!selectedState}
                   />
+                  <InputField label="City" name="city" register={register} errors={errors} />
+
 
                   <InputField label="PIN Code" name="pin_code" register={register} errors={errors} />
                 </div>
@@ -327,10 +369,10 @@ const DriverEditPage = () => {
               {/* 3. Professional Info */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaBriefcase className="text-slate-400" />
+                  <FaBriefcase className="text-green-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Professional Info</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
                   <SelectInputField
                     label="Employment Type"
                     name="employment_type"
@@ -377,21 +419,47 @@ const DriverEditPage = () => {
                 </div>
               </div>
 
-              {/* 4. Bank & Emergency */}
+              {/* 4. Bank  */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaCreditCard className="text-slate-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Bank & Emergency</h3>
+                  <FaCreditCard className="text-blue-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Bank Details</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
+                  <InputField label="Account Holder Name" name="account_holder_name" register={register} errors={errors} />
                   <InputField label="Bank Name" name="bank_name" register={register} errors={errors} />
                   <InputField label="Account No" name="account_number" register={register} errors={errors} />
                   <InputField label="IFSC Code" name="ifsc_code" register={register} errors={errors} />
+                </div>
+              </div>
 
-                  <div className="md:col-span-2 border-t border-slate-200 my-2"></div>
-
-                  <InputField label="Emergency Contact (Name)" name="primary_person_name" register={register} errors={errors} />
-                  <InputField label="Emergency Contact (Phone)" name="primary_person_phone_1" register={register} errors={errors} />
+              {/* 4. Emergency Contact Person */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FaCreditCard className="text-amber-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Emergency Contact Person</h3>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaUser className="text-green-400" />
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Primary Person</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
+                    <InputField label="Name" name="primary_person_name" register={register} errors={errors} />
+                    <InputField label="Primary Phone" name="primary_person_phone_1" register={register} errors={errors} />
+                    <InputField label="Secondary Phone" name="primary_person_phone_2" register={register} errors={errors} />
+                    <InputField label="Email" name="primary_person_email" register={register} errors={errors} />
+                  </div>
+                  <div className="flex items-center gap-2 mt-4 mb-4">
+                    <FaUser className="text-blue-400" />
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Secondary Person</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
+                    <InputField label="Name" name="secondary_person_name" register={register} errors={errors} />
+                    <InputField label="primary Phone" name="secondary_person_phone_1" register={register} errors={errors} />
+                    <InputField label="secondary Phone" name="secondary_person_phone_2" register={register} errors={errors} />
+                    <InputField label="Email" name="secondary_person_email" register={register} errors={errors} />
+                  </div>
                 </div>
               </div>
 

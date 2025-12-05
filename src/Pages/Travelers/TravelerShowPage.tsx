@@ -16,7 +16,6 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { MdOutlineWorkHistory, MdEventSeat, MdNotes } from "react-icons/md";
-import { BiUserCircle } from "react-icons/bi";
 
 // Components
 import { CirclularLoader } from "../../Components/UI/CircularLoader";
@@ -24,7 +23,7 @@ import EmptyState from "../../Components/UI/EmptyState";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 
 // Services & Utils
-import tenantApi from "../../Services/ApiService";
+import tenantApi, { centralAsset} from "../../Services/ApiService";
 import type { Traveller } from "./Traveler.types";
 import type { Booking } from "../Bookings/Booking.types";
 import { DataBlock } from "../../Components/UI/DetailItem";
@@ -144,14 +143,14 @@ const TravelerShowPage = () => {
 
       {/* 2. Hero Section */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-8">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
 
             {/* Avatar */}
             <div className="relative shrink-0 group">
               <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full p-1 bg-white border border-slate-200 shadow-xl">
                 <img
-                  src={DUMMY_IMAGE_PATH} // Using dummy as primary fallback as requested
+                  src={`${centralAsset}${traveller.profile_photo}`} // Using dummy as primary fallback as requested
                   alt={traveller.first_name}
                   className="w-full h-full rounded-full object-cover"
                   onError={(e) => { (e.target as HTMLImageElement).src = DUMMY_IMAGE_PATH; }}
@@ -178,7 +177,7 @@ const TravelerShowPage = () => {
         </div>
 
         {/* Tab Navigation (Scrollable on mobile) */}
-        <div className="max-w-5xl mx-auto px-4 md:px-6 flex gap-6 md:gap-8 mt-2 overflow-x-auto no-scrollbar">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 flex gap-6 md:gap-8 mt-2 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('details')}
             className={`pb-4 text-sm font-bold uppercase tracking-wide border-b-[3px] transition-all whitespace-nowrap ${activeTab === 'details' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
@@ -195,20 +194,18 @@ const TravelerShowPage = () => {
       </div>
 
       {/* 3. Content Area */}
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
 
         {/* TAB 1: DETAILS */}
         {activeTab === 'details' && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
-            <div className="bg-blue-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-slate-800 uppercase flex items-center gap-2">
-                <BiUserCircle className="text-indigo-600 text-sm" /> Profile
-              </h3>
-            </div>
+          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
+            
 
             <div className="p-6 md:p-8 overflow-y-auto xl:max-h-[60vh] lg:max-h-[60vh] md:max-h-[40vh] max-h-[30vh]">
               {/* Responsive Grid: 1 col mobile, 2 col tablet, 3 col desktop */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+                <DataBlock label="First Name" value={traveller.first_name} />
+                <DataBlock label="Last Name" value={traveller.last_name}  />
                 <DataBlock label="Aadhaar Number" value={traveller.aadhaar_number} icon={<FaIdCard className="text-amber-600" />} />
                 <DataBlock label="Gender" value={traveller.gender} icon={<FaVenusMars className="text-blue-600" />} />
                 <DataBlock label="Date of Birth" value={formatDate(traveller.date_of_birth)} icon={<FaBirthdayCake className="text-pink-600" />} />
@@ -235,7 +232,7 @@ const TravelerShowPage = () => {
 
         {/* TAB 2: BOOKINGS */}
         {activeTab === 'bookings' && (
-          <div className="space-y-10 bg-white p-6 rounded-lg overflow-y-auto xl:max-h-[60vh] lg:max-h-[60vh] md:max-h-[40vh] max-h-[35vh]">
+          <div className="space-y-10 bg-white p-6 rounded-lg  shadow-md border border-gray-200 overflow-y-auto xl:max-h-[60vh] lg:max-h-[60vh] md:max-h-[40vh] max-h-[35vh]">
 
             {/* Active Trips */}
             <section>
@@ -274,8 +271,8 @@ const TravelerShowPage = () => {
                   {pastBookings.map(booking => <BookingCard key={booking.id} booking={booking} />)}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-[10px] uppercase text-red-600 font-medium">No booking history available</p>
+                <div className="flex flex-col bg-gray-100 rounded-lg p-3 items-center justify-center">
+                  <p className="text-[10px] uppercase text-red-400 font-medium">No booking history available</p>
                 </div>
               )}
             </section>

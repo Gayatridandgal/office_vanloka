@@ -225,7 +225,7 @@ const DriverCreatePage = () => {
               {/* 1. Basic Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaUser className="text-slate-400" />
+                  <FaUser className="text-purple-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -265,14 +265,13 @@ const DriverCreatePage = () => {
               {/* 2. Address Details */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaMapMarkerAlt className="text-slate-400" />
+                  <FaMapMarkerAlt className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Address Details</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <InputField label="Address Line 1" name="address_line_1" register={register} errors={errors} />
                   <InputField label="Address Line 2" name="address_line_2" register={register} errors={errors} />
                   <InputField label="Landmark" name="landmark" register={register} errors={errors} />
-                  <InputField label="City" name="city" register={register} errors={errors} />
 
                   <SelectInputField
                     label="State"
@@ -289,6 +288,8 @@ const DriverCreatePage = () => {
                     options={districts.map(d => ({ label: d.district, value: d.district }))}
                     disabled={!selectedState}
                   />
+                  <InputField label="City" name="city" register={register} errors={errors} />
+
 
                   <InputField label="PIN Code" name="pin_code" register={register} errors={errors} />
                 </div>
@@ -297,7 +298,7 @@ const DriverCreatePage = () => {
               {/* 3. Professional Info */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaBriefcase className="text-slate-400" />
+                  <FaBriefcase className="text-green-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Professional Info</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -350,25 +351,22 @@ const DriverCreatePage = () => {
               {/* 4. Bank & Emergency */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaCreditCard className="text-slate-400" />
+                  <FaCreditCard className="text-blue-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Bank Details</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
+                  <InputField label="Account Holder Name" name="account_holder_name" register={register} errors={errors} />
                   <InputField label="Bank Name" name="bank_name" register={register} errors={errors} />
                   <InputField label="Account No" name="account_number" register={register} errors={errors} />
                   <InputField label="IFSC Code" name="ifsc_code" register={register} errors={errors} />
-
-                  <div className="md:col-span-2 border-t border-slate-200 my-2"></div>
-
-                  <InputField label="Emergency Contact (Name)" name="primary_person_name" register={register} errors={errors} />
-                  <InputField label="Emergency Contact (Phone)" name="primary_person_phone_1" register={register} errors={errors} />
                 </div>
               </div>
 
 
+              {/* 4. Emergency Contact Person */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaCreditCard className="text-slate-400" />
+                  <FaCreditCard className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Emergency Contact Person</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -378,31 +376,30 @@ const DriverCreatePage = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
                     <InputField label="Name" name="primary_person_name" register={register} errors={errors} />
-                    <InputField label="Phone" name="primary_person_phone_1" register={register} errors={errors} />
-                    <InputField label="Phone2" name="primary_person_phone_2" register={register} errors={errors} />
+                    <InputField label="Primary Phone" name="primary_person_phone_1" register={register} errors={errors} />
+                    <InputField label="Secondary Phone" name="primary_person_phone_2" register={register} errors={errors} />
                     <InputField label="Email" name="primary_person_email" register={register} errors={errors} />
                   </div>
-                </div>
-
-                <div className="bg-gray-50  p-6 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mt-4 mb-4">
                     <FaUser className="text-blue-400" />
                     <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Secondary Person</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
                     <InputField label="Name" name="secondary_person_name" register={register} errors={errors} />
-                    <InputField label="Phone" name="secondary_person_phone_1" register={register} errors={errors} />
-                    <InputField label="Phone2" name="secondary_person_phone_2" register={register} errors={errors} />
+                    <InputField label="primary Phone" name="secondary_person_phone_1" register={register} errors={errors} />
+                    <InputField label="secondary Phone" name="secondary_person_phone_2" register={register} errors={errors} />
                     <InputField label="Email" name="secondary_person_email" register={register} errors={errors} />
                   </div>
                 </div>
+
+                
 
               </div>
 
               {/* 5. Licenses (Dynamic Array) */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaIdCard className="text-slate-400" />
+                  <FaIdCard className="text-purple-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Licenses & Insurance</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100 space-y-4">
@@ -437,7 +434,7 @@ const DriverCreatePage = () => {
               {/* 6. Assignments */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaExclamationTriangle className="text-slate-400" />
+                  <FaExclamationTriangle className="text-yellow-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Assignments</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -461,7 +458,7 @@ const DriverCreatePage = () => {
               {/* 7. Documents */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaFileAlt className="text-slate-400" />
+                  <FaFileAlt className="text-green-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Upload Documents</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -475,7 +472,7 @@ const DriverCreatePage = () => {
               {/* 8. Remarks & Status */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaStickyNote className="text-slate-400" />
+                  <FaStickyNote className="text-blue-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Remarks</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-4 bg-gray-50 p-6 rounded-xl border border-slate-100">

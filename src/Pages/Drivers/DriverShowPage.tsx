@@ -1,508 +1,353 @@
+// src/components/drivers/DriverShowPage.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+
+// Icons
 import {
-  FaUser,
-  FaMapMarkerAlt,
-  FaBriefcase,
-  FaFileAlt,
-  FaIdCard,
-  FaCreditCard,
-  FaUserShield,
-  FaCalendarAlt,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaExclamationTriangle,
+    FaUser,
+    FaMapMarkerAlt,
+    FaBriefcase,
+    FaFileAlt,
+    FaIdCard,
+    FaCreditCard,
+    FaUserShield,
+    FaCheckCircle,
+    FaTimesCircle,
+    FaPhoneAlt,
+    FaEnvelope,
+    FaTint,
+    FaUsers,
+    FaEdit
 } from "react-icons/fa";
-import { MdWarning } from "react-icons/md";
+import { MdWarning, MdVerified, MdHealthAndSafety, MdLocalPolice } from "react-icons/md";
+
+// Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import DetailItem from "../../Components/UI/DetailItem";
-import DocumentItem from "../../Components/UI/DocumentItem";
-import type { Driver } from "./Driver.types";
-import { SectionHeader } from "../../Components/UI/SectionHeader";
 import { Loader } from "../../Components/UI/Loader";
+import DetailItem, { DataBlock, InfoCard } from "../../Components/UI/DetailItem";
+import DocumentItem from "../../Components/UI/DocumentItem";
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
+import type { Driver } from "../Drivers/Driver.types";
 
-// Utility function for date formatting
+
+// --- Helpers ---
+
 const formatDate = (dateString: string | null | undefined) => {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
 };
 
-// Yes/No Badge with Icons
-const YesNoBadge = ({ value }: { value?: string | null }) => {
-  if (value === "YES") {
+const StatusBadge = ({ status }: { status?: string }) => {
+    const styles = {
+        active: "bg-green-50 text-green-700 border-green-200 ring-green-100",
+        inactive: "bg-red-50 text-red-700 border-red-200 ring-red-100",
+        suspended: "bg-amber-50 text-amber-700 border-amber-200 ring-amber-100",
+        default: "bg-slate-50 text-slate-700 border-slate-200 ring-slate-100"
+    };
+
+    const key = status?.toLowerCase() as keyof typeof styles;
+    const className = styles[key] || styles.default;
+
     return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-100 text-green-800 border-2 border-green-200">
-        <FaCheckCircle size={12} />
-        YES
-      </span>
+        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${className}`}>
+            {status || "-"}
+        </span>
     );
-  }
-  if (value === "NO") {
-    return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-800 border-2 border-red-200">
-        <FaTimesCircle size={12} />
-        NO
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-800 border-2 border-gray-200">
-      N/A
-    </span>
-  );
 };
 
-const StatusBadge = ({ status }:any) => {
-  if (status === "active") {
+const EmploymentBadge = ({ type }: { type?: string }) => {
     return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-green-100 text-green-800 border-2 border-green-200">
-        <FaCheckCircle size={12} />
-        active
-      </span>
+        <span className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase border border-blue-100">
+            <FaBriefcase size={10} /> {type || "-"}
+        </span>
     );
-  }
-  if (status === "inactive") {
-    return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold uppercase bg-red-100 text-red-800 border-2 border-red-200">
-        <FaTimesCircle size={12} />
-        inactive
-      </span>
-    );
-  }
 };
 
-// Employment Type Badge
-const EmploymentTypeBadge = ({ type }: { type?: string | null }) => {
-  const getTypeConfig = () => {
-    switch (type?.toLowerCase()) {
-      case "full-time":
-        return { label: "Full-time", color: "bg-blue-100 text-blue-800 border-blue-200" };
-      case "contract":
-        return { label: "Contract", color: "bg-amber-100 text-amber-800 border-amber-200" };
-      case "self-employed":
-        return { label: "Self-employed", color: "bg-purple-100 text-purple-800 border-purple-200" };
-      default:
-        return { label: type || "N/A", color: "bg-gray-100 text-gray-800 border-gray-200" };
-    }
-  };
-
-  const config = getTypeConfig();
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 p-1 rounded-lg text-sm font-bold uppercase border-2 ${config.color}`}
-    >
-      <FaBriefcase size={14} />
-      {config.label}
-    </span>
-  );
+const YesNoIndicator = ({ value, icon: Icon }: { value?: string, icon?: any }) => {
+    const isYes = value === "YES";
+    return (
+        <div className={`flex items-center gap-2 p-2 rounded border ${isYes ? 'bg-green-50 border-green-100 text-green-800' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
+            {Icon && <Icon size={14} />}
+            <span className="text-xs font-bold uppercase">{isYes ? "Verified" : "Not Verified"}</span>
+            {isYes ? <FaCheckCircle size={15} /> : <FaTimesCircle size={15} />}
+        </div>
+    );
 };
+
+// --- Main Component ---
 
 const DriverShowPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const [driver, setDriver] = useState<Driver | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    const { id } = useParams<{ id: string }>();
 
-  useEffect(() => {
-    fetchDriver();
-  }, [id]);
+    // State
+    const [driver, setDriver] = useState<Driver | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  const fetchDriver = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+    // Fetch Data
+    useEffect(() => {
+        const fetchDriver = async () => {
+            try {
+                setLoading(true);
+                const response = await tenantApi.get<{ success: boolean; data: Driver }>(`/drivers/${id}`);
+                if (response.data.success) {
+                    setDriver(response.data.data);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (id) fetchDriver();
+    }, [id]);
 
-      const response = await tenantApi.get<{
-        success: boolean;
-        data: Driver;
-      }>(`/drivers/${id}`);
+    if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader /></div>;
+    if (!driver) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-500 font-bold uppercase">Driver not found</div>;
 
-      if (response.data.success) {
-        setDriver(response.data.data);
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch driver details";
-      setError(errorMessage);
-      console.error("Error fetching driver:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
     return (
-      <Loader/>
-    );
-  }
+        <div className="min-h-screen bg-slate-50 pb-12">
 
-  if (error || !driver) {
-    return (
-      <Loader/>
-    );
-  }
+            {/* 1. Sticky Header */}
+            <div className="bg-white py-1 sticky top-0 z-20 shadow-sm">
+                <PageHeaderBack title="Back" buttonLink="/drivers" />
+            </div>
 
-  return (
-    <div className="px-4 bg-white min-h-screen">
-      <PageHeaderBack title="Driver Details" buttonLink="/drivers" />
+            {/* 2. Hero Section */}
+            <div className="bg-white border-b border-slate-200">
+                <div className="max-w-6xl mx-auto px-6 py-8">
+                    <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
 
-      <div className="space-y-4 mt-4 pb-10 mx-auto max-w-7xl">
-        {/* Header Card with Profile and Status */}
-        <div className="bg-gray-50 rounded-md p-6 border border-gray-100 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex items-start gap-4">
-              {driver.profile_photo ? (
-                <img
-                  src={`${tenantAsset}${driver.profile_photo}`}
-                  alt={`${driver.first_name} ${driver.last_name}`}
-                  className="h-24 w-24 rounded-lg object-cover border-4 border-purple-200 shadow-md"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="h-24 w-24 rounded-lg bg-purple-100 flex items-center justify-center border-4 border-purple-200 shadow-md">
-                  <FaUser className="text-purple-500" size={40} />
+                        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                            {/* Avatar */}
+                            <div className="relative shrink-0">
+                                <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
+                                    {driver.profile_photo ? (
+                                        <img src={`${tenantAsset}${driver.profile_photo}`} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <FaUser className="text-slate-300" size={40} />
+                                    )}
+                                </div>
+                                <div className={`absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-white flex items-center justify-center text-[10px] text-white shadow-sm ${driver.status === 'active' ? 'bg-green-500' : 'bg-slate-400'}`}>
+                                    {driver.status === 'active' && <FaCheckCircle />}
+                                </div>
+                            </div>
+
+                            {/* Main Info */}
+                            <div className="flex-1 text-center md:text-left">
+                                <h1 className="text-lg font-extrabold text-slate-800 uppercase tracking-wide">
+                                    {driver.first_name} <span className="text-indigo-600">{driver.last_name}</span>
+                                </h1>
+                                <p className="text-sm font-bold text-slate-500 uppercase mt-1 flex items-center justify-center md:justify-start gap-2">
+                                    <FaIdCard size={12} /> EMP : {driver.employee_id || "-"}
+                                    <span className="text-slate-300">|</span>
+                                    <span className="text-slate-400">{driver.gender}</span>
+                                </p>
+
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
+                                    <StatusBadge status={driver.status} />
+                                    <EmploymentBadge type={driver.employment_type} />
+
+                                    {driver.vehicle && (
+                                        <span className="flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold uppercase border border-amber-100">
+                                            Vehicle : {driver.vehicle}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Edit Button Action */}
+                        <div className="flex-shrink-0">
+                            <Link
+                                to={`/drivers/edit/${id}`}
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-bold uppercase hover:bg-indigo-100 transition-colors border border-indigo-200"
+                            >
+                                <FaEdit />Edit Details
+                            </Link>
+                        </div>
+                    </div>
                 </div>
-              )}
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 uppercase mb-1">
-                  {driver.first_name} {driver.last_name}
-                </h1>
-                <p className="text-sm text-gray-600 flex items-center gap-2 mb-1">
-                  <FaIdCard size={14} className="text-gray-400" />
-                  Employee ID:{" "}
-                  <span className="font-mono font-semibold">
-                    {driver.employee_id || "N/A"}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600 flex items-center gap-2">
-                  <FaCalendarAlt size={14} className="text-gray-400" />
-                  DOB: {formatDate(driver.date_of_birth)}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <EmploymentTypeBadge type={driver.employment_type} />
-              <StatusBadge status={driver.status} />
-            </div>
-          </div>
-        </div>
-        
-        <div className="overflow-y-auto max-h-[70vh] space-y-4 border border-gray-200 p-6 rounded-lg">
-          {/* Basic Information Section */}
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-          <SectionHeader icon={<FaUser size={20} />} title="Basic Information" />
-          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
-            <DetailItem label="First Name" value={driver.first_name} />
-            <DetailItem label="Last Name" value={driver.last_name} />
-            <DetailItem label="Gender" value={driver.gender} />
-            <DetailItem
-              label="Date of Birth"
-              value={formatDate(driver.date_of_birth)}
-            />
-            <DetailItem label="Blood Group" value={driver.blood_group} />
-            <DetailItem label="Marital Status" value={driver.marital_status} />
-            <DetailItem
-              label="Number of Dependents"
-              value={driver.number_of_dependents}
-            />
-            <DetailItem label="Mobile Number" value={driver.mobile_number} />
-            <DetailItem label="Email" value={driver.email} />
-          </div>
-        </div>
-
-        {/* Professional Information Section */}
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-          <SectionHeader
-            icon={<FaBriefcase size={20} />}
-            title="Professional Information"
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
-            <DetailItem label="Employment Type" value={driver.employment_type} />
-            <DetailItem label="Employee ID" value={driver.employee_id} />
-            <DetailItem
-              label="Driving Experience (Years)"
-              value={driver.driving_experience}
-            />
-
-            <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
-                Safety Training Completed
-              </h4>
-              <YesNoBadge value={driver.safety_training_completion} />
             </div>
 
-            {driver.safety_training_completion === "YES" && (
-              <DetailItem
-                label="Training Completion Date"
-                value={formatDate(driver.safety_training_completion_date)}
-              />
-            )}
+            {/* 3. Content Area */}
+            <div className="max-w-6xl overflow-y-auto max-h-[73vh] bg-white border border-gray-200 mt-4 rounded-lg shadow-md mx-auto px-6 py-8">
+                <div className="space-y-8 animate-fadeIn">
 
-            <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
-                Medical Fitness Issued
-              </h4>
-              <YesNoBadge value={driver.medical_fitness} />
-            </div>
+                    {/* Row 1: 3-Column Layout */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            {driver.medical_fitness === "YES" && (
-              <DetailItem
-                label="Medical Fitness Expiry"
-                value={formatDate(driver.medical_fitness_exp_date)}
-              />
-            )}
+                        {/* Card 1: Personal Info */}
+                        <InfoCard title="Personal Information" icon={<FaUser />}>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <DetailItem label="Date of birth" value={formatDate(driver.date_of_birth)} />
+                                    <DetailItem label="Blood Group" value={driver.blood_group} />
+                                    <DetailItem label="Marital Status" value={driver.marital_status} />
+                                    <DetailItem label="Dependents" value={String(driver.number_of_dependents)} />
+                                </div>
 
-            <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
-                Police Verification
-              </h4>
-              <YesNoBadge value={driver.police_verification} />
-            </div>
+                                <div className="pt-2 border-t border-slate-100 space-y-2">
+                                    <div className="flex items-start gap-2">
+                                        <FaPhoneAlt className="text-green-400 mt-1" size={12} />
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Mobile</p>
+                                            <p className="text-sm font-bold text-slate-800">{driver.mobile_number}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <FaEnvelope className="text-blue-400 mt-1" size={12} />
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Email</p>
+                                            <p className="text-sm font-bold text-slate-800 truncate w-48">{driver.email || "-"}</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-            {driver.police_verification === "YES" && (
-              <DetailItem
-                label="Police Verification Date"
-                value={formatDate(driver.police_verification_date)}
-              />
-            )}
-          </div>
-        </div>
+                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                    <p className="text-[10px] font-bold text-red-400 uppercase mb-1 flex items-center gap-1"><FaMapMarkerAlt /> Address</p>
+                                    <p className="text-xs font-bold text-slate-700 leading-relaxed uppercase">
+                                        {driver.address_line_1}, {driver.address_line_2}, {driver.city}, {driver.state}, {driver.pin_code}
+                                    </p>
+                                </div>
+                            </div>
+                        </InfoCard>
 
-        {/* Assignment Information */}
-        {(driver.beacon_id || driver.vehicle) && (
-          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <SectionHeader
-              icon={<FaExclamationTriangle size={20} />}
-              title="Tracking & Assignment"
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 gap-6">
-              <DetailItem label="Beacon Assigned" value={driver.beacon_id} />
-              <DetailItem label="Vehicle Assigned" value={driver.vehicle} />
-            </div>
-          </div>
-        )}
+                        {/* Card 2: Professional Info */}
+                        <InfoCard title="Professional & Safety" icon={<FaBriefcase />}>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <DetailItem label="Experience" value={`${driver.driving_experience || 0} Years`} />
+                                    <DetailItem label="Assigned Vehicle" value={driver.vehicle} />
+                                </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {/* Address Details Section */}
-          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <SectionHeader
-              icon={<FaMapMarkerAlt size={20} />}
-              title="Address Details"
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 gap-6">
-              <DetailItem label="Address Line 1" value={driver.address_line_1} />
-              <DetailItem label="Address Line 2" value={driver.address_line_2} />
-              <DetailItem label="Landmark" value={driver.landmark} />
-              <DetailItem label="City" value={driver.city} />
-              <DetailItem label="District" value={driver.district} />
-              <DetailItem label="State" value={driver.state} />
-              <DetailItem label="PIN Code" value={driver.pin_code} />
-            </div>
-          </div>
+                                <div className="space-y-2 pt-2 border-t border-slate-100">
+                                    <div className="grid grid-cols-2 gap-2 items-center">
+                                        <span className="text-xs text-slate-500 uppercase font-bold">Safety Training</span>
+                                        <YesNoIndicator value={driver.safety_training_completion} />
+                                    </div>
+                                    {driver.safety_training_completion === 'YES' && (
+                                        <div className="text-right"><span className="text-[10px] text-slate-400">Date: {formatDate(driver.safety_training_completion_date)}</span></div>
+                                    )}
 
-          {/* Emergency Contact Persons Section */}
-          <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <SectionHeader
-              icon={<FaUserShield size={20} />}
-              title="Emergency Contact Persons"
-            />
+                                    <div className="grid grid-cols-2 gap-2 items-center">
+                                        <span className="text-xs text-slate-500 uppercase font-bold">Physicaly Fit</span>
+                                        <YesNoIndicator value={driver.medical_fitness} />
+                                    </div>
+                                    {driver.medical_fitness === 'YES' && (
+                                        <div className="text-right"><span className="text-[10px] text-slate-400">Exp: {formatDate(driver.medical_fitness_exp_date)}</span></div>
+                                    )}
 
-            {/* Primary Contact */}
-            <div className="mb-4">
-              <h3 className="text-sm font-bold text-blue-700 uppercase mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                Primary
-              </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 gap-4">
-                <DetailItem label="Name" value={driver.primary_person_name} />
-                <DetailItem label="Email" value={driver.primary_person_email} />
-                <DetailItem
-                  label="Primary Number"
-                  value={driver.primary_person_phone_1}
-                />
-                <DetailItem
-                  label="Secondary Number"
-                  value={driver.primary_person_phone_2}
-                />
-              </div>
-            </div>
+                                    <div className="grid grid-cols-2 gap-2 items-center">
+                                        <span className="text-xs text-slate-500 uppercase font-bold">Police Verification</span>
+                                        <YesNoIndicator value={driver.police_verification} />
+                                    </div>
+                                </div>
+                            </div>
+                        </InfoCard>
 
-            {/* Secondary Contact */}
-            <div>
-              <h3 className="text-sm font-bold text-green-700 uppercase mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                Secondary
-              </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 gap-4">
-                <DetailItem label="Name" value={driver.secondary_person_name} />
-                <DetailItem label="Email" value={driver.secondary_person_email} />
-                <DetailItem
-                  label="Primary Number"
-                  value={driver.secondary_person_phone_1}
-                />
-                <DetailItem
-                  label="Secondary Number"
-                  value={driver.secondary_person_phone_2}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+                        {/* Card 3: Emergency & Bank */}
+                        <InfoCard title="Emergency & Bank" icon={<FaUserShield />}>
+                            <div className="space-y-4">
 
-        {/* Bank Account Details */}
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-          <SectionHeader
-            icon={<FaCreditCard size={20} />}
-            title="Bank Account Details"
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
-            <DetailItem label="Bank Name" value={driver.bank_name} />
-            <DetailItem
-              label="Account Holder Name"
-              value={driver.account_holder_name}
-            />
-            <DetailItem label="Account Number" value={driver.account_number} />
-            <DetailItem label="IFSC Code" value={driver.ifsc_code} />
-          </div>
-        </div>
+                                {/* Emergency Contacts */}
+                                <div className="space-y-2 uppercase">
+                                    <div className="p-2 bg-blue-50 rounded border border-blue-100">
+                                        <p className="text-[10px] font-bold text-blue-400 uppercase mb-1">Primary Emergency Contact</p>
+                                        <p className="text-sm font-bold text-blue-900">{driver.primary_person_name || "-"}</p>
+                                        <p className="text-xs text-blue-700">{driver.primary_person_phone_1}</p>
+                                    </div>
+                                    <div className="p-2 uppercase bg-pink-50 rounded border border-pink-100">
+                                        <p className="text-[10px] font-bold text-pink-400 uppercase mb-1">Secondary Contact</p>
+                                        <p className="text-sm font-bold text-pink-700">{driver.secondary_person_name || "-"}</p>
+                                        <p className="text-xs text-pink-500">{driver.secondary_person_phone_1}</p>
+                                    </div>
+                                </div>
 
-        {/* License & Insurance Information */}
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-          <SectionHeader
-            icon={<FaIdCard size={20} />}
-            title="License & Insurance Information"
-          />
-          {driver.license_insurance && driver.license_insurance.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {driver.license_insurance.map((item, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200 hover:shadow-md transition-shadow"
-                >
-                  <h4 className="font-bold text-sm text-purple-900 mb-3 uppercase flex items-center gap-2">
-                    <FaIdCard size={16} />
-                    {item.type?.replace(/_/g, " ") || "Record"}
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600 uppercase font-semibold">
-                        Document Number:
-                      </span>
-                      <span className="font-mono text-gray-900">
-                        {item.number || "-"}
-                      </span>
+                                {/* Bank Info */}
+                                <div className="pt-2 border-t border-slate-100">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <FaCreditCard className="text-purple-400" />
+                                        <span className="text-xs font-bold text-slate-600 uppercase">Bank Details</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <DetailItem label="Account Holder" value={driver.account_holder_name} />
+                                        <DetailItem label="Bank" value={driver.bank_name} />
+                                        <DetailItem label="IFSC" value={driver.ifsc_code} />
+                                        <div className="">
+                                            <DetailItem label="Account No" value={driver.account_number} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </InfoCard>
                     </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600 uppercase font-semibold">
-                        Issue Date:
-                      </span>
-                      <span className="text-gray-900">
-                        {formatDate(item.issue_date)}
-                      </span>
+
+                    {/* Row 2: Licenses (Full Width of Grid) */}
+                    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <FaIdCard className="text-purple-500" />
+                            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Insurance</h3>
+                        </div>
+
+                        {driver.license_insurance && driver.license_insurance.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {driver.license_insurance.map((item, index) => (
+                                    <div key={index} className="p-4 bg-white rounded-lg border border-gray-300 flex flex-col justify-between shadow-md transition-shadow">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="px-2 py-0.5 bg-white text-black text-[10px] font-bold uppercase rounded border border-blue-400">
+                                                {item.type?.replace(/_/g, " ") || "ID"}
+                                            </span>
+                                            <FaIdCard className="text-amber-500" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-purple-950 uppercase font-mono mb-1">Document Number : {item.number || "-"}</p>
+                                            <div className="flex justify-between uppercase text-[10px] text-blue-900">
+                                                <span>Iss: {formatDate(item.issue_date)}</span>
+                                                <span>Exp: {formatDate(item.exp_date)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 text-slate-400 text-xs uppercase font-bold">No License Records Found</div>
+                        )}
                     </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600 uppercase font-semibold">
-                        Expiry Date:
-                      </span>
-                      <span className="text-gray-900">
-                        {formatDate(item.exp_date)}
-                      </span>
+
+                    {/* Row 3: Documents & Remarks */}
+                    <div className="grid grid-cols-1 gap-6">
+                        <div className=" bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <FaFileAlt className="text-amber-400" />
+                                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Documents</h3>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {driver.driving_license && <DocumentItem label="Driving License" path={driver.driving_license} />}
+                                {driver.aadhaar_card && <DocumentItem label="Aadhaar Card" path={driver.aadhaar_card} />}
+                                {driver.pan_card && <DocumentItem label="PAN Card" path={driver.pan_card} />}
+                                {driver.police_verification_doc && <DocumentItem label="Police Verification" path={driver.police_verification_doc} />}
+                                {driver.medical_fitness_certificate && <DocumentItem label="Medical Cert" path={driver.medical_fitness_certificate} />}
+                                {driver.address_proof_doc && <DocumentItem label="Address Proof" path={driver.address_proof_doc} />}
+                                {driver.training_certificate_doc && <DocumentItem label="Training Cert" path={driver.training_certificate_doc} />}
+                            </div>
+                            {!driver.driving_license && !driver.aadhaar_card && (
+                                <div className="text-center py-8">
+                                    <p className="text-xs font-bold text-slate-300 uppercase">No Documents Attached</p>
+                                </div>
+                            )}
+                        </div>
+
+
                     </div>
-                  </div>
+
                 </div>
-              ))}
             </div>
-          ) : (
-            <div className="p-6 bg-gray-50 rounded-lg text-center border border-gray-200">
-              <FaIdCard className="text-gray-300 mx-auto mb-2" size={32} />
-              <p className="text-gray-500 text-sm uppercase">
-                No License or Insurance Records Found
-              </p>
-            </div>
-          )}
         </div>
-
-        {/* Documents Section */}
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-          <SectionHeader icon={<FaFileAlt size={20} />} title="Documents" />
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {driver.driving_license && (
-              <DocumentItem label="Driving License" path={driver.driving_license} />
-            )}
-            {driver.aadhaar_card && (
-              <DocumentItem label="Aadhaar Card" path={driver.aadhaar_card} />
-            )}
-            {driver.pan_card && (
-              <DocumentItem label="PAN Card" path={driver.pan_card} />
-            )}
-            {driver.police_verification_doc && (
-              <DocumentItem
-                label="Police Verification"
-                path={driver.police_verification_doc}
-              />
-            )}
-            {driver.medical_fitness_certificate && (
-              <DocumentItem
-                label="Medical Fitness Certificate"
-                path={driver.medical_fitness_certificate}
-              />
-            )}
-            {driver.address_proof_doc && (
-              <DocumentItem label="Address Proof" path={driver.address_proof_doc} />
-            )}
-            {driver.training_certificate_doc && (
-              <DocumentItem
-                label="Training Certificate"
-                path={driver.training_certificate_doc}
-              />
-            )}
-          </div>
-
-          {!driver.driving_license &&
-            !driver.aadhaar_card &&
-            !driver.pan_card &&
-            !driver.police_verification_doc &&
-            !driver.medical_fitness_certificate &&
-            !driver.address_proof_doc &&
-            !driver.training_certificate_doc && (
-              <div className="p-6 bg-gray-50 rounded-lg text-center border border-gray-200">
-                <FaFileAlt className="text-gray-300 mx-auto mb-2" size={32} />
-                <p className="text-gray-500 text-sm uppercase">
-                  No Documents Uploaded
-                </p>
-              </div>
-            )}
-        </div>
-
-        {/* Remarks / Notes */}
-        {driver.remarks && (
-          <div className="bg-amber-50 rounded-md shadow-sm border-2 border-amber-200 p-6">
-            <div className="flex items-start gap-2">
-              <MdWarning className="text-amber-600 mt-1" size={20} />
-              <div>
-                <h3 className="text-sm font-bold text-amber-800 uppercase mb-2">
-                  Remarks / Notes
-                </h3>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                  {driver.remarks}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-        </div>
-
-      </div>
-    </div>
-  );
+    );
 };
 
 export default DriverShowPage;
