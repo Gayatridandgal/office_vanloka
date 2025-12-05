@@ -27,26 +27,13 @@ import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 import { useAlert } from "../../Context/AlertContext";
 import { useAuth } from "../../Context/AuthContext";
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
+import type { Staff } from "./Staff.types";
 
 interface Role {
   id: number;
   name: string;
 }
 
-interface StaffFormData {
-  photo?: FileList;
-  employee_id: string;
-  first_name: string;
-  last_name: string;
-  designation: string;
-  gender: string;
-  address: string;
-  joining_date: string;
-  email: string;
-  phone: string;
-  roles: string[];
-  status: "Active" | "Inactive";
-}
 
 const StaffEditPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +52,7 @@ const StaffEditPage = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<StaffFormData>({
+  } = useForm<Staff>({
     defaultValues: {
       status: "Active",
       roles: [],
@@ -98,7 +85,13 @@ const StaffEditPage = () => {
           last_name: employee.last_name,
           designation: employee.designation,
           gender: employee.gender,
-          address: employee.address,
+          address_line_1: employee.address_line_1,
+          address_line_2: employee.address_line_2,
+          landmark: employee.landmark,
+          state: employee.state,
+          district: employee.district,
+          city: employee.city,
+          pincode: employee.pincode,
           joining_date: employee.joining_date.split("T")[0],
           email: employee.email,
           phone: employee.phone,
@@ -119,7 +112,7 @@ const StaffEditPage = () => {
     }
   }, [id, reset, showAlert, navigate]);
 
-  const onSubmit: SubmitHandler<StaffFormData> = async (data) => {
+  const onSubmit: SubmitHandler<Staff> = async (data) => {
     if (data.roles.length === 0) {
       showAlert("Please select at least one role.", "error");
       return;
@@ -134,7 +127,13 @@ const StaffEditPage = () => {
       formData.append("last_name", data.last_name);
       formData.append("designation", data.designation);
       formData.append("gender", data.gender);
-      formData.append("address", data.address);
+      formData.append("address_line_1", data.address_line_1);
+      formData.append("address_line_2", data.address_line_2);
+      formData.append("landmark", data.landmark);
+      formData.append("state", data.state);
+      formData.append("district", data.district);
+      formData.append("city", data.city);
+      formData.append("pincode", data.pincode);
       formData.append("joining_date", data.joining_date);
       formData.append("email", data.email);
       formData.append("phone", data.phone);
@@ -184,10 +183,10 @@ const StaffEditPage = () => {
       {/* 2. Main Container */}
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          
+
           {/* 3. The Form Card */}
           <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-            
+
             {/* Card Header */}
             <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
               <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
@@ -202,25 +201,24 @@ const StaffEditPage = () => {
 
             {/* Scrollable Area */}
             <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
-              
+
               {/* SECTION: Basic Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaIdCard className="text-slate-400" />
+                  <FaIdCard className="text-blue-600" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <InputField label="Employee ID" name="employee_id" register={register} errors={errors} required />
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <InputField label="First Name" name="first_name" register={register} errors={errors} required />
-                      <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
-                    </div>
+
+
+                    <InputField label="First Name" name="first_name" register={register} errors={errors} required />
+                    <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
 
                     <InputField label="Email Address" name="email" type="email" register={register} errors={errors} required />
                     <InputField label="Phone Number" name="phone" type="tel" register={register} errors={errors} required />
-                    
+
                     <SelectInputField
                       label="Gender"
                       name="gender"
@@ -233,25 +231,32 @@ const StaffEditPage = () => {
                       ]}
                       required
                     />
+                    <InputField label="Designation" name="designation" register={register} errors={errors} required />
+
 
                     <InputField label="Date of Joining" name="joining_date" type="date" register={register} errors={errors} required />
                   </div>
                 </div>
               </div>
 
-              {/* SECTION: Professional Details */}
+
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaMapMarkerAlt className="text-slate-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Professional & Contact</h3>
+                  <FaMapMarkerAlt className="text-green-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Address Details</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Designation" name="designation" register={register} errors={errors} required />
-                    <InputField label="Full Address" name="address" register={register} errors={errors} required />
-                    
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <InputField label="Address Line 1" name="address_line_1" register={register} errors={errors} />
+                    <InputField label="Address Line 2" name="address_line_2" register={register} errors={errors} />
+                    <InputField label="Landmark" name="landmark" register={register} errors={errors} />
+                    <InputField label="state" name="state" register={register} errors={errors} />
+                    <InputField label="district" name="district" register={register} errors={errors} />
+                    <InputField label="city" name="city" register={register} errors={errors} />
+                    <InputField label="pincode" name="pincode" register={register} errors={errors} />
+
                     <SelectInputField
-                      label="Account Status"
+                      label="Status"
                       name="status"
                       register={register}
                       errors={errors}
@@ -268,7 +273,7 @@ const StaffEditPage = () => {
               {/* SECTION: Roles */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaShieldAlt className="text-slate-400" />
+                  <FaShieldAlt className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">System Roles <span className="text-red-500">*</span></h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -281,12 +286,12 @@ const StaffEditPage = () => {
                         {allRoles.map((role) => {
                           const isSelected = field.value?.includes(role.name);
                           return (
-                            <label 
-                              key={role.id} 
+                            <label
+                              key={role.id}
                               className={`
                                 relative flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all
-                                ${isSelected 
-                                  ? 'bg-purple-50 border-purple-200 shadow-sm' 
+                                ${isSelected
+                                  ? 'bg-purple-50 border-purple-200 shadow-sm'
                                   : 'bg-white border-slate-200 hover:border-purple-200 hover:bg-slate-50'}
                               `}
                             >
@@ -326,44 +331,44 @@ const StaffEditPage = () => {
               {/* SECTION: Photo */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaCamera className="text-slate-400" />
+                  <FaCamera className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Profile Picture</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                   
-                   {/* Current Photo Preview */}
-                   <div className="flex items-center gap-6 mb-6 pb-6 border-b border-slate-200">
-                     <div className="relative">
-                        {currentPhoto ? (
-                          <img
-                            src={`${tenantAsset}${currentPhoto}`}
-                            alt="Current Profile"
-                            className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
-                          />
-                        ) : (
-                          <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center border-4 border-white shadow-md text-slate-400">
-                            <FaUserCircle size={48} />
-                          </div>
-                        )}
-                        <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
-                     </div>
-                     <div>
-                       <h4 className="text-sm font-bold text-slate-700 uppercase">Current Photo</h4>
-                       <p className="text-xs uppercase text-slate-500 mt-1">
-                         This is the image currently displayed on employee profile.
-                       </p>
-                     </div>
-                   </div>
 
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <FileInputField
-                       label="Photo"
-                       name="photo"
-                       register={register}
-                       errors={errors}
-                     />
-                     
-                   </div>
+                  {/* Current Photo Preview */}
+                  <div className="flex items-center gap-6 mb-6 pb-6 border-b border-slate-200">
+                    <div className="relative">
+                      {currentPhoto ? (
+                        <img
+                          src={`${tenantAsset}${currentPhoto}`}
+                          alt="Current Profile"
+                          className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center border-4 border-white shadow-md text-slate-400">
+                          <FaUserCircle size={48} />
+                        </div>
+                      )}
+                      <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-700 uppercase">Current Photo</h4>
+                      <p className="text-xs uppercase text-slate-500 mt-1">
+                        This is the image currently displayed on employee profile.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FileInputField
+                      label="Photo"
+                      name="photo"
+                      register={register}
+                      errors={errors}
+                    />
+
+                  </div>
                 </div>
               </div>
 

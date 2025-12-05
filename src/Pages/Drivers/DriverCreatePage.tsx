@@ -14,7 +14,6 @@ import {
   FaCreditCard,
   FaExclamationTriangle,
   FaStickyNote,
-  FaUserShield,
   FaPlus,
   FaTrash
 } from "react-icons/fa";
@@ -56,7 +55,6 @@ const DriverCreatePage = () => {
     register,
     control,
     handleSubmit,
-    setValue,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormInputs>({

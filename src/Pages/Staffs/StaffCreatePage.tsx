@@ -82,10 +82,19 @@ const StaffCreatePage = () => {
       formData.append("last_name", data.last_name);
       formData.append("designation", data.designation);
       formData.append("gender", data.gender);
-      formData.append("address", data.address);
+
       formData.append("joining_date", data.joining_date);
       formData.append("email", data.email);
       formData.append("phone", data.phone);
+
+      formData.append("address_line_1", data.address_line_1);
+      formData.append("address_line_2", data.address_line_2);
+      formData.append("landmark", data.landmark);
+      formData.append("state", data.state);
+      formData.append("district", data.district);
+      formData.append("city", data.city);
+      formData.append("pincode", data.pincode);
+
       formData.append("status", data.status);
 
       // Add roles array
@@ -94,7 +103,7 @@ const StaffCreatePage = () => {
       });
 
       // Add SINGLE photo
-      if (data.photo && data.photo.length > 0) {
+      if (data.photo) {
         formData.append("photo", data.photo[0]);
       }
 
@@ -124,7 +133,7 @@ const StaffCreatePage = () => {
     <div className="min-h-screen bg-white pb-12">
       {/* 1. Sticky Header */}
       <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
-        <PageHeaderBack title="Add Staff" buttonLink="/staff" />
+        <PageHeaderBack title="Back" buttonLink="/staff" />
       </div>
 
       {/* 2. Main Container */}
@@ -152,19 +161,19 @@ const StaffCreatePage = () => {
               {/* SECTION: Basic Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaIdCard className="text-slate-400" />
+                  <FaIdCard className="text-blue-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <InputField label="Employee ID" name="employee_id" register={register} errors={errors} required />
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <InputField label="First Name" name="first_name" register={register} errors={errors} required />
-                      <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
-                    </div>
 
-                    <InputField label="Email Address" name="email" type="email" register={register} errors={errors} required />
+                    <InputField label="First Name" name="first_name" register={register} errors={errors} required />
+                    <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
+
+
+                    <InputField label="Email" name="email" type="email" register={register} errors={errors} required />
                     <InputField label="Phone Number" name="phone" type="tel" register={register} errors={errors} required />
 
                     <SelectInputField
@@ -179,7 +188,7 @@ const StaffCreatePage = () => {
                       ]}
                       required
                     />
-
+                    <InputField label="Designation" name="designation" register={register} errors={errors} required />
                     <InputField label="Date of Joining" name="joining_date" type="date" register={register} errors={errors} required />
                   </div>
                 </div>
@@ -188,16 +197,20 @@ const StaffCreatePage = () => {
               {/* SECTION: Professional Details */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaMapMarkerAlt className="text-slate-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Professional & Contact</h3>
+                  <FaMapMarkerAlt className="text-green-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Address Details</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Designation" name="designation" register={register} errors={errors} required />
-                    <InputField label="Full Address" name="address" register={register} errors={errors} required />
-
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <InputField label="Address Line 1" name="address_line_1" register={register} errors={errors} />
+                    <InputField label="Address Line 2" name="address_line_2" register={register} errors={errors} />
+                    <InputField label="Landmark" name="landmark" register={register} errors={errors} />
+                    <InputField label="state" name="state" register={register} errors={errors} />
+                    <InputField label="district" name="district" register={register} errors={errors} />
+                    <InputField label="city" name="city" register={register} errors={errors} />
+                    <InputField label="pincode" name="pincode" register={register} errors={errors} />
                     <SelectInputField
-                      label="Account Status"
+                      label="Status"
                       name="status"
                       register={register}
                       errors={errors}
@@ -214,7 +227,7 @@ const StaffCreatePage = () => {
               {/* SECTION: Roles */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaShieldAlt className="text-slate-400" />
+                  <FaShieldAlt className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">System Roles <span className="text-red-500">*</span></h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -272,7 +285,7 @@ const StaffCreatePage = () => {
               {/* SECTION: Photo */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaCamera className="text-slate-400" />
+                  <FaCamera className="text-amber-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Profile Picture</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
