@@ -23,10 +23,11 @@ import EmptyState from "../../Components/UI/EmptyState";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 
 // Services & Utils
-import tenantApi, { centralAsset} from "../../Services/ApiService";
+import tenantApi, { centralAsset } from "../../Services/ApiService";
 import type { Traveller } from "./Traveler.types";
 import type { Booking } from "../Bookings/Booking.types";
 import { DataBlock } from "../../Components/UI/DetailItem";
+import { IoSettings } from "react-icons/io5";
 
 // --- Configuration ---
 const DUMMY_IMAGE_PATH = "/user.jpeg";
@@ -43,8 +44,9 @@ const formatDate = (dateString?: string | null) => {
 
 const getStatusStyles = (status: string) => {
   switch (status.toLowerCase()) {
-    case "active": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
-    case "approved": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
+    case "approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
+    case "pending": return "bg-amber-50 text-amber-700 border-amber-200 ring-amber-100";
+    case "active": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
     case "completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
     case "cancelled": return "bg-red-50 text-red-700 border-red-200 ring-red-100";
     default: return "bg-slate-50 text-slate-700 border-slate-200 ring-slate-100";
@@ -128,8 +130,8 @@ const TravelerShowPage = () => {
     );
   }
 
-  const activeBookings = traveller.bookings?.filter(b => ["active", "approved", "pending"].includes(b.status.toLowerCase())) || [];
-  const pastBookings = traveller.bookings?.filter(b => ["completed", "cancelled", "rejected"].includes(b.status.toLowerCase())) || [];
+  const activeBookings = traveller.bookings?.filter(b => ["active", "approved"].includes(b.status.toLowerCase())) || [];
+  const pastBookings = traveller.bookings?.filter(b => ["completed", "cancelled", "pending"].includes(b.status.toLowerCase())) || [];
 
   return (
     <div className="min-h-screen bg-slate-50 pb-12 overflow-x-hidden">
@@ -168,8 +170,8 @@ const TravelerShowPage = () => {
                 <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm md:text-sm font-bold uppercase border border-slate-200 flex items-center gap-2 whitespace-nowrap">
                   {traveller.relationship || "Traveller"}
                 </span>
-                <span className="text-sm md:text-sm font-bold text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded border border-slate-100 whitespace-nowrap">
-                  UID: {traveller.traveller_uid || "N/A"}
+                <span className="text-sm md:text-sm font-bold text-indigo-800 font-mono bg-slate-50 px-2 py-1 rounded border border-slate-100 whitespace-nowrap">
+                  UID : {traveller.traveller_uid || "N/A"}
                 </span>
               </div>
             </div>
@@ -198,14 +200,21 @@ const TravelerShowPage = () => {
 
         {/* TAB 1: DETAILS */}
         {activeTab === 'details' && (
-          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
-            
+          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
+
+            <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex items-center gap-3">
+              <div className="p-2 bg-white text-indigo-600 rounded-lg shadow-sm"><IoSettings size={20} /></div>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800 uppercase">Traveller</h3>
+                <p className="text-xs uppercase text-slate-500">Traveller Details.</p>
+              </div>
+            </div>
 
             <div className="p-6 md:p-8 overflow-y-auto xl:max-h-[60vh] lg:max-h-[60vh] md:max-h-[40vh] max-h-[30vh]">
               {/* Responsive Grid: 1 col mobile, 2 col tablet, 3 col desktop */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <DataBlock label="First Name" value={traveller.first_name} />
-                <DataBlock label="Last Name" value={traveller.last_name}  />
+                <DataBlock label="Last Name" value={traveller.last_name} />
                 <DataBlock label="Aadhaar Number" value={traveller.aadhaar_number} icon={<FaIdCard className="text-amber-600" />} />
                 <DataBlock label="Gender" value={traveller.gender} icon={<FaVenusMars className="text-blue-600" />} />
                 <DataBlock label="Date of Birth" value={formatDate(traveller.date_of_birth)} icon={<FaBirthdayCake className="text-pink-600" />} />
@@ -232,46 +241,48 @@ const TravelerShowPage = () => {
 
         {/* TAB 2: BOOKINGS */}
         {activeTab === 'bookings' && (
-          <div className="space-y-10 bg-white p-6 rounded-lg  shadow-md border border-gray-200 overflow-y-auto xl:max-h-[60vh] lg:max-h-[60vh] md:max-h-[40vh] max-h-[35vh]">
+          <div className="space-y-10 bg-white rounded-lg  shadow-md border border-gray-200 overflow-y-auto xl:max-h-[60vh] lg:max-h-[60vh] md:max-h-[40vh] max-h-[35vh]">
 
             {/* Active Trips */}
             <section>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-green-100 text-green-600 rounded-lg shrink-0">
-                  <MdEventSeat size={20} />
+              <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex items-center gap-3">
+                <div className="p-2 bg-white text-indigo-600 rounded-lg shadow-sm"><MdEventSeat size={20} /></div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-800 uppercase">Bookings</h3>
+                  <p className="text-xs uppercase text-slate-500">Approved / Active</p>
                 </div>
-                <h3 className="text-sm font-bold text-slate-800 uppercase">active / approved</h3>
               </div>
 
               {activeBookings.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 mt-4">
                   {activeBookings.map(booking => <BookingCard key={booking.id} booking={booking} />)}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 bg-white border border-slate-200 border-dashed rounded-xl">
+                <div className="flex flex-col items-center justify-center py-12 bg-white">
                   <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                    <MdEventSeat className="text-slate-300 text-sm" />
+                    <MdEventSeat className="text-amber-300 text-sm" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium">No active bookings found.</p>
+                  <p className="text-sm uppercase text-red-300 font-medium">No active bookings found.</p>
                 </div>
               )}
             </section>
 
             {/* History */}
             <section>
-              <div className="flex items-center gap-3 mb-6 pt-6 border-t border-slate-200">
-                <div className="p-2 bg-purple-100 text-purple-500 rounded-lg shrink-0">
-                  <MdOutlineWorkHistory size={20} />
+              <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex items-center gap-3">
+                <div className="p-2 bg-white text-amber-600 rounded-lg shadow-sm"><MdOutlineWorkHistory size={20} /></div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-800 uppercase">Past Bookings</h3>
+                  <p className="text-xs uppercase text-slate-500">Completed / Canceled</p>
                 </div>
-                <h3 className="text-sm font-bold text-slate-800 uppercase">Past Bookings</h3>
               </div>
 
               {pastBookings.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 m-5">
                   {pastBookings.map(booking => <BookingCard key={booking.id} booking={booking} />)}
                 </div>
               ) : (
-                <div className="flex flex-col bg-gray-100 rounded-lg p-3 items-center justify-center">
+                <div className="flex flex-col  rounded-lg p-3 items-center m-5 justify-center">
                   <p className="text-[10px] uppercase text-red-400 font-medium">No booking history available</p>
                 </div>
               )}
