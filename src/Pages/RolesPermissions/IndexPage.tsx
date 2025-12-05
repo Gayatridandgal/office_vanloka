@@ -105,8 +105,8 @@ const IndexPage = () => {
       {/* Header */}
       <div className="mx-4">
         <PageHeader
-          title="User Roles"
-          buttonText="Add New Role"
+          title="Role Management"
+          buttonText="Add Role"
           buttonLink="create"
         />
       </div>
@@ -176,8 +176,8 @@ const IndexPage = () => {
                 <TableContainer>
                   <Table>
                     <Thead>
-                      <Th width="5%">S.No</Th>
-                      <Th align="center">Role Name</Th>
+                      <Th >S.No</Th>
+                      <Th align="left">Role Name</Th>
                       <Th align="center">Actions</Th>
                     </Thead>
 
@@ -191,7 +191,7 @@ const IndexPage = () => {
 
                           {/* Role Name */}
                           <Td>
-                            <div className="flex justify-center items-center gap-3">
+                            <div className="flex justify-start items-center gap-3">
                               <div className="p-2 bg-purple-100 rounded-lg text-purple-600 shadow-sm">
                                 <FaUserShield size={16} />
                               </div>

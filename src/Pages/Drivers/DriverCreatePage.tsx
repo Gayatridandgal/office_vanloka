@@ -155,11 +155,11 @@ const DriverCreatePage = () => {
       Object.keys(data).forEach((key) => {
         const k = key as keyof FormInputs;
         const value = data[k];
-        
+
         // Skip file lists and arrays initially
         if (value instanceof FileList) return;
         if (Array.isArray(value) && k === 'license_insurance') return;
-        
+
         if (value !== undefined && value !== null && value !== "") {
           formData.append(k, String(value));
         }
@@ -173,7 +173,7 @@ const DriverCreatePage = () => {
       // Append Files
       const fileFields = [
         "profile_photo", "driving_license", "aadhaar_card", "pan_card",
-        "police_verification_doc", "medical_fitness_certificate", 
+        "police_verification_doc", "medical_fitness_certificate",
         "address_proof_doc", "training_certificate_doc"
       ] as const;
 
@@ -209,7 +209,7 @@ const DriverCreatePage = () => {
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-            
+
             {/* Header */}
             <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
               <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
@@ -223,20 +223,20 @@ const DriverCreatePage = () => {
             </div>
 
             <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
-              
+
               {/* 1. Basic Information */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <FaUser className="text-slate-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <InputField label="First Name" name="first_name" register={register} errors={errors} required />
                   <InputField label="Last Name" name="last_name" register={register} errors={errors} required />
                   <InputField label="Email" name="email" type="email" register={register} errors={errors} />
                   <InputField label="Mobile Number" name="mobile_number" register={register} errors={errors} required />
                   <InputField label="Date of Birth" name="date_of_birth" type="date" register={register} errors={errors} required />
-                  
+
                   <SelectInputField
                     label="Gender"
                     name="gender"
@@ -259,7 +259,7 @@ const DriverCreatePage = () => {
                     errors={errors}
                     options={dropdowns.maritalStatuses.map(d => ({ label: d.value, value: d.value }))}
                   />
-                  
+
                   <FileInputField label="Profile Photo" name="profile_photo" register={register} errors={errors} />
                 </div>
               </div>
@@ -270,12 +270,12 @@ const DriverCreatePage = () => {
                   <FaMapMarkerAlt className="text-slate-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Address Details</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <InputField label="Address Line 1" name="address_line_1" register={register} errors={errors} />
                   <InputField label="Address Line 2" name="address_line_2" register={register} errors={errors} />
                   <InputField label="Landmark" name="landmark" register={register} errors={errors} />
                   <InputField label="City" name="city" register={register} errors={errors} />
-                  
+
                   <SelectInputField
                     label="State"
                     name="state"
@@ -291,7 +291,7 @@ const DriverCreatePage = () => {
                     options={districts.map(d => ({ label: d.district, value: d.district }))}
                     disabled={!selectedState}
                   />
-                  
+
                   <InputField label="PIN Code" name="pin_code" register={register} errors={errors} />
                 </div>
               </div>
@@ -302,7 +302,7 @@ const DriverCreatePage = () => {
                   <FaBriefcase className="text-slate-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Professional Info</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <SelectInputField
                     label="Employment Type"
                     name="employment_type"
@@ -312,7 +312,7 @@ const DriverCreatePage = () => {
                   />
                   <InputField label="Employee ID" name="employee_id" register={register} errors={errors} />
                   <InputField label="Experience (Years)" name="driving_experience" type="number" register={register} errors={errors} />
-                  
+
                   {/* Conditional Fields */}
                   <SelectInputField
                     label="Safety Training?"
@@ -353,18 +353,52 @@ const DriverCreatePage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <FaCreditCard className="text-slate-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Bank & Emergency</h3>
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Bank Details</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <InputField label="Bank Name" name="bank_name" register={register} errors={errors} />
                   <InputField label="Account No" name="account_number" register={register} errors={errors} />
                   <InputField label="IFSC Code" name="ifsc_code" register={register} errors={errors} />
-                  
+
                   <div className="md:col-span-2 border-t border-slate-200 my-2"></div>
-                  
+
                   <InputField label="Emergency Contact (Name)" name="primary_person_name" register={register} errors={errors} />
                   <InputField label="Emergency Contact (Phone)" name="primary_person_phone_1" register={register} errors={errors} />
                 </div>
+              </div>
+
+
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FaCreditCard className="text-slate-400" />
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Emergency Contact Person</h3>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaUser className="text-green-400" />
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Primary Person</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
+                    <InputField label="Name" name="primary_person_name" register={register} errors={errors} />
+                    <InputField label="Phone" name="primary_person_phone_1" register={register} errors={errors} />
+                    <InputField label="Phone2" name="primary_person_phone_2" register={register} errors={errors} />
+                    <InputField label="Email" name="primary_person_email" register={register} errors={errors} />
+                  </div>
+                </div>
+
+                <div className="bg-gray-50  p-6 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaUser className="text-blue-400" />
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Secondary Person</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
+                    <InputField label="Name" name="secondary_person_name" register={register} errors={errors} />
+                    <InputField label="Phone" name="secondary_person_phone_1" register={register} errors={errors} />
+                    <InputField label="Phone2" name="secondary_person_phone_2" register={register} errors={errors} />
+                    <InputField label="Email" name="secondary_person_email" register={register} errors={errors} />
+                  </div>
+                </div>
+
               </div>
 
               {/* 5. Licenses (Dynamic Array) */}
@@ -386,7 +420,7 @@ const DriverCreatePage = () => {
                       <InputField label="Doc Number" name={`license_insurance.${index}.number`} register={register} errors={errors} />
                       <InputField label="Issue Date" name={`license_insurance.${index}.issue_date`} type="date" register={register} errors={errors} />
                       <InputField label="Expiry Date" name={`license_insurance.${index}.exp_date`} type="date" register={register} errors={errors} />
-                      
+
                       <button type="button" onClick={() => remove(index)} className="bg-red-50 text-red-600 p-3 rounded-lg hover:bg-red-100 transition-colors">
                         <FaTrash size={14} />
                       </button>
@@ -458,12 +492,12 @@ const DriverCreatePage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-purple-950 mb-2 uppercase">Additional Notes</label>
-                  <textarea
-                    {...register("remarks")}
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    rows={1}
-                    placeholder="Enter any remarks..."
-                  />
+                    <textarea
+                      {...register("remarks")}
+                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      rows={1}
+                      placeholder="Enter any remarks..."
+                    />
                   </div>
                 </div>
               </div>

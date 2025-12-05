@@ -3,7 +3,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Icons
-import { FaUserShield, FaKey, FaCheck, FaShieldAlt } from "react-icons/fa";
+import { 
+  FaUserShield, 
+  FaKey, 
+  FaCheck, 
+  FaShieldAlt, 
+  FaCheckDouble, 
+  FaTimes 
+} from "react-icons/fa";
 
 // Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
@@ -42,12 +49,24 @@ const CreatePage = () => {
     fetchPermissions();
   }, [showAlert]);
 
+  // Handle individual checkbox toggle
   const handlePermissionChange = (permissionId: number) => {
     setSelectedPermissions((prev) =>
       prev.includes(permissionId)
         ? prev.filter((id) => id !== permissionId)
         : [...prev, permissionId]
     );
+  };
+
+  // Handle Select All
+  const handleSelectAll = () => {
+    const allIds = allPermissions.map((p) => p.id);
+    setSelectedPermissions(allIds);
+  };
+
+  // Handle Deselect All
+  const handleDeselectAll = () => {
+    setSelectedPermissions([]);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -89,7 +108,7 @@ const CreatePage = () => {
       {/* 1. Sticky Header */}
       <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
         <PageHeaderBack
-          title="Create Role"
+          title="Back"
           buttonLink="/roles_permissions"
         />
       </div>
@@ -108,7 +127,7 @@ const CreatePage = () => {
               </div>
               <div>
                 <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-wide">
-                  Role Configuration
+                  Add New Role
                 </h2>
               </div>
             </div>
@@ -119,13 +138,13 @@ const CreatePage = () => {
               {/* SECTION: Role Details */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <FaShieldAlt className="text-slate-400" />
+                  <FaShieldAlt className="text-red-400" />
                   <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Role Details</h3>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="roleName" className="block text-sm font-medium text-slate-700 mb-1">
+                      <label htmlFor="roleName" className="block text-sm font-medium uppercase text-slate-700 mb-1">
                         Role Name <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -144,9 +163,30 @@ const CreatePage = () => {
 
               {/* SECTION: Permissions */}
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaKey className="text-slate-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Assign Permissions</h3>
+                {/* Header with Select/Deselect Actions */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <FaKey className="text-green-400" />
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Assign Permissions</h3>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSelectAll}
+                      className="text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded border border-blue-200 transition-colors flex items-center gap-1.5 uppercase"
+                    >
+                      <FaCheckDouble size={12} /> Select All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeselectAll}
+                      className="text-xs font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded border border-amber-300 transition-colors flex items-center gap-1.5 uppercase"
+                    >
+                      <FaTimes size={12} /> Deselect All
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
@@ -159,8 +199,8 @@ const CreatePage = () => {
                           className={`
                             relative flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all select-none
                             ${isSelected 
-                              ? 'bg-purple-50 border-purple-200 shadow-sm' 
-                              : 'bg-white border-slate-200 hover:border-purple-200 hover:bg-slate-50'}
+                              ? 'bg-blue-50 border-blue-200 shadow-sm' 
+                              : 'bg-white border-slate-200 hover:border-blue-100 hover:bg-slate-50'}
                           `}
                         >
                           <div className="flex items-center gap-3">
@@ -168,13 +208,13 @@ const CreatePage = () => {
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => handlePermissionChange(permission.id)}
-                              className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
-                            <span className={`text-xs font-bold uppercase ${isSelected ? 'text-purple-700' : 'text-slate-600'}`}>
+                            <span className={`text-xs font-bold uppercase ${isSelected ? 'text-blue-950' : 'text-slate-600'}`}>
                               {permission.name.replace(/-/g, " ")}
                             </span>
                           </div>
-                          {isSelected && <FaCheck className="text-purple-600 text-[10px]" />}
+                          {isSelected && <FaCheck className="text-blue-600 text-[10px]" />}
                         </label>
                       );
                     })}
