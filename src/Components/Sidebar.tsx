@@ -1,51 +1,15 @@
-// import SidebarLink from "./SidebarLink";
-// import BottomLink from "./BottomLink";
-
-// interface Props {
-//   isOpen: boolean;
-// }
-
-// const Sidebar = ({ isOpen }: Props) => {
-//   return (
-//     // The sidebar container is a flex column with full height.
-//     <div
-//       className={`fixed inset-y-0 shadow-xl left-0 w-72  bg-white text-white z-50  transform md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col ${
-//         isOpen ? "translate-x-0" : "-translate-x-full"
-//       }`}
-//     >
-//       <div className="px-5 pt-5 mb-6">
-//         <h3 className="text-lg font-extrabold uppercase tracking-wide text-purple-950 overflow-hidden">
-//           Organization Admin
-//         </h3>
-//         {/* <p className="text-sm uppercase text-gray-600">Fleet Tracking System</p> */}
-//       </div>
-
-//       {/* The main navigation links, which will grow to fill available space */}
-//       <SidebarLink />
-
-//       {/* The Logout button container. 'mt-auto' pushes it to the bottom. */}
-//       <div className="mt-auto mb-4">
-//         <BottomLink />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Sidebar;
-
 import { useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToolkit } from "../Utils/Toolkit";
 import { app_features } from "../Data/Index";
 import type { SidebarLinkType } from "../Types/Index";
 
 // Icons
-import { MdDashboard, MdLogout, MdOutlineSupportAgent } from "react-icons/md";
+import { MdDashboard, MdLogout } from "react-icons/md";
 import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime } from "react-icons/fa6";
 
 import { FaUsersCog } from "react-icons/fa";
-import { TbReport } from "react-icons/tb";
-import { HiOutlineDocumentReport, HiUsers } from "react-icons/hi";
+import { HiUsers } from "react-icons/hi";
 import { BsBusFront } from "react-icons/bs";
 import { logout } from "../Services/AuthService";
 
@@ -237,10 +201,10 @@ const Sidebar = ({ isOpen, closeSidebar }: Props) => {
         <div className="h-16 flex items-center px-6 border-b border-slate-200 bg-slate-50">
           <div>
             <h3 className="text-xl font-extrabold uppercase tracking-wide text-purple-900 leading-none">
-              Vanloka
+              Organisation
             </h3>
-            <p className="text-[10px] font-bold tracking-widest uppercase text-slate-400 mt-1">
-              Admin Console
+            <p className="text-[10px] font-bold tracking-widest uppercase text-gray-800 mt-1">
+              Admin Panel
             </p>
           </div>
         </div>

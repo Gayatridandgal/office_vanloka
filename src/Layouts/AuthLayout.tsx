@@ -15,8 +15,6 @@ import DriverEditPage from "../Pages/Drivers/DriverEditPage";
 import DriverCreatePage from "../Pages/Drivers/DriverCreatePage";
 import BookingIndexPage from "../Pages/Bookings/BookingIndexPage";
 import BookingShowPage from "../Pages/Bookings/BookingShowPage";
-import TravelerIndexPage from "../Pages/Travelers/TravelerIndexPage";
-import TravelerShowPage from "../Pages/Travelers/TravelerShowPage";
 import StaffIndexPage from "../Pages/Staffs/StaffIndexPage";
 import StaffCreatePage from "../Pages/Staffs/StaffCreatePage";
 import StaffEditPage from "../Pages/Staffs/StaffEditPage";
@@ -26,6 +24,9 @@ import InstructorCreatePage from "../Pages/Instructors/InstructorCreatePage";
 import InstructorShowPage from "../Pages/Instructors/InstructorShowPage";
 import InstructorEditPage from "../Pages/Instructors/InstructorEditpage";
 import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
+import TravellerIndexPage from "../Pages/Travelers/TravellerIndexPage";
+import TravellerShowPage from "../Pages/Travelers/TravellerShowPage";
+import TravellerEditPage from "../Pages/Travelers/TravellerEditPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -99,10 +100,10 @@ const AuthLayout = () => {
               <Route path="bookings/show/:id" element={<BookingShowPage />} />
               {/* <Route path="bookings/create" element={<BookingCreatePage />} /> */}
 
-              {/* Traveler Pages */}
-              <Route path="travellers" element={<TravelerIndexPage />} />
-              <Route path="travellers/show/:id" element={<TravelerShowPage />} />
-              {/* <Route path="travellers/Edit/:id" element={<TravelerEditPage />} /> */}
+              {/* Traveller Pages */}
+              <Route path="travellers" element={<TravellerIndexPage />} />
+              <Route path="travellers/show/:id" element={<TravellerShowPage />} />
+              <Route path="travellers/edit/:id" element={<TravellerEditPage />} />
 
               {/* Plan Detail Page */}
               {/* <Route path="plan" element={<MyPlanPage />} /> */}
