@@ -31,16 +31,16 @@ import type { Vehicle } from "../Vehicles/Vehicle.types";
 import type { BeaconDevice } from "../../Types/Index";
 import DetailItem, { InfoCard } from "../../Components/UI/DetailItem";
 import SaveButton from "../../Components/Form/SaveButton";
-import CancelButton from "../../Components/Form/CancelButton";
+import InputField from "../../Components/Form/InputField";
 
 // --- Helpers ---
 const getStatusStyles = (status: string) => {
   switch (status.toLowerCase()) {
-    case "approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
-    case "completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
-    case "cancelled": return "bg-red-50 text-red-700 border-red-200 ring-red-100";
-    case "pending": return "bg-yellow-50 text-yellow-700 border-yellow-200 ring-yellow-100";
-    default: return "bg-slate-50 text-slate-700 border-slate-200 ring-slate-100";
+    case "Approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
+    case "Completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
+    case "Cancelled": return "bg-red-50 text-red-700 border-red-200 ring-red-100";
+    case "Rejected": return "bg-amber-50 text-amber-700 border-amber-200 ring-amber-100";
+    default: return "bg-yellow-50 text-yellow-700 border-yellow-200 ring-yellow-100";
   }
 };
 
@@ -87,7 +87,7 @@ const BookingShowPage = () => {
             pickup_time: bData.pickup_time || "",
             drop_time: bData.drop_time || "",
             assigned_vehicle: bData.assigned_vehicle || "",
-            status: bData.status || "pending",
+            status: bData.status || "Pending",
             beacon_id: bData.traveller?.beacon_id || "",
           });
         }
@@ -126,17 +126,33 @@ const BookingShowPage = () => {
   const hasBeacon = booking.traveller?.beacon_id;
   const availableBeacons = beacons.filter(b => b.status === "available" || b.device_id === booking.traveller?.beacon_id);
 
+  const statusOptions = [
+    { value: 'Approved', label: 'Approve' },
+    { value: 'Rejected', label: 'Reject' }
+  ];
+  const currentStatus = booking.status;
+
+  const getAvailableStatuses = () => {
+    if (currentStatus === 'Pending') return statusOptions;
+    if (currentStatus === 'Approved') {
+      return [{ value: 'Cancelled', label: 'Cancel' }];
+    }
+    if (currentStatus === 'Cancelled') {
+      return [{ value: 'Cancelled', label: 'Cancelled' }];
+    }
+    if (currentStatus === 'Rejected') return statusOptions.filter(s => s.value === 'Rejected'); // Read-only
+    return statusOptions;
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 pb-12">
+    <div className="min-h-screen bg-white pb-12">
       {/* 1. Sticky Back Navigation */}
-      <div className="bg-white border-b border-slate-100 px-4 py-1 sticky top-0 z-20 shadow-sm">
-        <div className="">
-          <PageHeaderBack title="Back" buttonLink="/bookings" />
-        </div>
-      </div>
+      
+      <PageHeaderBack title="Back" buttonLink="/bookings" />
+       
 
       {/* 2. Hero Section */}
-      <div className="bg-white border-b border-slate-200">
+      <div className="bg-white ">
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
 
@@ -149,8 +165,8 @@ const BookingShowPage = () => {
                   <div className="w-full h-full flex items-center justify-center text-slate-300"><FaUser size={32} /></div>
                 )}
               </div>
-              <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full border-4 border-white flex items-center justify-center text-[10px] text-white shadow-sm ${booking.status === 'approved' ? 'bg-green-500' : 'bg-slate-400'}`}>
-                {booking.status === 'approved' && <FaCheckCircle className="" />}
+              <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full border-4 border-white flex items-center justify-center text-[10px] text-white shadow-sm ${booking.status === 'Approved' ? 'bg-green-500' : 'bg-slate-400'}`}>
+                {booking.status === 'Approved' && <FaCheckCircle className="" />}
               </div>
             </div>
 
@@ -180,32 +196,33 @@ const BookingShowPage = () => {
                 )}
               </div>
             </div>
+
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="max-w-6xl mx-auto px-6 flex gap-8 mt-4">
+        <div className="max-w-6xl bg-blue-50 mx-auto p-3 flex gap-8 rounded-lg border border-gray-200">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`pb-4 text-sm font-bold uppercase tracking-wide border-b-[3px] transition-all ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={` text-sm font-bold uppercase tracking-wide border-b-[3px] transition-all ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
           >
             Booking Overview
           </button>
           <button
             onClick={() => setActiveTab('operations')}
-            className={`pb-4 text-sm font-bold uppercase tracking-wide border-b-[3px] transition-all ${activeTab === 'operations' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            className={` text-sm font-bold uppercase tracking-wide border-b-[3px] transition-all ${activeTab === 'operations' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
           >
-            Manage Request
+            Booking Request
           </button>
         </div>
       </div>
 
       {/* 3. Content Area */}
-      <div className="max-w-6xl mx-auto px-6 py-8 overflow-y-auto max-h-80 lg:max-h-[80vh] xl:max-h-[80vh]">
+      <div className="max-w-6xl mx-auto mt-10  overflow-y-auto max-h-[60vh]">
 
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-6 mb-5">
 
             {/* Card 1: Trip Info */}
             <InfoCard title="Booking Details" icon={<FaRoad />}>
@@ -284,69 +301,45 @@ const BookingShowPage = () => {
 
         {/* TAB 2: OPERATIONS (Edit Form) */}
         {activeTab === 'operations' && (
-          <div className="max-w-xl mx-auto">
+          <div className="max-w-lg mx-auto mb-5">
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
               <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex items-center gap-3">
                 <div className="p-2 bg-white text-indigo-600 rounded-lg shadow-sm"><IoSettings size={20} /></div>
                 <div>
-                  <h3 className="text-sm font-extrabold text-slate-800 uppercase">Update Booking</h3>
-                  <p className="text-xs uppercase text-slate-500">Modify schedule, vehicle assignment, or status.</p>
+                  <h3 className="text-sm font-extrabold text-slate-800 uppercase">Manage Booking Request</h3>
                 </div>
               </div>
 
               <form className="p-6 md:p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <InputField type="time" label="pickup time" name="pickup_time" register={register} errors={errors} />
+                  <InputField type="time" label="drop time" name="drop_time" register={register} errors={errors} />
 
-                  {/* Time Inputs */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 uppercase mb-2">Pickup Time</label>
-                    <input type="time" {...register("pickup_time")} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-700" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 uppercase mb-2">Drop Time</label>
-                    <input type="time" {...register("drop_time")} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-700" />
-                  </div>
+                  <SelectInputField
+                    label="State"
+                    name="assigned_vehicle"
+                    register={register}
+                    errors={errors}
+                    options={vehicles.map(s => ({ label: s.vehicle_number, value: s.vehicle_number }))}
+                  />
 
-                  {/* Vehicle Assignment */}
-                  <div className="">
-                    <label className=" text-sm font-bold text-slate-700 uppercase mb-2 flex items-center gap-2">
-                      <FaBus className="text-indigo-400" /> Assign Vehicle
-                    </label>
-                    <select {...register("assigned_vehicle")} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-700 uppercase cursor-pointer">
-                      <option value="">-- Select Vehicle --</option>
-                      {vehicles.map(v => (
-                        <option key={v.id} value={v.vehicle_number}>
-                          {v.vehicle_number} ({v.vehicle_type})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Beacon Assignment (If missing) */}
-                  {/* {!hasBeacon && ( */}
-                    <div className="md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                      <label className=" text-sm font-bold text-amber-800 uppercase mb-2 flex items-center gap-2">
-                        <MdWarning /> Assign Beacon
-                      </label>
-                      <SelectInputField
-                        label=""
-                        name="beacon_id"
-                        register={register}
-                        errors={errors}
-                        options={availableBeacons.map(b => ({ label: `${b.imei_number}`, value: b.imei_number }))}
-                      />
-                    </div>
-                  {/* )} */}
+                  <SelectInputField
+                    label="Assign Beacon"
+                    name="beacon_id"
+                    register={register}
+                    errors={errors}
+                    options={availableBeacons.map(s => ({ label: s.imei_number, value: s.imei_number }))}
+                  />
 
                   {/* Status */}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-slate-700 uppercase mb-2">Booking Status</label>
+                    <label className="block text-sm font-bold text-purple-950 uppercase mb-2">Booking Status</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {['pending', 'approved', 'active', 'completed', 'cancelled'].map(status => (
-                        <label key={status} className="cursor-pointer">
-                          <input type="radio" value={status} {...register("status")} className="peer sr-only" />
+                      {getAvailableStatuses().map(status => (
+                        <label key={status.value} className="cursor-pointer">
+                          <input type="radio" value={status.value} {...register("status")} className="peer sr-only" />
                           <div className="px-3 py-2 rounded-lg border border-slate-200 text-center text-sm font-bold uppercase text-slate-500 peer-checked:bg-indigo-500 peer-checked:text-white hover:peer-checked:text-black peer-checked:border-indigo-300 transition-all hover:bg-slate-50">
-                            {status}
+                            {status.label}
                           </div>
                         </label>
                       ))}
@@ -354,9 +347,9 @@ const BookingShowPage = () => {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-slate-100 flex  gap-3">
-                  <CancelButton onClick={() => setActiveTab('overview')} label="cancel" />
-                  <SaveButton label="save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
+                <div className="pt-6 border-t border-slate-200 flex  gap-3">
+
+                  <SaveButton label="submit" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
                 </div>
               </form>
             </div>

@@ -37,12 +37,12 @@ import { Loader } from "../../Components/UI/Loader";
 // Helper: Status Styles
 const getStatusStyles = (status: string) => {
   switch (status.toLowerCase()) {
-    case "active": return "bg-green-50 text-green-700 border-green-200";
-    case "approved": return "bg-blue-50 text-blue-700 border-blue-200";
-    case "completed": return "bg-purple-50 text-purple-700 border-purple-200";
-    case "cancelled": return "bg-red-50 text-red-700 border-red-200";
-    case "pending": return "bg-yellow-50 text-yellow-700 border-yellow-200";
-    default: return "bg-slate-50 text-slate-700 border-slate-200";
+    case "Approved": return "bg-green-50 text-green-700 border-green-200";
+    case "Active": return "bg-blue-50 text-blue-700 border-blue-200";
+    case "Completed": return "bg-purple-50 text-purple-700 border-purple-200";
+    case "Cancelled": return "bg-red-50 text-red-700 border-red-200";
+    case "Cancelled": return "bg-amber-50 text-amber-700 border-amber-200";
+    default: return "bg-yellow-50 text-yellow-700 border-yellow-200";
   }
 };
 
@@ -171,27 +171,7 @@ const BookingIndexPage = () => {
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
-                  Filter by Status
-                </label>
-                <div className="relative">
-                  <FaFilter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={14} />
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm uppercase appearance-none bg-white cursor-pointer"
-                  >
-                    <option value="">All</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-
-                  </select>
-                </div>
-              </div>
+              </div>        
             </div>
 
             {/* Active Filters */}
@@ -226,10 +206,10 @@ const BookingIndexPage = () => {
               />
             ) : (
               <>
-                <TableContainer maxHeight="70vh">
+                <TableContainer maxHeight="71vh">
                   <Table>
                     <Thead>
-                      <Th width="5%">S.No</Th>
+                      <Th>S.No</Th>
                       <Th>Traveller</Th>
                       <Th>Pickup Info</Th>
                       <Th>Vehicle</Th>
