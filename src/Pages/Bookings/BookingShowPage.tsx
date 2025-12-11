@@ -135,10 +135,7 @@ const BookingShowPage = () => {
   const getAvailableStatuses = () => {
     if (currentStatus === 'Pending') return statusOptions;
     if (currentStatus === 'Approved') {
-      return [{ value: 'Cancelled', label: 'Cancel' }];
-    }
-    if (currentStatus === 'Cancelled') {
-      return [{ value: 'Cancelled', label: 'Cancelled' }];
+      return [{ value: 'Approved', label: 'Approved' }];
     }
     if (currentStatus === 'Rejected') return statusOptions.filter(s => s.value === 'Rejected'); // Read-only
     return statusOptions;
@@ -147,9 +144,9 @@ const BookingShowPage = () => {
   return (
     <div className="min-h-screen bg-white pb-12">
       {/* 1. Sticky Back Navigation */}
-      
+
       <PageHeaderBack title="Back" buttonLink="/bookings" />
-       
+
 
       {/* 2. Hero Section */}
       <div className="bg-white ">
