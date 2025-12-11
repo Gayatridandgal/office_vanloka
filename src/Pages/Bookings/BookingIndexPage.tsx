@@ -30,7 +30,7 @@ import {
 } from "../../Components/Table/Table";
 
 // Services & Utils
-import tenantApi from "../../Services/ApiService";
+import tenantApi, { centralAsset } from "../../Services/ApiService";
 import type { Booking } from "./Booking.types";
 import { Loader } from "../../Components/UI/Loader";
 
@@ -123,7 +123,7 @@ const BookingIndexPage = () => {
   // Helper: Render Avatar
   const renderAvatar = (row: Booking) => {
     const imgSrc = row.traveller_profile_photo
-      ? `http://localhost/storage/${row.traveller_profile_photo}`
+      ? `${centralAsset}${row.traveller_profile_photo}`
       : `https://ui-avatars.com/api/?name=${row.traveller_first_name}+${row.traveller_last_name}&background=random`;
 
     return (

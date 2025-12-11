@@ -39,11 +39,11 @@ const formatDate = (dateString?: string | null) => {
 
 const getStatusStyles = (status: string) => {
   switch (status.toLowerCase()) {
-    case "active": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
-    case "approved": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
+    case "active": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
+    case "approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
     case "completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
     case "cancelled": return "bg-red-50 text-red-700 border-red-200 ring-red-100";
-    case "pending": return "bg-yellow-50 text-yellow-700 border-yellow-200 ring-yellow-100";
+    case "pending": return "bg-amber-50 text-amber-700 border-amber-200 ring-amber-100";
     default: return "bg-slate-50 text-slate-700 border-slate-200 ring-slate-100";
   }
 };
