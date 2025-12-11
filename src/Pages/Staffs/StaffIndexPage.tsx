@@ -29,17 +29,18 @@ import {
 // Services & Utils
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
 import { useAlert } from "../../Context/AlertContext";
-import type { Staff } from "./Staff.types";
 import { Loader } from "../../Components/UI/Loader";
 import EmptyState from "../../Components/UI/EmptyState";
 import { Pagination } from "../../Components/Table/Pagination";
+import type { Employee } from "./Staff.types";
+import { FaEye } from "react-icons/fa6";
 
 const StaffIndexPage = () => {
   // const { can } = useToolkit();
   const { showAlert } = useAlert();
 
   // Data State
-  const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [staffList, setStaffList] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Filter State
@@ -98,7 +99,7 @@ const StaffIndexPage = () => {
   };
 
   // Helper: Render Avatar
-  const renderAvatar = (row: Staff) => {
+  const renderAvatar = (row: Employee) => {
     if (row.photo) {
       return (
         <img
@@ -308,7 +309,7 @@ const StaffIndexPage = () => {
                           <Td>
                             <div className="flex flex-wrap gap-1.5 max-w-[200px]">
                               {row.roles && row.roles.length > 0 ? (
-                                row.roles.map((roleName, i) => (
+                                row.roles.map((roleName:any, i:any) => (
                                   <span
                                     key={i}
                                     className="px-2 py-1 text-[10px] font-bold rounded bg-purple-50 text-purple-700 uppercase border border-purple-100 tracking-wide"
@@ -336,14 +337,24 @@ const StaffIndexPage = () => {
 
                           {/* Actions */}
                           {/* {can("edit users") && ( */}
-                          <Td align="center">
-                            <Link
+                          <Td>
+                              <div className="flex gap-2 items-center justify-center">
+                                 <Link
                               to={`/staff/edit/${row.id}`}
                               className="inline-flex p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
                               title="Edit Staff"
                             >
                               <FaEdit size={14} />
                             </Link>
+
+                            <Link
+                              to={`/staff/show/${row.id}`}
+                              className="inline-flex p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
+                              title="Edit Staff"
+                            >
+                              <FaEye size={14} />
+                            </Link>
+                              </div>
                           </Td>
                           {/* )} */}
                         </Tr>
