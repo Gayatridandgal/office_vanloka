@@ -27,6 +27,7 @@ import VehicleTrackPage from "../Pages/Vehicles/VehicleTrackPage";
 import TravellerIndexPage from "../Pages/Travelers/TravellerIndexPage";
 import TravellerShowPage from "../Pages/Travelers/TravellerShowPage";
 import TravellerEditPage from "../Pages/Travelers/TravellerEditPage";
+import StaffShowPage from "../Pages/Staffs/StaffShowPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -71,6 +72,7 @@ const AuthLayout = () => {
               <Route path="staff" element={<StaffIndexPage />} />
               <Route path="staff/create" element={<StaffCreatePage />} />
               <Route path="staff/edit/:id" element={<StaffEditPage />} />
+              <Route path="staff/show/:id" element={<StaffShowPage />} />
 
               {/* GPS Device Pages */}
               {/* <Route path="gps" element={<GpsIndexPage />} />
