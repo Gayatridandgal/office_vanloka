@@ -3,19 +3,18 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Icons
-import { 
-  FaUserShield, 
-  FaKey, 
-  FaCheck, 
-  FaShieldAlt, 
-  FaCheckDouble, 
-  FaTimes 
+import {
+  FaUserShield,
+  FaKey,
+  FaCheck,
+  FaShieldAlt,
+  FaCheckDouble,
+  FaTimes
 } from "react-icons/fa";
 
 // Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import SaveButton from "../../Components/Form/SaveButton";
-import CancelButton from "../../Components/Form/CancelButton";
 import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 
 // Services & Context
@@ -116,10 +115,10 @@ const CreatePage = () => {
       {/* 2. Main Container */}
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          
+
           {/* 3. The Form Card */}
           <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-            
+
             {/* Card Header */}
             <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
               <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
@@ -134,7 +133,7 @@ const CreatePage = () => {
 
             {/* Scrollable Area */}
             <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
-              
+
               {/* SECTION: Role Details */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -169,7 +168,7 @@ const CreatePage = () => {
                     <FaKey className="text-green-400" />
                     <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Assign Permissions</h3>
                   </div>
-                  
+
                   {/* Action Buttons */}
                   <div className="flex gap-2">
                     <button
@@ -188,7 +187,7 @@ const CreatePage = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {allPermissions.map((permission) => {
@@ -198,8 +197,8 @@ const CreatePage = () => {
                           key={permission.id}
                           className={`
                             relative flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all select-none
-                            ${isSelected 
-                              ? 'bg-blue-50 border-blue-200 shadow-sm' 
+                            ${isSelected
+                              ? 'bg-blue-50 border-blue-200 shadow-sm'
                               : 'bg-white border-slate-200 hover:border-blue-100 hover:bg-slate-50'}
                           `}
                         >
@@ -220,7 +219,7 @@ const CreatePage = () => {
                     })}
                   </div>
                   {allPermissions.length === 0 && (
-                     <p className="text-sm text-slate-400 italic text-center py-4">No permissions available to assign.</p>
+                    <p className="text-sm text-slate-400 italic text-center py-4">No permissions available to assign.</p>
                   )}
                 </div>
               </div>
@@ -229,7 +228,7 @@ const CreatePage = () => {
 
             {/* Footer */}
             <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row justify-start items-center gap-4">
-              <CancelButton label="Cancel" onClick={() => navigate("/roles_permissions")} />
+
               <SaveButton label="save" isSaving={isSubmitting} onClick={handleSubmit} />
             </div>
 

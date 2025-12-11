@@ -459,7 +459,6 @@ const StaffCreatePage = () => {
 
             {/* Footer */}
             <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row justify-start items-center gap-4">
-
               <SaveButton type="submit" label="save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
             </div>
 
