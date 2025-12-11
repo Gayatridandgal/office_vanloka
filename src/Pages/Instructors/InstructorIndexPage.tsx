@@ -339,7 +339,7 @@ const InstructorIndexPage = () => {
             }}
             optionValueKey="id"
             optionLabelKey="name"
-            placeholder="All Cities"
+            placeholder="All"
           />
 
           <SingleFilterHeader
@@ -353,7 +353,7 @@ const InstructorIndexPage = () => {
             }}
             optionValueKey="id"
             optionLabelKey="name"
-            placeholder="All Types"
+            placeholder="All"
           />
 
           <SingleFilterHeader

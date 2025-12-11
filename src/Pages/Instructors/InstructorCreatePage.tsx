@@ -2,10 +2,10 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import StarInputField from "../../Components/Form/StarInputField";
 import SaveButton from "../../Components/Form/SaveButton";
 import type { Instructor } from "./Instructor.types";
 import tenantApi from "../../Services/ApiService";
+import InputField from "../../Components/Form/InputField";
 
 type FormInputs = Instructor & {
   // File field for profile photo
@@ -158,19 +158,19 @@ const InstructorCreatePage = () => {
               Basic Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StarInputField
+              <InputField
                 label="First Name"
                 name="first_name"
                 register={register}
                 errors={errors}
-                required="First name is required."
+                required
               />
-              <StarInputField
+              <InputField
                 label="Last Name"
                 name="last_name"
                 register={register}
                 errors={errors}
-                required="Last name is required."
+                required
               />
 
               <div>
@@ -192,16 +192,16 @@ const InstructorCreatePage = () => {
                 )}
               </div>
 
-              <StarInputField
+              <InputField
                 label="Date of Birth"
                 name="date_of_birth"
                 register={register}
                 errors={errors}
-                required="Date of birth is required."
+                required
                 type="date"
               />
 
-              <StarInputField
+              <InputField
                 label="Email"
                 name="email"
                 register={register}
@@ -210,12 +210,12 @@ const InstructorCreatePage = () => {
                 placeholder="example@email.com"
               />
 
-              <StarInputField
+              <InputField
                 label="Mobile Number"
                 name="mobile_number"
                 register={register}
                 errors={errors}
-                required="Mobile number is required."
+                required
                 placeholder="10-digit number"
               />
 
@@ -396,12 +396,12 @@ const InstructorCreatePage = () => {
               Driving License Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StarInputField
+              <InputField
                 label="Driving License Number"
                 name="driving_license_number"
                 register={register}
                 errors={errors}
-                required="Driving license number is required."
+                required
               />
 
               <div>
@@ -616,12 +616,12 @@ const InstructorCreatePage = () => {
               Instructor Certification Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StarInputField
+              <InputField
                 label="Instructor Certification Number"
                 name="instructor_certification_number"
                 register={register}
                 errors={errors}
-                required="Certification number is required."
+                required
               />
 
               <div>

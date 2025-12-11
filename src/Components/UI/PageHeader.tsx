@@ -19,7 +19,7 @@ const PageHeader: React.FC<HeaderProps> = ({
       {buttonLink && buttonText && (
         <Link
           to={buttonLink}
-          className={` bg-blue-300 shadow-sm font-bold py-1 px-2 hover:bg-blue-400 rounded-lg  transition-colors uppercase`}
+          className={` bg-blue-700 text-white text-sm shadow-sm font-bold py-1 px-2 hover:bg-blue-800 rounded-lg  transition-colors uppercase`}
         >
           {buttonText}
         </Link>

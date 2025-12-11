@@ -3,18 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../Services/AuthService"; // Your refactored service
 import logo from "../../public/logo.avif";
 import type { User } from "../Types/Index";
+import { useAuth } from "../Context/AuthContext";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("admin@admin.com");
   const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { refreshMe } = useAuth();
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       await login({ email, password } as User);
+      await refreshMe();
 
       navigate("/dashboard");
     } catch (err: any) {

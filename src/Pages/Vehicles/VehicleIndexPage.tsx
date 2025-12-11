@@ -1,393 +1,397 @@
+// src/components/vehicles/VehicleIndexPage.tsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+
+// Icons
+import {
+  FaSearch,
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaBusAlt,
+  FaGasPump,
+  FaMapMarkerAlt
+} from "react-icons/fa";
+import { MdClear, MdDirectionsCar } from "react-icons/md";
+
+// Components
 import PageHeader from "../../Components/UI/PageHeader";
-import Table from "../../Components/UI/Table";
-import type { PaginatedResponse } from "../../Types/Index";
-import SearchComponent from "../../Components/UI/SearchComponents";
-import SingleFilterHeader from "../../Components/UI/SingleFilterHeader";
+import EmptyState from "../../Components/UI/EmptyState";
+import { Pagination } from "../../Components/Table/Pagination";
+import {
+  TableDiv,
+  TableContainer,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+} from "../../Components/Table/Table";
+
+// Services & Utils
 import tenantApi from "../../Services/ApiService";
-import { HiRefresh } from "react-icons/hi";
+import { useAlert } from "../../Context/AlertContext";
+import type { Vehicle } from "./Vehicle.types";
+import type { PaginatedResponse } from "../../Types/Index";
+import { Loader } from "../../Components/UI/Loader";
 
-export interface Vehicle {
-  id: string | number;
-  vehicle_number?: string;
-  vehicle_type?: string;
-  manufacturer?: string;
-  vehicle_model?: string;
-  manufacturing_year?: number;
-  fuel_type?: string;
-  seating_capacity?: number;
-  vehicle_color?: string;
-  kilometers_driven?: number;
-  gps_device_id?: string;
-  sim_number?: string;
-  beacon_count?: number;
-  assigned_driver_id?: string;
-  assigned_route_id?: string;
-  permit_type?: string;
-  permit_number?: string;
-  permit_issue_date?: string;
-  permit_expiry_date?: string;
-  ownership_type?: string;
-  owner_name?: string;
-  owner_contact_number?: string;
-  vendor_name?: string;
-  vendor_contact_number?: string;
-  organization_name?: string;
-  gps_installation_date?: string;
-  insurance_provider_name?: string;
-  insurance_policy_number?: string;
-  insurance_expiry_date?: string;
-  fitness_certificate_number?: string;
-  fitness_expiry_date?: string;
-  pollution_certificate_number?: string;
-  pollution_expiry_date?: string;
-  last_service_date?: string;
-  next_service_due_date?: string;
-  tyre_replacement_due_date?: string;
-  battery_replacement_due_date?: string;
-  fire_extinguisher_status?: string;
-  first_aid_kit_status?: string;
-  cctv_installed?: boolean;
-  panic_button_installed?: boolean;
-  vehicle_remarks?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-// Helper function to determine status based on vehicle data
+// Helper for status
 const getVehicleStatus = (vehicle: Vehicle): string => {
   const now = new Date();
-
-  // Check if any compliance is expired
-  if (
-    vehicle.permit_expiry_date &&
-    new Date(vehicle.permit_expiry_date) < now
-  ) {
-    return "Inactive";
-  }
-  if (
-    vehicle.insurance_expiry_date &&
-    new Date(vehicle.insurance_expiry_date) < now
-  ) {
-    return "Inactive";
-  }
-  if (
-    vehicle.fitness_expiry_date &&
-    new Date(vehicle.fitness_expiry_date) < now
-  ) {
-    return "Inactive";
-  }
-
-  // Check if service is due
-  if (
-    vehicle.next_service_due_date &&
-    new Date(vehicle.next_service_due_date) < now
-  ) {
-    return "Maintenance";
-  }
-
+  if (vehicle.permit_expiry_date && new Date(vehicle.permit_expiry_date) < now) return "Inactive";
+  if (vehicle.insurance_expiry_date && new Date(vehicle.insurance_expiry_date) < now) return "Inactive";
+  if (vehicle.fitness_expiry_date && new Date(vehicle.fitness_expiry_date) < now) return "Inactive";
+  if (vehicle.next_service_due_date && new Date(vehicle.next_service_due_date) < now) return "Maintenance";
   return "Active";
 };
 
-// Column definitions
-const columns = [
-  {
-    key: "sno",
-    label: "SNo",
-    render: (_: Vehicle, index: number) => index + 1,
-  },
-  {
-    key: "vehicle_number",
-    label: "Vehicle Number",
-    render: (row: Vehicle) => (
-      <div className="font-medium">{row.vehicle_number}</div>
-    ),
-  },
-  {
-    key: "details",
-    label: "Vehicle Details",
-    render: (row: Vehicle) => (
-      <div>
-        <div className="font-medium text-gray-900">
-          {row.manufacturer} {row.vehicle_model}
-        </div>
-        <div className="text-sm text-gray-500">
-          {row.vehicle_type} • {row.fuel_type}
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: "seating_capacity",
-    label: "Seats",
-  },
-  {
-    key: "ownership",
-    label: "Ownership",
-    render: (row: Vehicle) => (
-      <div>
-        <div className="text-sm">{row.ownership_type}</div>
-        {row.organization_name && (
-          <div className="text-xs text-gray-500">{row.organization_name}</div>
-        )}
-      </div>
-    ),
-  },
-  {
-    key: "status",
-    label: "Status",
-    render: (row: Vehicle) => {
-      const status = getVehicleStatus(row);
-      const statusColor =
-        status === "Active"
-          ? "bg-green-100 text-green-800"
-          : status === "Maintenance"
-            ? "bg-yellow-100 text-yellow-800"
-            : "bg-red-100 text-red-800";
-      return (
-        <span
-          className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColor}`}
-        >
-          {status}
-        </span>
-      );
-    },
-  },
-  {
-    key: "actions",
-    label: "",
-    render: (row: Vehicle) => (
-      <div className="flex items-center gap-2">
-        {row.gps_device_id && (
-          <Link
-            to={`/vehicles/track/${row.id}`}
-            className="text-purple-950 bg-yellow-200 py-1 px-2 rounded-full font-semibold text-sm"
-          >
-            Track
-          </Link>
-        )}
-      </div>
-    ),
-  },
-];
-
 const VehicleIndexPage = () => {
+  const { showAlert } = useAlert();
+
+  // Data State
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [displayVehicles, setDisplayVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Filter Options State
+  const [vehicleTypes, setVehicleTypes] = useState<string[]>([]);
+  const [fuelTypes, setFuelTypes] = useState<string[]>([]);
+
+  // Filter Selection State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedVehicleType, setSelectedVehicleType] = useState("");
   const [selectedFuelType, setSelectedFuelType] = useState("");
-  const [displayVehicles, setDisplayVehicles] = useState<Vehicle[]>([]);
-  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
-  const [vehicleTypes, setVehicleTypes] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [fuelTypes, setFuelTypes] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [perPage] = useState(15);
 
-  // Fetch vehicles from API
-  useEffect(() => {
-    fetchVehicles();
-  }, [currentPage, perPage]);
-
+  // 1. Fetch Data
   const fetchVehicles = async () => {
     try {
       setLoading(true);
-      setError(null);
 
-      const response = await tenantApi.get<PaginatedResponse<Vehicle>>(
-        "/vehicles",
-        {
-          params: {
-            page: currentPage,
-            per_page: perPage,
-          },
-        },
-      );
+      const response = await tenantApi.get<PaginatedResponse<Vehicle>>("/vehicles", {
+        params: { page: currentPage, per_page: perPage },
+      });
 
       if (response.data.success && response.data.data) {
         const vehicles = response.data.data.data || [];
         setAllVehicles(vehicles);
         setDisplayVehicles(vehicles);
 
-        // Extract unique vehicle types
-        const uniqueVehicleTypes = Array.from(
-          new Set(vehicles.map((v) => v.vehicle_type).filter(Boolean)),
-        ) as string[];
-        setVehicleTypes(
-          uniqueVehicleTypes.sort().map((type) => ({ id: type, name: type })),
-        );
+        // Extract Filter Options
+        setVehicleTypes(Array.from(new Set(vehicles.map(v => v.vehicle_type).filter(Boolean))) as string[]);
+        setFuelTypes(Array.from(new Set(vehicles.map(v => v.fuel_type).filter(Boolean))) as string[]);
 
-        // Extract unique fuel types
-        const uniqueFuelTypes = Array.from(
-          new Set(vehicles.map((v) => v.fuel_type).filter(Boolean)),
-        ) as string[];
-        setFuelTypes(
-          uniqueFuelTypes.sort().map((type) => ({ id: type, name: type })),
-        );
-
-        // Set pagination info
         if (response.data.data.last_page) {
           setTotalPages(response.data.data.last_page);
         }
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch vehicles";
-      setError(errorMessage);
+    } catch (err: any) {
       console.error("Error fetching vehicles:", err);
+      showAlert("Failed to fetch vehicles.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter effect
+  useEffect(() => {
+    fetchVehicles();
+  }, [currentPage, perPage]);
+
+  // 2. Filter Logic
   useEffect(() => {
     let result = allVehicles;
 
-    // Apply vehicle type filter
-    if (selectedVehicleType) {
-      result = result.filter((v) => v.vehicle_type === selectedVehicleType);
-    }
+    if (selectedVehicleType) result = result.filter((v) => v.vehicle_type === selectedVehicleType);
+    if (selectedFuelType) result = result.filter((v) => v.fuel_type === selectedFuelType);
 
-    // Apply fuel type filter
-    if (selectedFuelType) {
-      result = result.filter((v) => v.fuel_type === selectedFuelType);
-    }
-
-    // Apply search filter
     if (searchQuery) {
-      const lowercasedQuery = searchQuery.toLowerCase();
-      result = result.filter(
-        (vehicle) =>
-          (vehicle.vehicle_number ?? "")
-            .toLowerCase()
-            .includes(lowercasedQuery) ||
-          (vehicle.vehicle_type ?? "")
-            .toLowerCase()
-            .includes(lowercasedQuery) ||
-          (vehicle.manufacturer ?? "")
-            .toLowerCase()
-            .includes(lowercasedQuery) ||
-          (vehicle.vehicle_model ?? "")
-            .toLowerCase()
-            .includes(lowercasedQuery) ||
-          (vehicle.permit_number ?? "").toLowerCase().includes(lowercasedQuery),
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter((v) =>
+        (v.vehicle_number ?? "").toLowerCase().includes(lowerQuery) ||
+        (v.vehicle_model ?? "").toLowerCase().includes(lowerQuery) ||
+        (v.permit_number ?? "").toLowerCase().includes(lowerQuery)
       );
     }
 
     setDisplayVehicles(result);
   }, [searchQuery, selectedVehicleType, selectedFuelType, allVehicles]);
 
+  // 3. Handlers
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedVehicleType("");
+    setSelectedFuelType("");
+  };
+
   const handleDelete = async (vehicle: Vehicle) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete vehicle ${vehicle.vehicle_number}?`,
-      )
-    ) {
-      return;
-    }
+    if (!confirm(`Are you sure you want to delete vehicle ${vehicle.vehicle_number}?`)) return;
 
     try {
       const response = await tenantApi.delete(`/vehicles/${vehicle.id}`);
-
       if (response.data.success) {
-        // Remove from local state
         setAllVehicles((prev) => prev.filter((v) => v.id !== vehicle.id));
-        setDisplayVehicles((prev) => prev.filter((v) => v.id !== vehicle.id));
-        alert("Vehicle deleted successfully");
+        showAlert("Vehicle deleted successfully", "success");
       }
     } catch (err) {
-      console.error("Error deleting vehicle:", err);
-      alert("Failed to delete vehicle");
+      showAlert("Failed to delete vehicle", "error");
     }
   };
 
-  if (error) {
-    return (
-      <div className="px-4 bg-white min-h-screen">
-        <PageHeader title="Vehicle Management" />
-        <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          Error: {error}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="px-4 bg-white min-h-screen">
-      <PageHeader
-        title="Vehicle Management"
-        buttonText="Add Vehicle"
-        buttonLink="create"
-      />
-
-      {/* Filter Controls Section */}
-      <div className="my-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <SearchComponent
-          onSearch={(query) => setSearchQuery(query)}
-          placeholder="Search by Vehicle No., Type, Model, Permit..."
+    <div className="min-h-screen bg-white px-2">
+      {/* Header */}
+      <div className="mx-4">
+        <PageHeader
+          title="Vehicle Management"
+          buttonText="Add Vehicle"
+          buttonLink="create"
         />
-
-        <div className="flex gap-2">
-          <SingleFilterHeader
-            label="Vehicle Type"
-            id="vehicle-type-filter"
-            options={vehicleTypes}
-            value={selectedVehicleType}
-            onChange={(type) => {
-              setSelectedVehicleType(type);
-              setCurrentPage(1);
-            }}
-            optionValueKey="id"
-            optionLabelKey="name"
-            placeholder="All Types"
-          />
-
-          <SingleFilterHeader
-            label="Fuel Type"
-            id="fuel-type-filter"
-            options={fuelTypes}
-            value={selectedFuelType}
-            onChange={(type) => {
-              setSelectedFuelType(type);
-              setCurrentPage(1);
-            }}
-            optionValueKey="id"
-            optionLabelKey="name"
-            placeholder="All Fuels"
-          />
-        </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin">
-            <HiRefresh className="w-6 h-6" />
-          </div>
-        </div>
-      ) : (
-        <>
-          <Table<Vehicle>
-            list={displayVehicles}
-            columns={columns}
-            viewUrl="/vehicles/show"
-            editUrl="/vehicles/edit"
-            onDelete={handleDelete}
-          />
+      <div className="px-4 pb-10">
+        <div className="mx-auto space-y-4">
 
-          {/* Pagination Info */}
-          <div className="mt-4 text-sm text-gray-600">
-            Showing {displayVehicles.length} of {allVehicles.length} vehicles
-            {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+          {/* Search & Filter Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
+                <FaSearch className="text-white" size={10} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {/* 1. Search Input */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Search Vehicles
+                </label>
+                <div className="relative">
+                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Vehicle No, Model, Permit..."
+                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
+                  />
+                </div>
+              </div>
+
+              {/* 2. Type Filter */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Vehicle Type
+                </label>
+                <div className="relative">
+                  <FaBusAlt className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                  <select
+                    value={selectedVehicleType}
+                    onChange={(e) => setSelectedVehicleType(e.target.value)}
+                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm uppercase transition-all appearance-none bg-white shadow-sm hover:border-blue-400 cursor-pointer"
+                  >
+                    <option value="">All</option>
+                    {vehicleTypes.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* 3. Fuel Filter */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
+                  Fuel Type
+                </label>
+                <div className="relative">
+                  <FaGasPump className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                  <select
+                    value={selectedFuelType}
+                    onChange={(e) => setSelectedFuelType(e.target.value)}
+                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm uppercase transition-all appearance-none bg-white shadow-sm hover:border-blue-400 cursor-pointer"
+                  >
+                    <option value="">All</option>
+                    {fuelTypes.map((fuel) => (
+                      <option key={fuel} value={fuel}>{fuel}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Filters */}
+            {(searchQuery || selectedVehicleType || selectedFuelType) && (
+              <div className="flex items-center flex-wrap gap-1 mt-3">
+                {searchQuery && (
+                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
+                    {searchQuery}
+                  </span>
+                )}
+                {selectedVehicleType && (
+                  <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold uppercase border border-purple-200">
+                    {selectedVehicleType}
+                  </span>
+                )}
+                {selectedFuelType && (
+                  <span className="px-3 py-1 bg-orange-50 text-orange-700 rounded-lg text-xs font-bold uppercase border border-orange-200">
+                    {selectedFuelType}
+                  </span>
+                )}
+                <button
+                  onClick={handleClearFilters}
+                  className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
+                >
+                  <MdClear /> Clear
+                </button>
+              </div>
+            )}
           </div>
-        </>
-      )}
+
+          {/* Table Section */}
+          <TableDiv>
+            {loading ? (
+              <div className="py-20">
+                <Loader />
+              </div>
+            ) : displayVehicles.length === 0 ? (
+              <EmptyState
+                title="No Vehicles Found"
+                description="Try adjusting filters or add a new vehicle."
+                icon={<MdDirectionsCar className="text-slate-300 text-6xl mb-4" />}
+              />
+            ) : (
+              <>
+                <TableContainer maxHeight="65vh">
+                  <Table>
+                    <Thead>
+                      <Th width="5%">S.No</Th>
+                      <Th>Vehicle Number</Th>
+                      <Th>Details</Th>
+                      <Th>Ownership</Th>
+                      <Th>Status</Th>
+                      <Th align="center">Actions</Th>
+                    </Thead>
+
+                    <Tbody>
+                      {displayVehicles.map((row, index) => {
+                        const status = getVehicleStatus(row);
+                        let statusStyles = "bg-gray-100 text-gray-800 border-gray-200";
+                        if (status === "Active") statusStyles = "bg-green-50 text-green-700 border-green-200";
+                        if (status === "Maintenance") statusStyles = "bg-yellow-50 text-yellow-700 border-yellow-200";
+                        if (status === "Inactive") statusStyles = "bg-red-50 text-red-700 border-red-200";
+
+                        return (
+                          <Tr key={row.id}>
+                            {/* S.No */}
+                            <Td isMono className="font-bold text-slate-500">
+                              {(currentPage - 1) * perPage + index + 1}
+                            </Td>
+
+                            {/* Vehicle Number */}
+                            <Td>
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
+                                  <FaBusAlt size={16} />
+                                </div>
+                                <span className="font-bold text-slate-800 uppercase text-sm">
+                                  {row.vehicle_number}
+                                </span>
+                              </div>
+                            </Td>
+
+                            {/* Details */}
+                            <Td>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-slate-700 text-sm">
+                                  {row.manufacturer} {row.vehicle_model}
+                                </span>
+                                <span className="text-xs text-slate-500 mt-0.5 font-medium uppercase">
+                                  {row.vehicle_type} • {row.fuel_type} • {row.seating_capacity} Seats
+                                </span>
+                              </div>
+                            </Td>
+
+                            {/* Ownership */}
+                            <Td>
+                              <span className="text-sm text-slate-700 font-medium">
+                                {row.ownership_type}
+                              </span>
+                            </Td>
+
+
+                            {/* Status */}
+                            <Td>
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border ${statusStyles}`}>
+                                {status}
+                              </span>
+                            </Td>
+
+                            {/* Actions */}
+                            <Td>
+                              <div className="flex items-center justify-center gap-2">
+                                {row.gps_device && (
+                                  <Link
+                                    to={`/vehicles/track/${row.vehicle_number}`}
+                                    className="flex items-center gap-1 px-2 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg text-xs font-bold uppercase hover:bg-yellow-100 transition-colors mr-2"
+                                    title="Track Vehicle"
+                                  >
+                                    <FaMapMarkerAlt /> Track
+                                  </Link>
+                                )}
+
+                                <Link
+                                  to={`/vehicles/show/${row.id}`}
+                                  className="p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
+                                  title="View Details"
+                                >
+                                  <FaEye size={14} />
+                                </Link>
+
+                                <Link
+                                  to={`/vehicles/edit/${row.id}`}
+                                  className="p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
+                                  title="Edit Vehicle"
+                                >
+                                  <FaEdit size={14} />
+                                </Link>
+
+                                <button
+                                  onClick={() => handleDelete(row)}
+                                  className="p-2 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all duration-200 shadow-sm"
+                                  title="Delete Vehicle"
+                                >
+                                  <FaTrash size={14} />
+                                </button>
+                              </div>
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+
+                {/* Pagination */}
+                {totalPages > 10 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={allVehicles.length}
+                    onPageChange={setCurrentPage}
+                    itemName="Vehicles"
+                  />
+                )}
+              </>
+            )}
+          </TableDiv>
+
+        </div>
+      </div>
     </div>
   );
 };

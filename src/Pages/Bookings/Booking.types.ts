@@ -1,27 +1,3 @@
-// import type { User } from "../../Types/Index";
-
-// export interface Booking {
-//   id?: number;
-//   traveller_uid: string;
-//   tenant_id: string;
-//   purpose?: string;
-//   employee_id?: string;
-//   traveller_age?: number;
-//   pickup_location_name: string;
-//   pickup_location_city: string;
-//   pickup_location_district?: string;
-//   pickup_location_state?: string;
-//   pickup_location_pin_code?: string;
-//   pickup_location_latitude?: number;
-//   pickup_location_longitude?: number;
-//   assign_vehicle?: string;
-//   status: string; 
-//   approved_by?: number; // Relationship
-//   approver?:User;
-//   created_at?: string;
-//   updated_at?: string;
-// }
-
 export interface Booking {
   id: number;
   app_user_traveller_id: number;
@@ -79,9 +55,3 @@ export interface Booking {
   updated_at?: string;
 }
 
-export interface Vehicle {
-  id: number;
-  vehicle_number: string;
-  vehicle_type?: string;
-  status?: string;
-}

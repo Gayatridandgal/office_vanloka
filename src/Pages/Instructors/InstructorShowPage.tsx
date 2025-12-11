@@ -11,8 +11,7 @@ import {
   FaCertificate,
   FaUsers,
 } from "react-icons/fa";
-import tenantApi from "../../Services/ApiService";
-import useAsset from "../../Hooks/useAsset";
+import tenantApi, { tenantAsset } from "../../Services/ApiService";
 
 // Helper component for displaying info fields
 const InfoField = ({
@@ -186,8 +185,6 @@ const InstructorShowPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const asset = useAsset();
-
   useEffect(() => {
     fetchInstructor();
   }, [id]);
@@ -256,7 +253,7 @@ const InstructorShowPage = () => {
             <div className="flex items-start gap-4">
               {instructor.profile_photo_path && (
                 <img
-                  src={asset(instructor.profile_photo_path)}
+                  src={`${tenantAsset}${instructor.profile_photo_path}`}
                   alt={`${instructor.first_name} ${instructor.last_name}`}
                   className="h-24 w-24 rounded-lg object-cover border-4 border-purple-300 shadow-lg"
                   onError={(e) => {

@@ -8,11 +8,11 @@ type InputFieldProps = {
   register: UseFormRegister<any>;
   errors: FieldErrors;
   required?: boolean | string;
-  type?: "text" | "email" | "number" | "password" | "tel" | "date" | "file";
+  type?: "text" | "email" | "number" | "password" | "tel" | "date" | "file" | 'time';
   className?: string;
   placeholder?: string;
   disabled?: boolean;
-  step?:any
+  step?: string | number;
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -45,7 +45,7 @@ const InputField: React.FC<InputFieldProps> = ({
         htmlFor={name}
         className="block text-sm text-purple-950 uppercase font-bold mb-2"
       >
-        {label}
+        {label}{required && <span className="text-red-500">*</span>}
       </label>
       <input
         id={name}
@@ -53,7 +53,7 @@ const InputField: React.FC<InputFieldProps> = ({
         step={step}
         disabled={disabled}
         {...register(name, validationRules)}
-        className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-sm uppercase focus:outline-none focus:ring focus:ring-purple-400 ${className}`}
+        className={`w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-purple-800 ${className}`}
         {...props} // Spread other props like placeholder
       />
       {errorMessage && (

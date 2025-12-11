@@ -1,9 +1,11 @@
+
+
 import axios from "axios";
 
-export const baseURL = `http://${window.location.hostname}/api/`;
-// const baseURL = `http://localhost/api/`;
-
-export const asset = `http://${window.location.hostname}/storage`
+export const baseURL = `http://${window.location.hostname}/api`;
+export const tenantAsset = `http://${window.location.hostname}/tenancy/assets/`
+export const centralAsset = `http://localhost/storage/`
+export const centralUrl =`http://localhost/api`
 
 const tenantApi = axios.create({
   baseURL: baseURL,

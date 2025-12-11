@@ -11,7 +11,7 @@ export interface Driver {
   mobile_number: string;
   blood_group?: string;
   marital_status?: string;
-  number_of_dependents?: number;
+  number_of_dependents: number;
   profile_photo?: string
 
   // Emergency Contacts
@@ -54,7 +54,7 @@ export interface Driver {
   license_insurance?: LicenseInsurance[];
 
   // Tracking & Assignment
-  beacon?: string;
+  beacon_id?: string;
   vehicle?: string;
 
   // Documents

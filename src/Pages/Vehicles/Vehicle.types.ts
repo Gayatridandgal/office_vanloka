@@ -1,4 +1,5 @@
 export interface Vehicle {
+    id:any
     // Basic Information
     vehicle_number: string;
     vehicle_type: string;
