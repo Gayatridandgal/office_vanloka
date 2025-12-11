@@ -15,7 +15,7 @@ import {
   FaIndustry,
   FaEdit
 } from "react-icons/fa";
-import { MdGpsFixed, MdInfoOutline } from "react-icons/md";
+import { MdInfoOutline } from "react-icons/md";
 import { IoSpeedometer } from "react-icons/io5";
 
 // Components
