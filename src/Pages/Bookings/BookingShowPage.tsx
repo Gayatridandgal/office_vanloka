@@ -44,7 +44,6 @@ const getStatusStyles = (status: string) => {
   }
 };
 
-
 // --- Form Types ---
 type UpdateFormInputs = {
   pickup_time: string;
@@ -324,7 +323,7 @@ const BookingShowPage = () => {
                   </div>
 
                   {/* Beacon Assignment (If missing) */}
-                  {!hasBeacon && (
+                  {/* {!hasBeacon && ( */}
                     <div className="md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
                       <label className=" text-sm font-bold text-amber-800 uppercase mb-2 flex items-center gap-2">
                         <MdWarning /> Assign Beacon
@@ -334,10 +333,10 @@ const BookingShowPage = () => {
                         name="beacon_id"
                         register={register}
                         errors={errors}
-                        options={availableBeacons.map(b => ({ label: `${b.device_id} (${b.imei_number})`, value: b.imei_number }))}
+                        options={availableBeacons.map(b => ({ label: `${b.imei_number}`, value: b.imei_number }))}
                       />
                     </div>
-                  )}
+                  {/* )} */}
 
                   {/* Status */}
                   <div className="md:col-span-2">
