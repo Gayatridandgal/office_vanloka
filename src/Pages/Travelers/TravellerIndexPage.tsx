@@ -236,7 +236,7 @@ const TravellerIndexPage = () => {
                       <Th>Traveller Name</Th>
                       <Th>UID</Th>
                       <Th>Beacon ID</Th>
-                      <Th>Gender</Th>
+                      <Th align="center">Gender</Th>
 
                       <Th align="center">Actions</Th>
                     </Thead>
@@ -291,11 +291,11 @@ const TravellerIndexPage = () => {
                           </Td>
 
                           {/* Gender */}
-                          <Td>
+                          <Td align="center">
                             <span className="text-sm text-slate-700 capitalize">
                               {row.gender == "Male" ? (
-                                <label className="bg-amber-100 text-amber-800 font-semibold p-1 rounded-lg">{row.gender}</label>
-                              ) : (<label className="bg-pink-100 text-pink-800 font-semibold p-1 rounded-lg">{row.gender}</label>)}
+                                <label className="bg-amber-100 text-amber-800 font-semibold px-4 py-1 rounded-lg">{row.gender}</label>
+                              ) : (<label className="bg-pink-50 text-pink-900 font-semibold px-4 py-1 rounded-lg">{row.gender}</label>)}
                             </span>
                           </Td>
 

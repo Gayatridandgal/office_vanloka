@@ -24,7 +24,7 @@ import tenantApi, { centralAsset, centralUrl } from "../../Services/ApiService";
 // Types
 import type { AppUser, Traveller } from "./Traveler.types";
 import type { Booking } from "../Bookings/Booking.types";
-import { FaEnvelope, FaPhone, FaUserTag } from "react-icons/fa6";
+import { FaUserTag } from "react-icons/fa6";
 import { DUMMY_USER_IMAGE } from "../../Utils/Toolkit";
 import axios from "axios";
 
@@ -41,12 +41,11 @@ const formatDate = (dateString?: string | null) => {
 
 const getStatusStyles = (status: string) => {
   switch (status.toLowerCase()) {
-    case "active": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
-    case "approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
-    case "completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
-    case "cancelled": return "bg-red-50 text-red-700 border-red-200 ring-red-100";
-    case "pending": return "bg-amber-50 text-amber-700 border-amber-200 ring-amber-100";
-    default: return "bg-slate-50 text-slate-700 border-slate-200 ring-slate-100";
+    case "Active": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
+    case "Approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
+    case "Completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
+    case "Cancelled": return "bg-red-50 text-red-700 border-red-200 ring-red-100";
+    default: return "bg-amber-50 text-amber-700 border-amber-200 ring-amber-100";
   }
 };
 
@@ -144,8 +143,8 @@ const TravellerShowPage = () => {
     );
   }
 
-  const activeBookings = traveller.bookings?.filter(b => ["active", "approved",].includes(b.status.toLowerCase())) || [];
-  const pastBookings = traveller.bookings?.filter(b => ["completed", "cancelled", "pending"].includes(b.status.toLowerCase())) || [];
+  const activeBookings = traveller.bookings?.filter(b => ["Active", "Approved",].includes(b.status)) || [];
+  const pastBookings = traveller.bookings?.filter(b => ["Completed", "Cancelled", "Pending"].includes(b.status)) || [];
 
   return (
     <div className="min-h-screen bg-white pb-12 overflow-x-hidden">
@@ -219,12 +218,12 @@ const TravellerShowPage = () => {
       <div className="flex-1 overflow-y-auto max-h-[66vh]">
         <div className="max-w-6xl mx-auto">
           {activeTab === 'details' && (
-            <div className="animate-fadeIn  mt-8">
+            <div className="animate-fadeIn mt-8">
               {/* Single Unified Card */}
               <div className="transition-all duration-300 overflow-hidden">
 
                 {/* Content Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10 m-2">
 
                   {/* Personal Details Section */}
                   <div className="space-y-5 border border-gray-300 rounded-lg shadow-lg">
