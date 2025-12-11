@@ -18,7 +18,7 @@ import EmptyState from "../../Components/UI/EmptyState";
 import { useAlert } from "../../Context/AlertContext";
 import type { FormDropdown } from "../../Types/Index";
 import type { TravellerForm } from "./Traveler.types";
-import tenantApi, { centralAsset, centralUrl} from "../../Services/ApiService";
+import tenantApi, { centralAsset, centralUrl } from "../../Services/ApiService";
 import axios from "axios";
 import { DUMMY_USER_IMAGE } from "../../Utils/Toolkit";
 import SelectInputField from "../../Components/Form/SelectInputField";
@@ -95,21 +95,14 @@ const TravellerEditPage = () => {
 
                 if (k === 'profile_photo') return;
 
-                
+
                 if (value !== undefined && value !== null && value !== '') {
                     formData.append(k, String(value));
-                }else{
-                    formData.append(k, String(value));
+                } else {
+                    formData.append(k, "");
                 }
-               
+
             });
-
-            // Append File if selected
-            if (data.profile_photo && data.profile_photo.length > 0) {
-                formData.append("profile_photo", data.profile_photo[0]);
-            }
-
-            console.log("data sending : ", formData);
 
             const response = await tenantApi.post(`/travellers/update/${id}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
@@ -147,7 +140,7 @@ const TravellerEditPage = () => {
         <div className="min-h-screen bg-white pb-12">
             <PageHeaderBack title="back" buttonLink="/travellers" />
 
-            <div className="max-w-5xl mx-auto px-4 mt-10">
+            <div className="max-w-4xl mx-auto px-4 mt-10">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="bg-white rounded-lg shadow-xl border border-slate-100 overflow-hidden">
 
@@ -165,10 +158,10 @@ const TravellerEditPage = () => {
 
                         <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
                             {/* Profile Photo Preview */}
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-center gap-4">
                                 <img
                                     src={displayPhoto}
-                                    className="h-24 w-24 rounded-full object-cover border-4 border-indigo-100 shadow-md"
+                                    className="h-28 w-28 rounded-full object-cover border-4 border-indigo-100 shadow-md"
                                     alt="Profile"
                                 />
                             </div>
@@ -183,13 +176,15 @@ const TravellerEditPage = () => {
                                 </div>
                                 <div className="bg-slate-50/50 p-6 rounded-xl border border-slate-100">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <InputField
-                                            label="Traveller UID"
-                                            name="traveller_uid"
-                                            register={register}
-                                            errors={errors}
-                                            disabled
-                                        />
+                                        <div className="col-span-2">
+                                            <InputField
+                                                label="Traveller UID"
+                                                name="traveller_uid"
+                                                register={register}
+                                                errors={errors}
+                                                disabled
+                                            />
+                                        </div>
                                         <InputField
                                             label="Beacon ID"
                                             name="beacon_id"
@@ -262,7 +257,6 @@ const TravellerEditPage = () => {
                                             register={register}
                                             errors={errors}
                                             options={statuses.map(data => ({ label: data.value, value: data.value }))}
-                                            required
                                         />
 
                                         <InputField
@@ -273,13 +267,6 @@ const TravellerEditPage = () => {
 
                                         />
 
-                                        <FileInputField
-                                            label="Profile Photo"
-                                            name="profile_photo"
-                                            register={register}
-                                            errors={errors}
-                                        />
-
                                     </div>
                                 </div>
                             </div>
@@ -287,7 +274,7 @@ const TravellerEditPage = () => {
 
                         {/* Footer */}
                         <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row items-center gap-4">
-                           
+
                             <SaveButton
                                 type="submit"
                                 label="save"
