@@ -15,16 +15,13 @@ import {
     FaTimesCircle,
     FaPhoneAlt,
     FaEnvelope,
-    FaTint,
-    FaUsers,
     FaEdit
 } from "react-icons/fa";
-import { MdWarning, MdVerified, MdHealthAndSafety, MdLocalPolice } from "react-icons/md";
 
 // Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import { Loader } from "../../Components/UI/Loader";
-import DetailItem, { DataBlock, InfoCard } from "../../Components/UI/DetailItem";
+import DetailItem, { InfoCard } from "../../Components/UI/DetailItem";
 import DocumentItem from "../../Components/UI/DocumentItem";
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
 import type { Driver } from "../Drivers/Driver.types";
@@ -109,15 +106,14 @@ const DriverShowPage = () => {
     if (!driver) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-500 font-bold uppercase">Driver not found</div>;
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-12">
+        <div className="min-h-screen bg-white pb-12">
 
-            {/* 1. Sticky Header */}
-            <div className="bg-white py-1 sticky top-0 z-20 shadow-sm">
+            
                 <PageHeaderBack title="Back" buttonLink="/drivers" />
-            </div>
+           
 
             {/* 2. Hero Section */}
-            <div className="bg-white border-b border-slate-200">
+            <div className="bg-white ">
                 <div className="max-w-6xl mx-auto px-6 py-8">
                     <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
 
@@ -164,9 +160,9 @@ const DriverShowPage = () => {
                         <div className="flex-shrink-0">
                             <Link
                                 to={`/drivers/edit/${id}`}
-                                className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-bold uppercase hover:bg-indigo-100 transition-colors border border-indigo-200"
+                                className="flex items-center gap-2 p-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-bold uppercase hover:bg-indigo-100 transition-colors border border-indigo-200"
                             >
-                                <FaEdit />Edit Details
+                                <FaEdit />Edit
                             </Link>
                         </div>
                     </div>
