@@ -261,7 +261,7 @@ const TravellerShowPage = () => {
                   <div className="space-y-5 border border-gray-300 rounded-lg shadow-md">
                     <div className="flex items-center gap-2 p-3 rounded-lg bg-purple-50">
                       <MdOutlineFamilyRestroom className="text-purple-500 text-lg" />
-                      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Parent User</h3>
+                      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Primary User</h3>
                     </div>
 
                     <div className="space-y-4">
