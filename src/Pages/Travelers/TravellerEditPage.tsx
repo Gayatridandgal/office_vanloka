@@ -9,7 +9,6 @@ import { FaUserEdit, FaIdCard, } from "react-icons/fa";
 // Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import InputField from "../../Components/Form/InputField";
-import FileInputField from "../../Components/Form/FileInputField";
 import SaveButton from "../../Components/Form/SaveButton";
 import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 import EmptyState from "../../Components/UI/EmptyState";
