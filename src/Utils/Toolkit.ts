@@ -171,3 +171,5 @@ export  const formatTime = (isoString: string) => {
       return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch (e) { return "--:--"; }
   };
+
+export const DUMMY_USER_IMAGE = "/user.jpeg";

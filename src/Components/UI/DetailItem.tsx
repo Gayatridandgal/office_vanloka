@@ -38,7 +38,7 @@ export const DataBlock = ({ label, value, icon, className = "" }: { label: strin
 
 // --- Sub-Components ---
 export const InfoCard = ({ title, icon, children, className = "" }: { title: string, icon: any, children: React.ReactNode, className?: string }) => (
-  <div className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${className}`}>
+  <div className={`bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden ${className}`}>
     <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center gap-2">
       <span className="text-indigo-500">{icon}</span>
       <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{title}</h3>
