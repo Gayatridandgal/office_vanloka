@@ -1,4 +1,4 @@
-// src/components/travelers/TravelerIndexPage.tsx
+// src/components/travelers/TravellerIndexPage.tsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -10,7 +10,8 @@ import {
   FaUserFriends,
   FaIdCard,
   FaBluetoothB,
-  FaVenusMars
+  FaVenusMars,
+  FaEdit
 } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
 
@@ -34,8 +35,9 @@ import tenantApi, { centralAsset } from "../../Services/ApiService";
 import type { Traveller } from "./Traveler.types";
 import type { PaginatedResponse } from "../../Types/Index";
 import { Loader } from "../../Components/UI/Loader";
+import { space } from "postcss/lib/list";
 
-const TravelerIndexPage = () => {
+const TravellerIndexPage = () => {
   // Data State
   const [allTravelers, setAllTravelers] = useState<Traveller[]>([]);
   const [displayTravelers, setDisplayTravelers] = useState<Traveller[]>([]);
@@ -291,7 +293,9 @@ const TravelerIndexPage = () => {
                           {/* Gender */}
                           <Td>
                             <span className="text-sm text-slate-700 capitalize">
-                              {row.gender || "—"}
+                              {row.gender == "Male" ? (
+                                <label className="bg-amber-100 text-amber-800 font-semibold p-1 rounded-lg">{row.gender}</label>
+                              ) : (<label className="bg-pink-100 text-pink-800 font-semibold p-1 rounded-lg">{row.gender}</label>)}
                             </span>
                           </Td>
 
@@ -305,6 +309,14 @@ const TravelerIndexPage = () => {
                                 title="View Details"
                               >
                                 <FaEye size={14} />
+                              </Link>
+
+                              <Link
+                                to={`/travellers/edit/${row.id}`}
+                                className="p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
+                                title="Edit"
+                              >
+                                <FaEdit size={14} />
                               </Link>
                             </div>
                           </Td>
@@ -334,4 +346,4 @@ const TravelerIndexPage = () => {
   );
 };
 
-export default TravelerIndexPage;
+export default TravellerIndexPage;
