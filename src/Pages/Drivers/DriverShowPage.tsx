@@ -18,7 +18,6 @@ import {
     FaEdit,
     FaCar
 } from "react-icons/fa";
-import { MdEventSeat, MdVerifiedUser } from "react-icons/md";
 
 // Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
