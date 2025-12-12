@@ -31,7 +31,7 @@ import axios from "axios";
 
 
 const getStatusStyles = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status) {
     case "Active": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
     case "Approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
     case "Completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";

@@ -344,9 +344,12 @@ const BookingShowPage = () => {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-slate-200 flex  gap-3">
-                  <SaveButton label="submit" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
-                </div>
+                {booking.status != "Approved" && booking.status != "Rejected" ? (
+                  <div className="pt-6 border-t border-slate-200 flex  gap-3">
+                    <SaveButton label="submit" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
+                  </div>
+                ) : ("")}
+
               </form>
             </div>
           </div>
