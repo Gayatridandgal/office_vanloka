@@ -120,8 +120,8 @@ const BookingShowPage = () => {
     }
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader /></div>;
-  if (!booking) return <div className="h-screen flex items-center justify-center bg-slate-50"><EmptyState title="Booking Not Found" /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-white"><Loader /></div>;
+  if (!booking) return <div className="h-screen flex items-center justify-center bg-white"><EmptyState title="Booking Not Found" /></div>;
 
   const hasBeacon = booking.traveller?.beacon_id;
   const availableBeacons = beacons.filter(b => b.status === "available" || b.device_id === booking.traveller?.beacon_id);
@@ -345,7 +345,6 @@ const BookingShowPage = () => {
                 </div>
 
                 <div className="pt-6 border-t border-slate-200 flex  gap-3">
-
                   <SaveButton label="submit" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
                 </div>
               </form>
