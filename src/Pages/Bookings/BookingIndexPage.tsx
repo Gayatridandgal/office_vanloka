@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 // Icons
 import {
   FaSearch,
-  FaFilter,
   FaEye,
   FaMapMarkerAlt,
   FaBus,

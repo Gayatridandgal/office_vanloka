@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 // Icons
 import {
   FaSearch,
-  FaFilter,
   FaEye,
   FaUserFriends,
   FaIdCard,
@@ -35,7 +34,6 @@ import tenantApi, { centralAsset } from "../../Services/ApiService";
 import type { Traveller } from "./Traveler.types";
 import type { PaginatedResponse } from "../../Types/Index";
 import { Loader } from "../../Components/UI/Loader";
-import { space } from "postcss/lib/list";
 
 const TravellerIndexPage = () => {
   // Data State
