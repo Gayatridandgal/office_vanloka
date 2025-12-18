@@ -24,7 +24,6 @@ import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import InputField from "../../Components/Form/InputField";
 import FileInputField from "../../Components/Form/FileInputField";
 import SaveButton from "../../Components/Form/SaveButton";
-import CancelButton from "../../Components/Form/CancelButton";
 import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 
 // Services & Context
@@ -231,9 +230,9 @@ const DriverEditPage = () => {
 
   return (
     <div className="min-h-screen bg-white-50 pb-12">
-      <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
+      
         <PageHeaderBack title="Edit Driver" buttonLink="/drivers" />
-      </div>
+    
 
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -586,7 +585,7 @@ const DriverEditPage = () => {
 
             {/* Footer */}
             <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row  items-center gap-4">
-              <CancelButton label="Cancel" onClick={() => navigate("/drivers")} />
+              
               <SaveButton label="save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
             </div>
 

@@ -34,14 +34,14 @@ import type { Driver } from "./Driver.types";
 import type { PaginatedResponse } from "../../Types/Index";
 import { Loader } from "../../Components/UI/Loader";
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
+import { DUMMY_USER_IMAGE } from "../../Utils/Toolkit";
 
 // --- Helpers ---
 
 const getStatusStyles = (status?: string) => {
   switch (status?.toLowerCase()) {
     case "active": return "bg-green-50 text-green-700 border-green-200";
-    case "inactive": return "bg-gray-100 text-gray-600 border-gray-200";
-    case "suspended": return "bg-red-50 text-red-700 border-red-200";
+    case "inactive": return "bg-red-100 text-red-600 border-red-200";
     default: return "bg-blue-50 text-blue-700 border-blue-200";
   }
 };
@@ -145,7 +145,7 @@ const DriverIndexPage = () => {
   const renderAvatar = (driver: Driver) => {
     const imgSrc = driver.profile_photo
       ? `${tenantAsset}${driver.profile_photo}`
-      : `https://ui-avatars.com/api/?name=${driver.first_name}+${driver.last_name}&background=random`;
+      : `${DUMMY_USER_IMAGE}`;
 
     return (
       <img
@@ -278,10 +278,10 @@ const DriverIndexPage = () => {
               />
             ) : (
               <>
-                <TableContainer maxHeight="65vh">
+                <TableContainer maxHeight="70vh">
                   <Table>
                     <Thead>
-                      <Th width="5%">S.No</Th>
+                      <Th>S.No</Th>
                       <Th>Driver Profile</Th>
                       <Th>Contact</Th>
                       <Th>Location</Th>

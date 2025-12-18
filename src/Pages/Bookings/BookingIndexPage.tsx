@@ -36,7 +36,7 @@ import { Loader } from "../../Components/UI/Loader";
 
 // Helper: Status Styles
 const getStatusStyles = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status) {
     case "Approved": return "bg-green-50 text-green-700 border-green-200";
     case "Active": return "bg-blue-50 text-blue-700 border-blue-200";
     case "Completed": return "bg-purple-50 text-purple-700 border-purple-200";
@@ -200,9 +200,9 @@ const BookingIndexPage = () => {
               <div className="py-20"><Loader /></div>
             ) : displayBookings.length === 0 ? (
               <EmptyState
-                title="No Bookings Found"
-                description="Try adjusting your search filters."
-                icon={<MdEventSeat className="text-slate-300 text-6xl mb-4" />}
+                title="No Bookings Found.."
+                description=""
+                icon={<MdEventSeat className="text-amber-300 text-3xl" />}
               />
             ) : (
               <>

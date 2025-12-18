@@ -173,7 +173,7 @@ const IndexPage = () => {
               />
             ) : (
               <>
-                <TableContainer>
+                <TableContainer maxHeight="70vh">
                   <Table>
                     <Thead>
                       <Th >S.No</Th>

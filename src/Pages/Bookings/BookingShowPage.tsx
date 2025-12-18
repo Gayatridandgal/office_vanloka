@@ -120,8 +120,8 @@ const BookingShowPage = () => {
     }
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader /></div>;
-  if (!booking) return <div className="h-screen flex items-center justify-center bg-slate-50"><EmptyState title="Booking Not Found" /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-white"><Loader /></div>;
+  if (!booking) return <div className="h-screen flex items-center justify-center bg-white"><EmptyState title="Booking Not Found" /></div>;
 
   const hasBeacon = booking.traveller?.beacon_id;
   const availableBeacons = beacons.filter(b => b.status === "available" || b.device_id === booking.traveller?.beacon_id);
@@ -143,9 +143,10 @@ const BookingShowPage = () => {
 
   return (
     <div className="min-h-screen bg-white pb-12">
-      {/* 1. Sticky Back Navigation */}
-
-      <PageHeaderBack title="Back" buttonLink="/bookings" />
+      {/* 1. Sticky Header */}
+      <div className="sticky top-0 z-50 bg-white shadow-sm">
+        <PageHeaderBack title="Back" buttonLink="/bookings" />
+      </div>
 
 
       {/* 2. Hero Section */}
@@ -313,7 +314,7 @@ const BookingShowPage = () => {
                   <InputField type="time" label="drop time" name="drop_time" register={register} errors={errors} />
 
                   <SelectInputField
-                    label="State"
+                    label="Assign Vehicle"
                     name="assigned_vehicle"
                     register={register}
                     errors={errors}
@@ -330,7 +331,7 @@ const BookingShowPage = () => {
 
                   {/* Status */}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-purple-950 uppercase mb-2">Booking Status</label>
+                    <label className="block text-sm font-bold text-purple-950 uppercase mb-2">Status</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {getAvailableStatuses().map(status => (
                         <label key={status.value} className="cursor-pointer">
@@ -344,10 +345,12 @@ const BookingShowPage = () => {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-slate-200 flex  gap-3">
+                {booking.status != "Approved" && booking.status != "Rejected" ? (
+                  <div className="pt-6 border-t border-slate-200 flex  gap-3">
+                    <SaveButton label="submit" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
+                  </div>
+                ) : ("")}
 
-                  <SaveButton label="submit" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
-                </div>
               </form>
             </div>
           </div>

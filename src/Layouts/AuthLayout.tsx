@@ -18,7 +18,6 @@ import BookingShowPage from "../Pages/Bookings/BookingShowPage";
 import StaffIndexPage from "../Pages/Staffs/StaffIndexPage";
 import StaffCreatePage from "../Pages/Staffs/StaffCreatePage";
 import StaffEditPage from "../Pages/Staffs/StaffEditPage";
-import DashBoardPage from "../Pages/DashBoardPage";
 import InstructorIndexPage from "../Pages/Instructors/InstructorIndexPage";
 import InstructorCreatePage from "../Pages/Instructors/InstructorCreatePage";
 import InstructorShowPage from "../Pages/Instructors/InstructorShowPage";
@@ -28,6 +27,7 @@ import TravellerIndexPage from "../Pages/Travelers/TravellerIndexPage";
 import TravellerShowPage from "../Pages/Travelers/TravellerShowPage";
 import TravellerEditPage from "../Pages/Travelers/TravellerEditPage";
 import StaffShowPage from "../Pages/Staffs/StaffShowPage";
+import DashboardPage from "../Pages/DashboardPage";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -50,18 +50,10 @@ const AuthLayout = () => {
         {/* Mobile Header (Fixed at top inside main) */}
         <MobileHeader title="Admin Panel" toggleSidebar={toggleSidebar} />
 
-        {/* 
-           Content Container:
-           - overflow-y-auto: Allows the page content (like Forms) to scroll if it gets too long.
-           - h-full: Takes remaining height.
-           - For Table Pages: Because we used 'maxHeight' on tables, they will scroll internally 
-             and likely won't trigger this outer scrollbar, giving you that "Application" feel.
-        */}
         <div className="flex-1 h-full w-full mt-4">
           <div className="mx-auto w-full h-full">
             <Routes>
-              {/* <Route path="dashboard" element={<DashBoardPage />} /> */}
-              <Route path="dashboard" element={<DashBoardPage />} />
+              <Route path="dashboard" element={<DashboardPage />} />
 
               {/* Roles and Permissions Pages*/}
               <Route path="roles_permissions" element={<IndexPage />} />

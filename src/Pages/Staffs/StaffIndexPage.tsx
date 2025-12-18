@@ -34,6 +34,7 @@ import EmptyState from "../../Components/UI/EmptyState";
 import { Pagination } from "../../Components/Table/Pagination";
 import type { Employee } from "./Staff.types";
 import { FaEye } from "react-icons/fa6";
+import { DUMMY_USER_IMAGE } from "../../Utils/Toolkit";
 
 const StaffIndexPage = () => {
   // const { can } = useToolkit();
@@ -99,23 +100,20 @@ const StaffIndexPage = () => {
   };
 
   // Helper: Render Avatar
-  const renderAvatar = (row: Employee) => {
-    if (row.photo) {
+   const renderAvatar = (employee: Employee) => {
+      const imgSrc = employee.photo
+        ? `${tenantAsset}${employee.photo}`
+        : `${DUMMY_USER_IMAGE}`;
+  
       return (
         <img
+          src={imgSrc}
+          alt={employee.first_name}
           className="h-10 w-10 rounded-full object-cover border border-slate-200"
-          src={`${tenantAsset}${row.photo}`}
-          alt={`${row.first_name}`}
+          onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${employee.first_name}+${employee.last_name}&background=random`; }}
         />
       );
-    }
-    return (
-      <div className="h-10 w-10 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 font-bold text-sm shadow-sm">
-        {row.first_name?.charAt(0)}
-        {row.last_name?.charAt(0)}
-      </div>
-    );
-  };
+    };
 
   return (
     <div className="min-h-screen bg-white px-2">
@@ -246,7 +244,7 @@ const StaffIndexPage = () => {
               />
             ) : (
               <>
-                <TableContainer maxHeight="65vh">
+                <TableContainer maxHeight="70vh">
                   <Table>
                     <Thead>
                       <Th >S.No</Th>

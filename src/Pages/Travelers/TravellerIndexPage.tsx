@@ -229,7 +229,7 @@ const TravellerIndexPage = () => {
               />
             ) : (
               <>
-                <TableContainer maxHeight="65vh">
+                <TableContainer maxHeight="71vh">
                   <Table>
                     <Thead>
                       <Th width="5%">S.No</Th>

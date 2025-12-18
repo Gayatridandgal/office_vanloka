@@ -2,10 +2,15 @@
 
 import axios from "axios";
 
-export const baseURL = `http://${window.location.hostname}/api`;
-export const tenantAsset = `http://${window.location.hostname}/tenancy/assets/`
-export const centralAsset = `http://localhost/storage/`
-export const centralUrl =`http://localhost/api`
+const hostname = window.location.hostname;
+const tenantName = hostname.split('.')[0];
+
+const baseURL = `https://${tenantName}.backend.vanloka.com/api/`;
+export const tenantAsset = `https://${tenantName}.backend.vanloka.com/tenancy/assets/`
+
+
+export const centralAsset = `https://backend.vanloka.com/storage/`
+export const centralUrl = `https://backend.vanloka.com/api`
 
 const tenantApi = axios.create({
   baseURL: baseURL,

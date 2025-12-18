@@ -28,16 +28,7 @@ import EmptyState from "../../Components/UI/EmptyState";
 
 // Types
 import type { Vehicle } from "./Vehicle.types";
-
-// --- Helpers ---
-const formatDate = (dateString: string | null | undefined) => {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-};
+import { formatDate } from "../../Utils/Toolkit";
 
 const YesNoIndicator = ({ value }: { value?: string | null }) => {
   const isYes = value === "YES";
@@ -78,11 +69,11 @@ const VehicleShowPage = () => {
     if (id) fetchVehicle();
   }, [id]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-white"><Loader /></div>;
 
   if (error || !vehicle) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-slate-50 gap-4 p-4 text-center">
+      <div className="h-screen flex flex-col items-center justify-center bg-white gap-4 p-4 text-center">
         <EmptyState title="Vehicle Not Found" description={error || "Vehicle data unavailable"} />
         <button onClick={() => navigate("/vehicles")} className="text-indigo-600 font-bold hover:underline uppercase text-xs">Go Back</button>
       </div>

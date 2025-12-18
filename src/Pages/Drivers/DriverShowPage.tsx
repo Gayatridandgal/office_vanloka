@@ -26,17 +26,10 @@ import { DataBlock } from "../../Components/UI/DetailItem";
 import DocumentItem from "../../Components/UI/DocumentItem";
 import tenantApi, { tenantAsset } from "../../Services/ApiService";
 import type { Driver } from "../Drivers/Driver.types";
-import { DUMMY_USER_IMAGE } from "../../Utils/Toolkit";
+import { DUMMY_USER_IMAGE, formatDate } from "../../Utils/Toolkit";
 
 // --- Helpers ---
-const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-};
+
 
 const YesNoIndicator = ({ value, icon: Icon }: { value?: string, icon?: any }) => {
     const isYes = value === "YES";
@@ -78,11 +71,11 @@ const DriverShowPage = () => {
         if (id) fetchDriver();
     }, [id]);
 
-    if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader /></div>;
+    if (loading) return <div className="h-screen flex items-center justify-center bg-white"><Loader /></div>;
 
     if (error || !driver) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center bg-slate-50 gap-4 p-4 text-center">
+            <div className="h-screen flex flex-col items-center justify-center bg-white gap-4 p-4 text-center">
                 <div className="text-slate-500 font-bold uppercase">Driver not found</div>
                 <button onClick={() => navigate("/drivers")} className="text-indigo-600 font-bold hover:underline uppercase text-xs">Go Back</button>
             </div>

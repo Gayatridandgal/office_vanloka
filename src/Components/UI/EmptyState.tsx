@@ -21,8 +21,8 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           <PiWarningBold size={40} className='text-red-400'/>
         )}
       </div>
-      <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-      <p className="text-slate-500 max-w-sm mb-6">{description}</p>
+      <h3 className="text-sm uppercase font-semibold text-slate-800">{title}</h3>
+      <p className="text-slate-500 text-xs uppercase max-w-sm mb-6">{description}</p>
       {action && <div>{action}</div>}
     </div>
   );

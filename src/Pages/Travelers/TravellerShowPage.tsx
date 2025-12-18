@@ -25,22 +25,13 @@ import tenantApi, { centralAsset, centralUrl } from "../../Services/ApiService";
 import type { AppUser, Traveller } from "./Traveler.types";
 import type { Booking } from "../Bookings/Booking.types";
 import { FaUserTag } from "react-icons/fa6";
-import { DUMMY_USER_IMAGE } from "../../Utils/Toolkit";
+import { DUMMY_USER_IMAGE, formatDate } from "../../Utils/Toolkit";
 import axios from "axios";
 
 
-// --- Helper Functions ---
-const formatDate = (dateString?: string | null) => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
 
 const getStatusStyles = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status) {
     case "Active": return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-100";
     case "Approved": return "bg-green-50 text-green-700 border-green-200 ring-green-100";
     case "Completed": return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-100";
@@ -132,11 +123,11 @@ const TravellerShowPage = () => {
     if (id) fetchTraveler();
   }, [id]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-white"><Loader /></div>;
 
   if (error || !traveller) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-slate-50 gap-4 p-4 text-center">
+      <div className="h-screen flex flex-col items-center justify-center bg-white gap-4 p-4 text-center">
         <EmptyState title="Profile Not Found" description={error || "Traveller data unavailable"} />
         <button onClick={() => navigate("/travellers")} className="text-indigo-600 font-bold hover:underline uppercase text-xs">Go Back</button>
       </div>
@@ -150,8 +141,10 @@ const TravellerShowPage = () => {
     <div className="min-h-screen bg-white pb-12 overflow-x-hidden">
 
       {/* 1. Sticky Header */}
+      <div className="sticky top-0 z-50 bg-white shadow-sm">
+        <PageHeaderBack title="Back" buttonLink="/travellers" />
+      </div>
 
-      <PageHeaderBack title="Back" buttonLink="/travellers" />
 
       {/* 2. Hero Section */}
       <div className="bg-white ">

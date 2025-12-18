@@ -245,9 +245,9 @@ const VehicleCreatePage = () => {
   return (
     <div className="min-h-screen bg-white pb-12">
       {/* 1. Sticky Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
-        <PageHeaderBack title="Add Vehicle" buttonLink="/vehicles" />
-      </div>
+
+      <PageHeaderBack title="Add Vehicle" buttonLink="/vehicles" />
+
 
       {/* 2. Main Container */}
       <div className="max-w-5xl mx-auto px-4 mt-8">
@@ -474,7 +474,7 @@ const VehicleCreatePage = () => {
 
             {/* Footer */}
             <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row justify-start items-center gap-4">
-            
+
               <SaveButton label="Save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
             </div>
 

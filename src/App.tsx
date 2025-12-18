@@ -7,8 +7,8 @@ import {
 import "./App.css";
 import LoginPage from "./Auth/LoginPage";
 import AuthLayout from "./Layouts/AuthLayout";
-import DashBoardPage from "./Pages/DashBoardPage";
 import { isLoggedIn } from "./Services/AuthService";
+import DashboardPage from "./Pages/DashboardPage";
 
 // Auth Service
 // Protected Route Component
@@ -71,7 +71,7 @@ function App() {
         >
           {/* Define nested routes for the authenticated area */}
           {/* The default protected route will be /dashboard */}
-          <Route path="dashboard" element={<DashBoardPage />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           {/* Example: <Route path="profile" element={<ProfilePage />} /> */}
         </Route>
       </Routes>
