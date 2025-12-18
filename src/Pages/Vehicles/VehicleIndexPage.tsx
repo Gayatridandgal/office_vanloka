@@ -266,10 +266,10 @@ const VehicleIndexPage = () => {
               />
             ) : (
               <>
-                <TableContainer maxHeight="65vh">
+                <TableContainer maxHeight="70vh">
                   <Table>
                     <Thead>
-                      <Th width="5%">S.No</Th>
+                      <Th>S.No</Th>
                       <Th>Vehicle Number</Th>
                       <Th>Details</Th>
                       <Th>Ownership</Th>

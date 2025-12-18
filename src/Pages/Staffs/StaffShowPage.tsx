@@ -71,7 +71,7 @@ const StaffShowPage = () => {
     return (
         <div className="min-h-screen bg-white flex flex-col overflow-hidden">
 
-            {/* 1. Sticky Header */}
+             {/* 1. Sticky Header */}
             <div className="sticky top-0 z-50 bg-white shadow-sm">
                 <PageHeaderBack title="Back" buttonLink="/staff" />
             </div>

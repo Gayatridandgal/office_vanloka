@@ -314,9 +314,9 @@ const VehicleEditPage = () => {
 
   return (
     <div className="min-h-screen bg-white pb-12">
-      <div className="bg-white border-b border-slate-200 px-4 py-1 sticky top-0 z-10">
+     
         <PageHeaderBack title="Back" buttonLink="/vehicles" />
-      </div>
+    
 
       <div className="max-w-5xl mx-auto px-4 mt-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

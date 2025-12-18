@@ -1,4 +1,4 @@
-// src/Pages/DashBoardPage.tsx
+// src/Pages/DashboardPage.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
 import { LoadScript } from "@react-google-maps/api";
 import { useAuth } from "../Context/AuthContext";
@@ -31,7 +31,7 @@ import { formatTime } from "../Utils/Toolkit";
 const STORAGE_KEY = "dashboard_cooldown_timestamp";
 const COOLDOWN_DURATION = 300; // 5 Minutes
 
-const DashBoardPage = () => {
+const DashboardPage = () => {
   const { tenantId } = useAuth();
 
   // State
@@ -493,4 +493,4 @@ const DashBoardPage = () => {
   );
 };
 
-export default DashBoardPage;
+export default DashboardPage;

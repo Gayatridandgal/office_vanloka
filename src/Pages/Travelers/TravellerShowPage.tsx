@@ -141,8 +141,10 @@ const TravellerShowPage = () => {
     <div className="min-h-screen bg-white pb-12 overflow-x-hidden">
 
       {/* 1. Sticky Header */}
+      <div className="sticky top-0 z-50 bg-white shadow-sm">
+        <PageHeaderBack title="Back" buttonLink="/travellers" />
+      </div>
 
-      <PageHeaderBack title="Back" buttonLink="/travellers" />
 
       {/* 2. Hero Section */}
       <div className="bg-white ">
