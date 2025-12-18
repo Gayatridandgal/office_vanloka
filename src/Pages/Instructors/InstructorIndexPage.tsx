@@ -6,20 +6,6 @@ import SingleFilterHeader from "../../Components/UI/SingleFilterHeader";
 import tenantApi from "../../Services/ApiService";
 import type { Instructor } from "./Instructor.types";
 
-// Helper function to determine status color
-const getStatusColor = (status?: string): string => {
-  switch (status?.toLowerCase()) {
-    case "active":
-      return "bg-green-100 text-green-800";
-    case "inactive":
-      return "bg-gray-100 text-gray-800";
-    case "suspended":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-blue-100 text-blue-800";
-  }
-};
-
 // Check if certification is expiring soon
 const isCertificationExpiringSoon = (expiryDate?: string): boolean => {
   if (!expiryDate) return false;

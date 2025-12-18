@@ -53,7 +53,7 @@ const StaffIndexPage = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalItems, setTotalItems] = useState<number>(0);
-  const [perPage, setPerPage] = useState<number>(10);
+  const [perPage] = useState(10);
 
   // 1. Fetch Data
   const fetchStaff = async () => {

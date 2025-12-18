@@ -3,9 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import type { Instructor } from "./Instructor.types";
 import {
-  FaFilePdf,
-  FaImage,
-  FaDownload,
   FaStar,
   FaGraduationCap,
   FaCertificate,
@@ -77,75 +74,6 @@ const DateField = ({
           </span>
         )}
       </p>
-    </div>
-  );
-};
-
-// Helper component for file/document display
-const DocumentDisplay = ({
-  label,
-  filePath,
-  fileType = "document",
-}: {
-  label: string;
-  filePath?: string | null;
-  fileType?: "image" | "document";
-}) => {
-  if (!filePath) {
-    return (
-      <div>
-        <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
-          {label}
-        </h4>
-        <p className="text-gray-500 italic text-sm">Not Uploaded</p>
-      </div>
-    );
-  }
-
-  const fileName = filePath.split("/").pop();
-  const isImage =
-    fileType === "image" || /\.(jpg|jpeg|png|gif)$/i.test(filePath);
-
-  return (
-    <div>
-      <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
-        {label}
-      </h4>
-      <div className="mt-2 p-3 border border-purple-200 rounded-lg bg-purple-50">
-        <div className="flex items-center gap-3 mb-3">
-          {isImage ? (
-            <FaImage className="text-blue-500 text-xl" />
-          ) : (
-            <FaFilePdf className="text-red-500 text-xl" />
-          )}
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-700">{fileName}</p>
-          </div>
-          <a
-            href={filePath}
-            target="_blank"
-            rel="noopener noreferrer"
-            download
-            className="text-purple-800 hover:text-purple-600 transition"
-            title="Download"
-          >
-            <FaDownload className="text-lg" />
-          </a>
-        </div>
-
-        {isImage && (
-          <div className="mt-3">
-            <img
-              src={filePath}
-              alt={label}
-              className="h-32 w-48 object-cover rounded border border-purple-200"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          </div>
-        )}
-      </div>
     </div>
   );
 };

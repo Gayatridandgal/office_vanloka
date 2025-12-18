@@ -24,7 +24,7 @@ const FileInputField: React.FC<FileInputFieldProps> = ({
   helperText
 }) => {
   const [fileName, setFileName] = useState<string | null>(null);
-  const [isHovered, setIsHovered] = useState(false);
+
 
   // Extract the original ref and onChange from register
   const { onChange, ref, ...rest } = register(name, {
@@ -80,8 +80,6 @@ const FileInputField: React.FC<FileInputFieldProps> = ({
 
       <div
         className={`relative group w-full transition-all duration-200 ease-in-out`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
         {/* The Actual Input (Hidden but Functional) */}
         <input
