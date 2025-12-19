@@ -14,6 +14,7 @@ import { BsBusFront } from "react-icons/bs";
 import { logout } from "../Services/AuthService";
 import { IoSettings } from "react-icons/io5";
 import { SiGooglemessages } from "react-icons/si";
+import { PiUsersThreeFill } from "react-icons/pi";
 
 // --- Link Configuration ---
 const sidebarLinks: SidebarLinkType[] = [
@@ -76,6 +77,7 @@ const sidebarLinks: SidebarLinkType[] = [
     requiredPermissions: ["view bookings"],
   },
 
+  { name: "Vendor Management", path: "/feedbacks", icon: <PiUsersThreeFill size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
   { name: "Feedbacks", path: "/feedbacks", icon: <SiGooglemessages size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
 
   { name: "Reports", path: "/reports", icon: <FaFilePdf size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
