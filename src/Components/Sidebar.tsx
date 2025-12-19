@@ -77,11 +77,11 @@ const sidebarLinks: SidebarLinkType[] = [
     requiredPermissions: ["view bookings"],
   },
 
-  { name: "Vendor Management", path: "/feedbacks", icon: <PiUsersThreeFill size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
-  { name: "Feedbacks", path: "/feedbacks", icon: <SiGooglemessages size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
+  { name: "Vendor Management", path: "/vendors", icon: <PiUsersThreeFill size={20} />, feature: "MANAGE BOOKINGS", requiredPermissions: ["view bookings"], },
+  { name: "Feedbacks", path: "/feedbacks", icon: <SiGooglemessages size={20} />, feature: "MANAGE BOOKINGS", requiredPermissions: ["view bookings"], },
 
-  { name: "Reports", path: "/reports", icon: <FaFilePdf size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
-  { name: "Settings", path: "/settings", icon: <IoSettings size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
+  { name: "Reports", path: "/reports", icon: <FaFilePdf size={20} />, feature: "MANAGE BOOKINGS", requiredPermissions: ["view bookings"], },
+  { name: "Settings", path: "/settings", icon: <IoSettings size={20} />, feature: "MANAGE BOOKINGS", requiredPermissions: ["view bookings"], },
 
 
   // {
