@@ -6,12 +6,14 @@ import type { SidebarLinkType } from "../Types/Index";
 
 // Icons
 import { MdDashboard, MdLogout } from "react-icons/md";
-import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime } from "react-icons/fa6";
+import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime, FaFilePdf } from "react-icons/fa6";
 
 import { FaUsersCog } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
 import { BsBusFront } from "react-icons/bs";
 import { logout } from "../Services/AuthService";
+import { IoSettings } from "react-icons/io5";
+import { SiGooglemessages } from "react-icons/si";
 
 // --- Link Configuration ---
 const sidebarLinks: SidebarLinkType[] = [
@@ -73,6 +75,12 @@ const sidebarLinks: SidebarLinkType[] = [
     feature: "MANAGE BOOKINGS",
     requiredPermissions: ["view bookings"],
   },
+
+  { name: "Feedbacks", path: "/feedbacks", icon: <SiGooglemessages size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
+
+  { name: "Reports", path: "/reports", icon: <FaFilePdf size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
+  { name: "Settings", path: "/settings", icon: <IoSettings size={20} />, feature: "ACCESS_ALL", requiredPermissions: ["view bookings"], },
+
 
   // {
   //   name: "Attender Management",
