@@ -1,2 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
+@import "./Components/UI/styles/design-system.css";
+@import "./Components/UI/styles/sidebar.css";
+@import "./Components/UI/styles/buttons.css";
+@import "./Components/UI/styles/cards.css";
+@import "./Components/UI/styles/badges.css";

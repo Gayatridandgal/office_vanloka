@@ -15,6 +15,7 @@ import {
 // Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import SaveButton from "../../Components/Form/SaveButton";
+import CancelButton from "../../Components/Form/CancelButton";
 import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 
 // Services & Context
@@ -227,8 +228,8 @@ const CreatePage = () => {
             </div>
 
             {/* Footer */}
-            <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row justify-start items-center gap-4">
-
+            <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-wrap justify-start items-center gap-4">
+              <CancelButton label="cancel" type="button" onClick={() => navigate("/roles_permissions")} />
               <SaveButton label="save" isSaving={isSubmitting} onClick={handleSubmit} />
             </div>
 

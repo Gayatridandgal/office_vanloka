@@ -1,48 +1,38 @@
-// src/components/staff/StaffIndexPage.tsx
+// src/Pages/Staffs/StaffIndexPage.tsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-// Icons
-import {
-  FaSearch,
-  FaFilter,
-  FaEdit,
-  FaUserTie,
-  FaPhoneAlt,
-  FaIdBadge
-} from "react-icons/fa";
-import { MdEmail, MdWork, MdClear } from "react-icons/md";
+// Icons (Lucide)
+import { 
+  Search, 
+  Eye, 
+  FileText, 
+  Users, 
+  UserCheck, 
+  Umbrella, 
+  UserX,
+  ChevronDown,
+  Mail,
+  Phone
+} from "lucide-react";
 
 // Components
-import PageHeader from "../../Components/UI/PageHeader";
-import {
-  TableDiv,
-  TableContainer,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-} from "../../Components/Table/Table";
-
-// Services & Utils
-import tenantApi, { tenantAsset } from "../../Services/ApiService";
-import { useAlert } from "../../Context/AlertContext";
 import { Loader } from "../../Components/UI/Loader";
 import EmptyState from "../../Components/UI/EmptyState";
 import { Pagination } from "../../Components/Table/Pagination";
+
+// Services & Utils
+import tenantApi from "../../Services/ApiService";
+import { useAlert } from "../../Context/AlertContext";
 import type { Employee } from "./Staff.types";
-import { FaEye } from "react-icons/fa6";
-import { DUMMY_USER_IMAGE } from "../../Utils/Toolkit";
 
 const StaffIndexPage = () => {
-  // const { can } = useToolkit();
   const { showAlert } = useAlert();
 
   // Data State
   const [staffList, setStaffList] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [roles, setRoles] = useState<{ id: number, name: string }[]>([]);
 
   // Filter State
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -55,11 +45,10 @@ const StaffIndexPage = () => {
   const [totalItems, setTotalItems] = useState<number>(0);
   const [perPage] = useState(10);
 
-  // 1. Fetch Data
+  // 1. Fetch Staff Data
   const fetchStaff = async () => {
     try {
       setLoading(true);
-
       const params: any = {
         page: currentPage,
         per_page: perPage,
@@ -72,9 +61,9 @@ const StaffIndexPage = () => {
       const { data, current_page, last_page, total } = response.data.data;
 
       setStaffList(data);
-      setCurrentPage(current_page);
-      setTotalPages(last_page);
-      setTotalItems(total);
+      setCurrentPage(current_page || 1);
+      setTotalPages(last_page || 1);
+      setTotalItems(total || 0);
     } catch (err: any) {
       console.error("Error fetching staff:", err);
       showAlert("Failed to load staff data.", "error");
@@ -83,302 +72,216 @@ const StaffIndexPage = () => {
     }
   };
 
+  // 2. Fetch Roles for Filter
+  const fetchRoles = async () => {
+    try {
+      const response = await tenantApi.get("/roles");
+      setRoles(response.data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch roles:", err);
+    }
+  };
+
   useEffect(() => {
-    // Debounce search to prevent too many API calls
+    fetchRoles();
+  }, []);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       fetchStaff();
     }, 500);
     return () => clearTimeout(timer);
   }, [currentPage, searchQuery, statusFilter, roleFilter, perPage]);
 
-  // 2. Handlers
-  const handleClearFilters = () => {
-    setSearchQuery("");
-    setStatusFilter("");
-    setRoleFilter("");
-    setCurrentPage(1);
-  };
-
-  // Helper: Render Avatar
-   const renderAvatar = (employee: Employee) => {
-      const imgSrc = employee.photo
-        ? `${tenantAsset}${employee.photo}`
-        : `${DUMMY_USER_IMAGE}`;
-  
-      return (
-        <img
-          src={imgSrc}
-          alt={employee.first_name}
-          className="h-10 w-10 rounded-full object-cover border border-slate-200"
-          onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${employee.first_name}+${employee.last_name}&background=random`; }}
-        />
-      );
-    };
+  // Derived Stats
+  const stats = [
+    { label: "Total Staff", value: totalItems, sub: `${staffList.filter(s => s.status === 'active').length} active`, icon: <Users size={20} />, color: "border-purple-100", iconBg: "bg-purple-50", iconCol: "text-purple-600" },
+    { label: "Active", value: staffList.filter(s => s.status === 'active').length, icon: <UserCheck size={20} />, color: "border-emerald-100", iconBg: "bg-emerald-50", iconCol: "text-emerald-600" },
+    { label: "On Leave", value: staffList.filter(s => s.status === 'on leave').length, icon: <Umbrella size={20} />, color: "border-amber-100", iconBg: "bg-amber-50", iconCol: "text-amber-600" },
+    { label: "Inactive", value: staffList.filter(s => s.status === 'inactive').length, icon: <UserX size={20} />, color: "border-red-100", iconBg: "bg-red-50", iconCol: "text-red-600" }
+  ];
 
   return (
-    <div className="min-h-screen bg-white px-2">
+    <div className="min-h-screen bg-transparent">
       {/* Header */}
-      <div className="mx-4">
-        <PageHeader
-          title="Staff Management"
-          buttonText="Add Staff"
-          buttonLink="/staff/create"
-        />
+      <div className="px-6 pt-6 flex justify-between items-start">
+        <div>
+           <div className="flex items-center gap-2 text-purple-600 mb-1">
+              <Users size={18} />
+              <h1 className="text-xl font-900 tracking-wider uppercase">Staff Management</h1>
+           </div>
+           <div className="flex items-center gap-2 text-[11px] font-bold text-muted uppercase">
+             <span>Admin</span>
+             <span className="text-slate-300">/</span>
+             <span className="text-primary-dark">Staff Management</span>
+           </div>
+        </div>
+        <div className="flex gap-3">
+          <button className="btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+             <FileText size={16} />
+             <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Import Excel</span>
+          </button>
+          <button className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+             <FileText size={16} />
+             <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Export PDF</span>
+          </button>
+        </div>
       </div>
 
-      <div className="px-4 pb-10">
-        <div className="mx-auto space-y-4">
-
-          {/* Search & Filter Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
-                <FaSearch className="text-white" size={10} />
+      <div className="p-6 space-y-6">
+        
+        {/* Statistics Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="stat-card flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${stat.iconBg} ${stat.iconCol}`}>
+                {stat.icon}
               </div>
-              <h3 className="text-sm font-bold text-slate-800 uppercase">Search & Filter</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {/* 1. Search Input */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
-                  Search Staff
-                </label>
-                <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    placeholder="Name, Email, ID..."
-                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
-                  />
-                </div>
-              </div>
-
-              {/* 2. Status Filter */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
-                  Filter by Status
-                </label>
-                <div className="relative">
-                  <FaFilter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => {
-                      setStatusFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm uppercase transition-all appearance-none bg-white shadow-sm hover:border-blue-400 cursor-pointer"
-                  >
-                    <option value="">All</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* 3. Role Filter */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
-                  Filter by Role
-                </label>
-                <div className="relative">
-                  <FaUserTie className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    value={roleFilter}
-                    onChange={(e) => {
-                      setRoleFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    placeholder="Enter Role Name..."
-                    className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
-                  />
+                <p className="text-[10px] font-800 text-muted uppercase tracking-widest">{stat.label}</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-900 text-text">{stat.value}</span>
+                  {stat.sub && <span className="text-[10px] font-700 text-success uppercase">{stat.sub}</span>}
                 </div>
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* Active Filters Display */}
-            {(searchQuery || statusFilter || roleFilter) && (
-              <div className="flex items-center flex-wrap gap-1 mt-3">
-                {searchQuery && (
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
-                    {searchQuery}
-                  </span>
-                )}
-                {statusFilter && (
-                  <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold uppercase border border-green-200">
-                    {statusFilter}
-                  </span>
-                )}
-                {roleFilter && (
-                  <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold uppercase border border-purple-200">
-                    {roleFilter}
-                  </span>
-                )}
-                <button
-                  onClick={handleClearFilters}
-                  className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
-                >
-                  <MdClear /> Clear
-                </button>
-              </div>
-            )}
+        {/* Filter Section */}
+        <div className="white-card p-4 flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search by name, email, role or ID..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border-none rounded-[10px] text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+            />
           </div>
+          <div className="flex gap-4 w-full md:w-auto">
+            <div className="relative min-w-[160px] flex-1 md:flex-initial">
+              <select 
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="w-full pl-4 pr-10 py-2.5 bg-surface border-none rounded-[10px] text-sm appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/10 uppercase font-800 tracking-wide"
+              >
+                <option value="">All Roles</option>
+                {roles.map(role => (
+                  <option key={role.id} value={role.name}>{role.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" size={14} />
+            </div>
+            <div className="relative min-w-[160px] flex-1 md:flex-initial">
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full pl-4 pr-10 py-2.5 bg-surface border-none rounded-[10px] text-sm appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/10 uppercase font-800 tracking-wide"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="on leave">On Leave</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" size={14} />
+            </div>
+          </div>
+        </div>
 
-          {/* Table Section */}
-          <TableDiv>
-            {loading ? (
-              <div className="py-20">
-                <Loader />
+        {/* Table Section */}
+        <div className="white-card overflow-hidden">
+          {loading ? (
+            <div className="py-20 flex justify-center"><Loader /></div>
+          ) : staffList.length === 0 ? (
+            <div className="py-20 flex flex-col items-center">
+              <EmptyState title="No Staff Found" description="Try adjusting your filters or search query." />
+              <button 
+                onClick={() => { setSearchQuery(""); setStatusFilter(""); setRoleFilter(""); }}
+                className="mt-4 text-primary font-800 text-[11px] uppercase tracking-widest hover:underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-50">
+                    <th className="px-6 py-4 text-[10.5px] font-800 text-muted uppercase tracking-widest text-[10px]">Employee</th>
+                    <th className="px-6 py-4 text-[10.5px] font-800 text-muted uppercase tracking-widest text-[10px]">Role</th>
+                    <th className="px-6 py-4 text-[10.5px] font-800 text-muted uppercase tracking-widest text-[10px] hidden md:table-cell">Contact Details</th>
+                    <th className="px-6 py-4 text-[10.5px] font-800 text-muted uppercase tracking-widest text-[10px] hidden lg:table-cell">Join Date</th>
+                    <th className="px-6 py-4 text-[10.5px] font-800 text-muted uppercase tracking-widest text-[10px]">Status</th>
+                    <th className="px-6 py-4 text-[10.5px] font-800 text-muted uppercase tracking-widest text-[10px] text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50/50">
+                  {staffList.map((row) => (
+                    <tr key={row.id} className="hover:bg-[#fdfbff] transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-800 border bg-primary-light text-primary-dark border-primary-mid/20`}>
+                            {row.first_name?.charAt(0)}{row.last_name?.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="text-sm font-700 text-text">{row.first_name} {row.last_name}</div>
+                            <div className="text-[10px] font-700 text-muted tracking-tight">ID: {row.employee_id}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs font-600 text-slate-600 uppercase tracking-tight">{row.designation || "Staff"}</td>
+                      <td className="px-6 py-4 hidden md:table-cell">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-[11px] font-500 text-muted">
+                            <Mail size={10} /> {row.email}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] font-500 text-muted">
+                            <Phone size={10} /> {row.phone}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs font-500 text-muted hidden lg:table-cell">
+                        {new Date(row.created_at || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`badge ${
+                          row.status?.toLowerCase() === 'active' ? 'badge-success' : 
+                          row.status?.toLowerCase() === 'on leave' ? 'badge-warning' : 'badge-danger'
+                        }`}>
+                          {row.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-center items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                          <Link to={`/staff/show/${row.id}`} className="p-1.5 hover:bg-info/10 text-info rounded-md transition-colors" title="View Details">
+                            <Eye size={16} />
+                          </Link>
+                          <button className="p-1.5 hover:bg-primary/10 text-primary rounded-md transition-colors" title="Export PDF">
+                            <FileText size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-6 py-4 border-t border-slate-50">
+                <Pagination 
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  onPageChange={setCurrentPage}
+                  itemName="Staff"
+                />
               </div>
-            ) : staffList.length === 0 ? (
-              <EmptyState
-                title="No Staff Found"
-                description="Try adjusting your filters or add a new staff member."
-                icon={<FaUserTie className="text-slate-300 text-6xl mb-4" />}
-              />
-            ) : (
-              <>
-                <TableContainer maxHeight="70vh">
-                  <Table>
-                    <Thead>
-                      <Th >S.No</Th>
-                      <Th>Staff Details</Th>
-                      <Th>Employee ID</Th>
-                      <Th>Designation</Th>
-                      <Th>Roles</Th>
-                      <Th>Status</Th>
-                      {/* {can("edit users") && <Th align="right">Actions</Th>} */}
-                      <Th align="center">Actions</Th>
-                    </Thead>
-
-                    <Tbody>
-                      {staffList.map((row, index) => (
-                        <Tr key={row.id}>
-                          {/* S.No */}
-                          <Td isMono className="font-bold text-slate-500">
-                            {(currentPage - 1) * perPage + index + 1}
-                          </Td>
-
-                          {/* Name & Avatar */}
-                          <Td>
-                            <div className="flex items-center gap-3">
-                              {renderAvatar(row)}
-                              <div>
-                                <div className="font-bold text-slate-800 uppercase text-sm">
-                                  {row.first_name} {row.last_name}
-                                </div>
-                                <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 font-semibold">
-                                  <MdEmail className="text-slate-400" />
-                                  {row.email}
-                                </div>
-                                <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 md:hidden">
-                                  <FaPhoneAlt className="text-slate-400" />
-                                  {row.phone}
-                                </div>
-                              </div>
-                            </div>
-                          </Td>
-
-                          {/* Employee ID */}
-                          <Td>
-                            <div className="flex items-center gap-2">
-                              <FaIdBadge className="text-slate-300" />
-                              <span className="font-mono font-bold text-slate-700 text-sm">
-                                {row.employee_id}
-                              </span>
-                            </div>
-                          </Td>
-
-                          {/* Designation */}
-                          <Td>
-                            <div className="flex items-center gap-2 text-slate-700 font-semibold uppercase text-xs">
-                              <MdWork className="text-slate-400" />
-                              {row.designation || "-"}
-                            </div>
-                          </Td>
-
-                          {/* Roles */}
-                          <Td>
-                            <div className="flex flex-wrap gap-1.5 max-w-[200px]">
-                              {row.roles && row.roles.length > 0 ? (
-                                row.roles.map((roleName:any, i:any) => (
-                                  <span
-                                    key={i}
-                                    className="px-2 py-1 text-[10px] font-bold rounded bg-purple-50 text-purple-700 uppercase border border-purple-100 tracking-wide"
-                                  >
-                                    {roleName}
-                                  </span>
-                                ))
-                              ) : (
-                                <span className="text-xs text-slate-400 italic font-semibold">No roles</span>
-                              )}
-                            </div>
-                          </Td>
-
-                          {/* Status */}
-                          <Td>
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border shadow-sm
-                                ${row.status === 'active'
-                                ? 'bg-green-50 text-green-700 border-green-200'
-                                : 'bg-red-50 text-red-700 border-red-200'
-                              }`}
-                            >
-                              {row.status}
-                            </span>
-                          </Td>
-
-                          {/* Actions */}
-                          {/* {can("edit users") && ( */}
-                          <Td>
-                              <div className="flex gap-2 items-center justify-center">
-                                 <Link
-                              to={`/staff/edit/${row.id}`}
-                              className="inline-flex p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
-                              title="Edit Staff"
-                            >
-                              <FaEdit size={14} />
-                            </Link>
-
-                            <Link
-                              to={`/staff/show/${row.id}`}
-                              className="inline-flex p-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all duration-200 shadow-sm"
-                              title="Edit Staff"
-                            >
-                              <FaEye size={14} />
-                            </Link>
-                              </div>
-                          </Td>
-                          {/* )} */}
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-
-                {/* Pagination (Reusable) */}
-                {staffList.length > 10 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    onPageChange={setCurrentPage}
-                    itemName="Staff"
-                  />
-                )}
-              </>
-            )}
-          </TableDiv>
-
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default StaffIndexPage;
+export default StaffIndexPage;

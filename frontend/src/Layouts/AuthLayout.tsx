@@ -26,6 +26,8 @@ import TravellerShowPage from "../Pages/Travelers/TravellerShowPage";
 import TravellerEditPage from "../Pages/Travelers/TravellerEditPage";
 import StaffShowPage from "../Pages/Staffs/StaffShowPage";
 import DashboardPage from "../Pages/DashboardPage";
+import { CompliancePage } from "../Pages/ComplianceLaws/Compliance";
+import { ComplianceCreate } from "../Pages/ComplianceLaws/ComplianceCreate";
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -76,6 +78,11 @@ const AuthLayout = () => {
               <Route path="drivers/create" element={<DriverCreatePage />} />
               <Route path="drivers/show/:id" element={<DriverShowPage />} />
               <Route path="drivers/edit/:id" element={<DriverEditPage />} />
+
+              {/* Compliance & Laws */}
+              <Route path="compliance" element={<CompliancePage />} />
+              <Route path="compliance/create" element={<ComplianceCreate />} />
+              <Route path="compliance/edit/:id" element={<ComplianceCreate />} />
 
               {/* Device Management */}
               <Route path="devices" element={<DeviceManagementIndexPage />} />

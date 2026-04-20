@@ -1,7 +1,7 @@
 // src/components/travellers/TravellerEditPage.tsx
 import { useState, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 // Icons
 import { FaUserEdit, FaIdCard, } from "react-icons/fa";
@@ -10,6 +10,7 @@ import { FaUserEdit, FaIdCard, } from "react-icons/fa";
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import InputField from "../../Components/Form/InputField";
 import SaveButton from "../../Components/Form/SaveButton";
+import CancelButton from "../../Components/Form/CancelButton";
 import LoadingSpinner from "../../Components/UI/LoadingSpinner";
 import EmptyState from "../../Components/UI/EmptyState";
 
@@ -24,6 +25,7 @@ import SelectInputField from "../../Components/Form/SelectInputField";
 
 const TravellerEditPage = () => {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const { showAlert } = useAlert();
 
     // State
@@ -272,8 +274,8 @@ const TravellerEditPage = () => {
                         </div>
 
                         {/* Footer */}
-                        <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row items-center gap-4">
-
+                        <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-wrap items-center gap-4">
+                            <CancelButton label="cancel" type="button" onClick={() => navigate("/travellers")} />
                             <SaveButton
                                 type="submit"
                                 label="save"

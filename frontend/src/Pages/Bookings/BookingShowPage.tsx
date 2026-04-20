@@ -31,6 +31,7 @@ import type { Vehicle } from "../Vehicles/Vehicle.types";
 import type { BeaconDevice } from "../../Types/Index";
 import DetailItem, { InfoCard } from "../../Components/UI/DetailItem";
 import SaveButton from "../../Components/Form/SaveButton";
+import CancelButton from "../../Components/Form/CancelButton";
 import InputField from "../../Components/Form/InputField";
 
 // --- Helpers ---
@@ -347,6 +348,7 @@ const BookingShowPage = () => {
 
                 {booking.status != "Approved" && booking.status != "Rejected" ? (
                   <div className="pt-6 border-t border-slate-200 flex  gap-3">
+                    <CancelButton label="cancel" type="button" onClick={() => setActiveTab("overview")} />
                     <SaveButton label="submit" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
                   </div>
                 ) : ("")}

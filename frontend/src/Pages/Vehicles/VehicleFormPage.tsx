@@ -20,6 +20,7 @@ import { MdGpsFixed } from "react-icons/md";
 // Components
 import PageHeaderBack from "../../Components/UI/PageHeaderBack";
 import SaveButton from "../../Components/Form/SaveButton";
+import CancelButton from "../../Components/Form/CancelButton";
 import InputField from "../../Components/Form/InputField";
 import SelectInputField from "../../Components/Form/SelectInputField";
 import FileInputField from "../../Components/Form/FileInputField";
@@ -523,8 +524,8 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
             </div>
 
             {/* Footer */}
-            <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-col-reverse md:flex-row justify-start items-center gap-4">
-
+            <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-wrap justify-start items-center gap-4">
+              <CancelButton label="cancel" type="button" onClick={() => navigate("/vehicles")} />
               <SaveButton label="Save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
             </div>
 

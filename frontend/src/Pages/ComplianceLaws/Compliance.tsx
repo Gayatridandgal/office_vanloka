@@ -1,0 +1,217 @@
+// src/Pages/ComplianceLaws/Compliance.tsx
+import React, { useState } from "react";
+import type { MouseEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  Gavel, 
+  Plus, 
+  Search, 
+  Filter, 
+  CheckCircle2, 
+  XCircle, 
+  AlertCircle, 
+  Info, 
+  PlayCircle, 
+  Trash2, 
+  X, 
+  FileText, 
+  ShieldCheck, 
+  Clock, 
+  Scale,
+  ChevronDown,
+  Eye,
+  Edit
+} from "lucide-react";
+
+import {
+  type ComplianceRecord,
+  INITIAL_COMPLIANCE,
+  complianceStatusVariant,
+} from "./complianceData";
+
+// --- Components ---
+const Badge = ({ variant, children }: { variant: string; children: React.ReactNode }) => {
+  const variants: Record<string, string> = {
+    green: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    red: "bg-rose-50 text-rose-600 border-rose-100",
+    blue: "bg-blue-50 text-blue-600 border-blue-100",
+    purple: "bg-purple-50 text-purple-600 border-purple-100",
+    amber: "bg-amber-50 text-amber-600 border-amber-100",
+    slate: "bg-slate-50 text-slate-500 border-slate-100",
+  };
+  const styleClass = variants[variant] ?? variants.slate;
+  return (
+    <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${styleClass}`}>
+      {children}
+    </span>
+  );
+};
+
+/* ═══════════════════════════════════════════════════
+   VIEW DETAIL OVERLAY
+   ═══════════════════════════════════════════════════ */
+const ViewOverlay = ({ record, onClose }: { record: ComplianceRecord; onClose: () => void }) => (
+  <div 
+    className="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6"
+    onClick={onClose}
+  >
+    <div 
+      className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-xl border border-slate-100"
+      onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
+    >
+      <div className="p-6 bg-primary text-white flex justify-between items-center">
+        <h2 className="text-lg font-bold uppercase">{record.documentName}</h2>
+        <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg"><X size={20} /></button>
+      </div>
+      <div className="p-6 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div><p className="text-[10px] font-bold text-slate-400 uppercase">Authority</p><p className="text-sm font-bold">{record.authority}</p></div>
+          <div><p className="text-[10px] font-bold text-slate-400 uppercase">Status</p><Badge variant={complianceStatusVariant(record.status)}>{record.status}</Badge></div>
+          <div><p className="text-[10px] font-bold text-slate-400 uppercase">Law Ref</p><p className="text-sm font-bold">{record.subLaw}</p></div>
+          <div><p className="text-[10px] font-bold text-slate-400 uppercase">Issue Date</p><p className="text-sm font-bold">{record.issueDate}</p></div>
+        </div>
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+          <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Remarks</p>
+          <p className="text-xs text-slate-600 italic">"{record.remarks || "No remarks."}"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════════════════════
+   DELETE CONFIRMATION OVERLAY
+   ═══════════════════════════════════════════════════ */
+const DeleteOverlay = ({ record, onConfirm, onCancel }: { record: ComplianceRecord; onConfirm: () => void; onCancel: () => void }) => (
+  <div className="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
+    <div className="bg-white rounded-2xl w-full max-w-sm p-6 text-center" onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
+      <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4"><Trash2 size={24} /></div>
+      <h3 className="font-bold text-slate-800 uppercase mb-2">Delete Record?</h3>
+      <p className="text-xs text-slate-500 mb-6">Permanently delete {record.documentName}?</p>
+      <div className="flex gap-2">
+        <button className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs" onClick={onCancel}>Cancel</button>
+        <button className="flex-1 px-4 py-2 bg-rose-600 text-white rounded-lg font-bold text-xs" onClick={onConfirm}>Delete</button>
+      </div>
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════════════════════
+   COMPLIANCE PAGE
+   ═══════════════════════════════════════════════════ */
+export const CompliancePage = () => {
+  const navigate = useNavigate();
+  const [records, setRecords] = useState<ComplianceRecord[]>(INITIAL_COMPLIANCE);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [viewRecord, setViewRecord] = useState<ComplianceRecord | null>(null);
+  const [deleteRecord, setDeleteRecord] = useState<ComplianceRecord | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  const filtered = records.filter((r) => {
+    const q = search.toLowerCase().trim();
+    const matchSearch = !q || r.documentName.toLowerCase().includes(q) || r.id.toLowerCase().includes(q);
+    const matchStatus = statusFilter === "All" || r.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const handleDelete = () => {
+    if (!deleteRecord) return;
+    setRecords((prev) => prev.filter((r) => r.id !== deleteRecord.id));
+    setDeleteRecord(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2 tracking-tight uppercase">
+            <Gavel size={24} /> Compliance & Laws
+          </h1>
+          <p className="text-xs text-slate-500 font-medium">Manage legal rules and fleet compliance.</p>
+        </div>
+        <button className="btn btn-primary flex items-center gap-2" onClick={() => navigate("/compliance/create")}>
+          <Plus size={16} /> Add Record
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {/* Simple Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 underline">Total Rules</p>
+            <p className="text-xl font-bold">{records.length}</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-emerald-500">
+            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Compliant</p>
+            <p className="text-xl font-bold">{records.filter(r => r.status === 'Compliant').length}</p>
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="bg-white p-3 rounded-xl border border-slate-200 flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+            <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <div className="relative min-w-[150px]">
+            <select className="w-full pl-3 pr-8 py-2 bg-slate-50 border-none rounded-lg text-xs font-bold appearance-none" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="All">All Status</option>
+              <option value="Compliant">Compliant</option>
+              <option value="Non-Compliant">Non-Compliant</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <tr>
+                <th className="px-6 py-4">Document</th>
+                <th className="px-6 py-4">Authority</th>
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-sm">
+              {filtered.map((record) => (
+                <tr key={record.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-4 flex items-center gap-3">
+                    <ShieldCheck size={18} className="text-slate-300" />
+                    <div><p className="font-bold text-slate-700">{record.documentName}</p><p className="text-[10px] text-slate-400">#{record.id}</p></div>
+                  </td>
+                  <td className="px-6 py-4 font-medium text-slate-600">{record.authority}</td>
+                  <td className="px-6 py-4 text-slate-500 font-mono text-xs">{record.issueDate}</td>
+                  <td className="px-6 py-4"><Badge variant={complianceStatusVariant(record.status)}>{record.status}</Badge></td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center gap-2">
+                       <button onClick={() => setViewRecord(record)} className="p-2 text-slate-400 hover:text-primary"><Eye size={16} /></button>
+                       <button onClick={() => navigate(`/compliance/edit/${record.id}`)} className="p-2 text-slate-400 hover:text-amber-500"><Edit size={16} /></button>
+                       {record.videoUrl && <button onClick={() => setVideoUrl(record.videoUrl)} className="p-2 text-slate-400 hover:text-rose-500"><PlayCircle size={16} /></button>}
+                       <button onClick={() => setDeleteRecord(record)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 size={16} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {viewRecord && <ViewOverlay record={viewRecord} onClose={() => setViewRecord(null)} />}
+      {deleteRecord && <DeleteOverlay record={deleteRecord} onConfirm={handleDelete} onCancel={() => setDeleteRecord(null)} />}
+      {videoUrl && (
+        <div className="fixed inset-0 z-[1100] bg-black/90 flex items-center justify-center p-6" onClick={() => setVideoUrl(null)}>
+           <div className="w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden relative">
+             <button className="absolute top-4 right-4 z-20 text-white" onClick={() => setVideoUrl(null)}><X size={24} /></button>
+             <iframe src={videoUrl.replace("watch?v=", "embed/")} className="w-full h-full" allowFullScreen />
+           </div>
+        </div>
+      )}
+    </div>
+  );
+};

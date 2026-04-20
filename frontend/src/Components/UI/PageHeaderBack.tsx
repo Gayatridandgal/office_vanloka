@@ -11,27 +11,21 @@ interface HeaderProps {
 
 const PageHeaderBack: React.FC<HeaderProps> = ({
   title,
-  buttonText = "",
+  buttonText = "Back",
   buttonLink = "#",
 }) => {
   return (
     <div className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-10">
-      <div className="flex items-center gap-2 ">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-md font-bold text-purple-950 uppercase">{title}</h1>
         {buttonLink && (
           <Link
             to={buttonLink}
-            className={`flex items-center font-bold rounded-lg text-md transition-colors uppercase`}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold uppercase text-slate-700 transition-colors hover:bg-slate-50"
           >
-            <FaArrowLeft size={25} /> {buttonText}
+            <FaArrowLeft size={12} /> {buttonText}
           </Link>
         )}
-
-        <Link
-          to={buttonLink}
-          className="text-md font-bold text-purple-950 uppercase"
-        >
-          {title}
-        </Link>
       </div>
     </div>
   );
