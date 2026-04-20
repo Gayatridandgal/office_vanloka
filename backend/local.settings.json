@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "",
+    "DATABASE_URL": "postgresql://user:password@host:5432/office_platform",
+    "JWT_SECRET": "dummy-secret-for-now"
+  }
+}
