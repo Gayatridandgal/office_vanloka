@@ -1,31 +1,15 @@
 // src/components/roles/IndexPage.tsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-// Icons
-import { FaEdit, FaTrash, FaUserShield, FaSearch } from "react-icons/fa";
-import { MdAdminPanelSettings, MdClear } from "react-icons/md";
+import { Search, Filter, Edit3, Trash2, Shield, Plus } from "lucide-react";
 
 // Components
-import PageHeader from "../../Components/UI/PageHeader";
-import {
-  TableDiv,
-  TableContainer,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td
-} from "../../Components/Table/Table";
-
-// Logic & Types
-import { useAlert } from "../../Context/AlertContext";
-import adminApi from "../../Services/ApiService";
-import type { Role } from "./RolesPermissions.types";
-import { BiLoader } from "react-icons/bi";
+import { Loader } from "../../Components/UI/Loader";
 import EmptyState from "../../Components/UI/EmptyState";
 import { Pagination } from "../../Components/Table/Pagination";
+import adminApi from "../../Services/ApiService";
+import { useAlert } from "../../Context/AlertContext";
+import type { Role } from "./RolesPermissions.types";
 
 const IndexPage = () => {
   // Data State
@@ -38,8 +22,7 @@ const IndexPage = () => {
 
   // Pagination State (Client-Side)
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(10);
-
+  const [perPage] = useState(15);
   const { showAlert } = useAlert();
 
   // 1. Fetch data
@@ -100,149 +83,147 @@ const IndexPage = () => {
     }
   };
 
+  const handleClearFilters = () => {
+    setSearchQuery("");
+  };
+
+  const stats = [
+    { label: "Total Roles", value: roles.length, icon: <Shield size={20} />, bg: "bg-indigo-50", text: "text-indigo-600" },
+  ];
+
   return (
-    <div className="min-h-screen bg-white px-2">
-      {/* Header */}
-      <div className="mx-4">
-        <PageHeader
-          title="Role Management"
-          buttonText="Add Role"
-          buttonLink="create"
-        />
+    <div className="min-h-screen bg-transparent">
+      {/* Header Segment */}
+      <div className="px-6 pt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+           <div className="flex items-center gap-2 text-indigo-600 mb-1">
+              <Shield size={22} className="stroke-[2.5]" />
+              <h1 className="text-xl font-900 tracking-wider uppercase">Role Management</h1>
+           </div>
+           <div className="flex items-center gap-2 text-[11px] font-800 text-muted uppercase tracking-widest px-0.5">
+             <span>Admin</span>
+             <span className="text-slate-300">/</span>
+             <span className="text-primary-dark">Roles & Permissions</span>
+           </div>
+        </div>
+
+        <div className="flex gap-3">
+          <Link to="create" className="btn btn-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
+             <Plus size={16} />
+             <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Add Role</span>
+          </Link>
+        </div>
       </div>
 
-      <div className="px-4 pb-10">
-        <div className="mx-auto space-y-4">
-
-          {/* Search Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
-                  <FaSearch className="text-white" size={10} />
+      <div className="p-6 space-y-6">
+        {/* Statistics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="stat-card flex items-center gap-4 border border-slate-50 shadow-sm bg-white p-4 rounded-xl">
+              <div className={`p-3.5 rounded-2xl ${stat.bg} ${stat.text}`}>
+                {stat.icon}
+              </div>
+              <div>
+                <p className="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-900 text-slate-800 tabular-nums">{stat.value}</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-800 uppercase">Search Roles</h3>
               </div>
             </div>
+          ))}
+        </div>
 
-            <div className="mt-4 max-w-md">
-              <label className="block text-xs font-bold text-slate-700 mb-2 uppercase">
-                Search by Name
-              </label>
-              <div className="relative">
-                <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="e.g. Manager, Admin..."
-                  className="w-full pl-12 pr-4 p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all shadow-sm hover:border-blue-400"
-                />
-              </div>
-              {/* Active Filters */}
-              {(searchQuery) && (
-                <div className="flex items-center flex-wrap gap-1 mt-3">
-                  {searchQuery && (
-                    <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase border border-blue-200">
-                      {searchQuery}
-                    </span>
-                  )}
+        {/* Premium Horizontal Filter Bar */}
+        <div className="white-card p-4 flex flex-col lg:flex-row gap-4 items-center shadow-sm bg-white rounded-xl">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search roles by name..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border-none rounded-xl text-sm font-600 focus:ring-2 focus:ring-indigo-600/10 transition-all outline-none"
+            />
+          </div>
+          
+          <div className="flex gap-4 w-full lg:w-auto">
+            <button 
+              onClick={handleClearFilters}
+              className="p-3 bg-slate-50 text-slate-400 hover:text-rose-500 rounded-xl transition-colors shrink-0"
+              title="Clear Filters"
+            >
+              <Filter size={20} />
+            </button>
+          </div>
+        </div>
 
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-bold uppercase hover:bg-red-100 transition-all flex items-center gap-1 border border-red-200"
-                  >
-                    <MdClear /> Clear
-                  </button>
-                </div>
+        {/* Table Module */}
+        <div className="white-card overflow-hidden border border-slate-100 shadow-sm bg-white rounded-xl">
+          {loading ? (
+            <div className="py-24 flex flex-col items-center gap-4">
+              <Loader />
+              <p className="text-[10px] font-900 text-slate-300 uppercase tracking-widest">Loading Roles...</p>
+            </div>
+          ) : filteredRoles.length === 0 ? (
+            <div className="py-24 flex flex-col items-center">
+              <EmptyState title="No Roles Found" description="Get started by creating a new user role." />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-50">
+                    <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">S.No</th>
+                    <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">Role Name</th>
+                    <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50/50">
+                  {currentItems.map((role, index) => (
+                    <tr key={role.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <span className="text-xs font-800 text-slate-300 tabular-nums">
+                          {((currentPage - 1) * perPage + index + 1).toString().padStart(2, '0')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-indigo-50 rounded-lg text-indigo-500 shadow-sm border border-indigo-100/50">
+                            <Shield size={16} className="stroke-[2.5]" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-800 text-slate-800 uppercase tracking-tight">{role.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-center items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                          <Link to={`/roles_permissions/edit/${role.id}`} className="p-2 bg-white hover:bg-indigo-50 text-indigo-600 rounded-lg shadow-sm border border-slate-100 transition-all hover:-translate-y-0.5" title="Edit Role">
+                            <Edit3 size={16} />
+                          </Link>
+                          <button onClick={() => handleDelete(role)} className="p-2 bg-white hover:bg-rose-50 text-rose-600 rounded-lg shadow-sm border border-slate-100 transition-all hover:-translate-y-0.5" title="Delete Role">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {filteredRoles.length > 0 && (
+                 <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-50">
+                   <Pagination
+                     currentPage={currentPage}
+                     totalPages={totalPages}
+                     totalItems={filteredRoles.length}
+                     onPageChange={setCurrentPage}
+                     itemName="Roles"
+                   />
+                 </div>
               )}
             </div>
-          </div>
-
-          {/* Table Area */}
-          <TableDiv>
-            {loading ? (
-              <div className="py-20">
-                <BiLoader />
-              </div>
-            ) : filteredRoles.length === 0 ? (
-              <EmptyState
-                title="No Roles Found"
-                description="Get started by creating a new user role."
-                icon={<MdAdminPanelSettings className="text-slate-300 text-6xl mb-4" />}
-              />
-            ) : (
-              <>
-                <TableContainer maxHeight="70vh">
-                  <Table>
-                    <Thead>
-                      <Th >S.No</Th>
-                      <Th align="left">Role Name</Th>
-                      <Th align="center">Actions</Th>
-                    </Thead>
-
-                    <Tbody>
-                      {currentItems.map((role, index) => (
-                        <Tr key={role.id}>
-                          {/* S.No */}
-                          <Td isMono className="font-bold text-slate-500">
-                            {(currentPage - 1) * perPage + index + 1}
-                          </Td>
-
-                          {/* Role Name */}
-                          <Td>
-                            <div className="flex justify-start items-center gap-3">
-                              <div className="p-2 bg-purple-100 rounded-lg text-purple-600 shadow-sm">
-                                <FaUserShield size={16} />
-                              </div>
-                              <span className="font-bold text-slate-700 uppercase tracking-wide text-sm">
-                                {role.name}
-                              </span>
-                            </div>
-                          </Td>
-
-                          {/* Actions */}
-                          <Td>
-                            <div className="flex items-center justify-center gap-2">
-                              {/* Edit Button */}
-                              <Link
-                                to={`/roles_permissions/edit/${role.id}`}
-                                className="group p-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
-                                title="Edit Role"
-                              >
-                                <FaEdit size={14} />
-                              </Link>
-
-                              {/* Delete Button */}
-                              <button
-                                onClick={() => handleDelete(role)}
-                                className="group p-2 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all duration-200 shadow-sm"
-                                title="Delete Role"
-                              >
-                                <FaTrash size={14} />
-                              </button>
-                            </div>
-                          </Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-
-                {/* Pagination */}
-                {currentItems.length > 10 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={filteredRoles.length}
-                    onPageChange={setCurrentPage}
-                    itemName="Roles"
-                  />
-                )}
-
-              </>
-            )}
-          </TableDiv>
+          )}
         </div>
       </div>
     </div>

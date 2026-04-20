@@ -109,7 +109,7 @@ const EditPage = () => {
     <div className="min-h-screen bg-white pb-12">
       {/* 1. Sticky Header */}
 
-      <PageHeaderBack title="Back" buttonLink="/roles_permissions" />
+      <PageHeaderBack title="Edit Role" buttonLink="/roles_permissions" />
 
 
       {/* 2. Main Container */}
