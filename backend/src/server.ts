@@ -4,6 +4,7 @@ import type { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import multer from "multer";
 import pool from "./lib/db";
 
@@ -17,8 +18,16 @@ const ROLE_PERMISSION_MAP_TABLE = 'schemaa."officeRolePermissions"';
 const EMPLOYEE_TABLE = 'schemaa."officeEmployees"';
 const VEHICLE_TABLE = 'schemaa."officeVehicles"';
 const DRIVER_TABLE = 'schemaa."officeDrivers"';
+const USER_TABLE_CANDIDATES = [
+  'schemaa."officeUsers"',
+  "schemaa.users",
+  "public.users",
+  'public."officeUsers"',
+];
 const upload = multer({ storage: multer.memoryStorage() });
 const tableColumnCache = new Map<string, Set<string>>();
+let resolvedUserTable: string | null | undefined;
+let resolvedUserColumns: Set<string> | null = null;
 
 const stateDistrictSeed = [
   { id: 1, state: "Tamil Nadu", district: "Chennai", city: "Chennai", pincode: "600001" },
@@ -102,6 +111,113 @@ function getPagination(req: Request) {
   return { page, perPage, offset };
 }
 
+function quoteIdent(value: string): string {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
+async function resolveUserAuthSource(): Promise<{ table: string; columns: Set<string> } | null> {
+  if (resolvedUserTable !== undefined) {
+    return resolvedUserTable && resolvedUserColumns
+      ? { table: resolvedUserTable, columns: resolvedUserColumns }
+      : null;
+  }
+
+  const hasCredentialColumns = (columns: Set<string>) => {
+    const hasPassword =
+      columns.has("password") || columns.has("password_hash") || columns.has("hashed_password");
+    return columns.has("email") && hasPassword;
+  };
+
+  for (const table of USER_TABLE_CANDIDATES) {
+    try {
+      const columns = await getTableColumns(table);
+      if (hasCredentialColumns(columns)) {
+        resolvedUserTable = table;
+        resolvedUserColumns = columns;
+        return { table, columns };
+      }
+    } catch {
+      // Ignore and continue probing candidates.
+    }
+  }
+
+  try {
+    const discovered = await pool.query(
+      `
+        SELECT table_schema, table_name
+        FROM information_schema.columns
+        WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+        GROUP BY table_schema, table_name
+        HAVING
+          BOOL_OR(column_name = 'email')
+          AND BOOL_OR(column_name IN ('password', 'password_hash', 'hashed_password'))
+        ORDER BY
+          CASE WHEN table_schema = 'schemaa' THEN 0 ELSE 1 END,
+          CASE WHEN LOWER(table_name) LIKE $1 ESCAPE '\\\\' THEN 0 ELSE 1 END,
+          table_schema,
+          table_name
+        LIMIT 1
+      `,
+      [`%${escapeLike("user")}%`]
+    );
+
+    const row = discovered.rows[0] as { table_schema: string; table_name: string } | undefined;
+    if (row) {
+      const table = `${quoteIdent(row.table_schema)}.${quoteIdent(row.table_name)}`;
+      const columns = await getTableColumns(table);
+      if (hasCredentialColumns(columns)) {
+        resolvedUserTable = table;
+        resolvedUserColumns = columns;
+        return { table, columns };
+      }
+    }
+  } catch {
+    // Fall through to null.
+  }
+
+  resolvedUserTable = null;
+  resolvedUserColumns = null;
+  return null;
+}
+
+function getPasswordColumn(columns: Set<string>): string | null {
+  if (columns.has("password_hash")) return "password_hash";
+  if (columns.has("hashed_password")) return "hashed_password";
+  if (columns.has("password")) return "password";
+  return null;
+}
+
+function resolveUserName(row: Record<string, unknown>, email: string): string {
+  const direct = ["name", "full_name", "display_name", "user_name"];
+  for (const key of direct) {
+    const value = row[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+
+  const first = typeof row.first_name === "string" ? row.first_name.trim() : "";
+  const last = typeof row.last_name === "string" ? row.last_name.trim() : "";
+  const combined = `${first} ${last}`.trim();
+  if (combined) return combined;
+
+  return email.split("@")[0] || "User";
+}
+
+function isPasswordHash(value: string): boolean {
+  return /^\$2[aby]\$\d{2}\$/.test(value);
+}
+
+async function verifyPassword(inputPassword: string, storedPassword: string): Promise<boolean> {
+  if (!storedPassword) return false;
+  if (isPasswordHash(storedPassword)) {
+    return bcrypt.compare(inputPassword, storedPassword);
+  }
+  return inputPassword === storedPassword;
+}
+
 function paginatedPayload<T>(rows: T[], page: number, perPage: number, total: number) {
   const from = total > 0 ? (page - 1) * perPage + 1 : 0;
   const to = total > 0 ? Math.min((page - 1) * perPage + rows.length, total) : 0;
@@ -122,12 +238,13 @@ function paginatedPayload<T>(rows: T[], page: number, perPage: number, total: nu
 async function fetchRowsWithOrgFallback(table: string, orgId: string) {
   const columns = await getTableColumns(table);
   if (columns.has("org_id")) {
-    const scoped = await pool.query(`SELECT * FROM ${table} WHERE org_id = $1 ORDER BY id DESC`, [orgId]);
-    if (scoped.rows.length > 0) return scoped.rows;
+    console.log(`[TENANT] Scoping ${table} query to org_id: ${orgId}`);
+    const result = await pool.query(`SELECT * FROM ${table} WHERE org_id = $1 ORDER BY id DESC`, [orgId]);
+    return result.rows;
   }
 
-  const all = await pool.query(`SELECT * FROM ${table} ORDER BY id DESC`);
-  return all.rows;
+  console.warn(`[TENANT] Table ${table} is missing "org_id" column! Blocking access.`);
+  return [];
 }
 
 function parseQualifiedTableName(table: string) {
@@ -350,51 +467,205 @@ app.get("/health", async (_req: Request, res: Response) => {
 });
 
 // Auth endpoints
-app.post("/api/tenant-login", (req: Request, res: Response) => {
-  const email = String(req.body?.email || "");
-  console.log(`[AUTH] Dummy login attempt for: ${email}`);
+app.post("/api/tenant-login", async (req: Request, res: Response) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
 
-  const token = jwt.sign(
-    {
-      id: "user-123",
-      email,
-      role: "admin",
-      org_id: DUMMY_ORG_ID,
-    },
-    JWT_SECRET,
-    { expiresIn: "24h" }
-  );
+  if (!email || !password) {
+    res.status(400).json({ success: false, message: "Email and password are required" });
+    return;
+  }
 
-  res.json({
-    success: true,
-    data: {
-      token,
-      user: {
-        id: "user-123",
-        name: "Dummy Administrator",
+  try {
+    const source = await resolveUserAuthSource();
+    if (!source) {
+      console.error(`[AUTH] No user table found for ${email}`);
+      res.status(500).json({ success: false, message: "Users table is not configured correctly. Checked: " + USER_TABLE_CANDIDATES.join(", ") });
+      return;
+    }
+    console.log(`[AUTH] Found user table: ${source.table}`);
+
+    const passwordColumn = getPasswordColumn(source.columns);
+    if (!passwordColumn) {
+      res.status(500).json({ success: false, message: "Users table missing password column" });
+      return;
+    }
+
+    const selectedColumns = [
+      "id",
+      "name",
+      "full_name",
+      "display_name",
+      "user_name",
+      "first_name",
+      "last_name",
+      "email",
+      "role",
+      "user_role",
+      "org_id",
+      "tenant_id",
+      "status",
+      passwordColumn,
+    ].filter((col, index, arr) => arr.indexOf(col) === index && source.columns.has(col));
+
+    const userResult = await pool.query(
+      `SELECT ${selectedColumns.map((col) => quoteIdent(col)).join(", ")} FROM ${source.table} WHERE LOWER(email) = LOWER($1) LIMIT 1`,
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      res.status(401).json({ success: false, message: "Invalid credentials" });
+      return;
+    }
+
+    const userRow = userResult.rows[0] as Record<string, unknown>;
+    const storedPassword = String(userRow[passwordColumn] || "");
+    const passwordValid = await verifyPassword(password, storedPassword);
+
+    if (!passwordValid) {
+      res.status(401).json({ success: false, message: "Invalid credentials" });
+      return;
+    }
+
+    if (source.columns.has("status")) {
+      const status = String(userRow.status || "").toLowerCase();
+      if (status && ["inactive", "disabled", "blocked", "suspended"].includes(status)) {
+        res.status(403).json({ success: false, message: "User account is inactive" });
+        return;
+      }
+    }
+
+    const orgId = String(userRow.org_id || userRow.tenant_id || "").trim();
+    if (!orgId) {
+      console.error(`[AUTH] User ${email} has no org_id or tenant_id. User record:`, { org_id: userRow.org_id, tenant_id: userRow.tenant_id });
+      res.status(403).json({ success: false, message: "User is not mapped to any organization. Available columns: " + Object.keys(userRow).join(", ") });
+      return;
+    }
+    console.log(`[AUTH] Login successful for ${email} with org_id=${orgId}`);
+    const userId = String(userRow.id || email);
+    const role = String(userRow.role || userRow.user_role || "admin");
+    const name = resolveUserName(userRow, email);
+
+    const token = jwt.sign(
+      {
+        id: userId,
         email,
-        role: "admin",
-        org_id: DUMMY_ORG_ID,
+        role,
+        org_id: orgId,
       },
-    },
-  });
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        token,
+        user: {
+          id: userId,
+          name,
+          email,
+          role,
+          org_id: orgId,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("[AUTH] tenant-login failed", error);
+    res.status(500).json({ success: false, message: "Login failed" });
+  }
 });
 
 app.get("/api/refreshMe", (req: Request, res: Response) => {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith("Bearer ")) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  const token = auth.slice(7);
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      id?: string;
+      email?: string;
+      role?: string;
+      org_id?: string;
+    };
+
+    const email = decoded.email || "";
+    const role = decoded.role || "admin";
+    const orgId = decoded.org_id || "";
+    if (!orgId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    res.json({
+      id: decoded.id || email,
+      name: email.split("@")[0] || "User",
+      email,
+      roles: [role],
+      tenant_id: orgId,
+      permissions: ["manage_fleet", "view_reports"],
+    });
+  } catch {
+    res.status(401).json({ message: "Unauthorized" });
+  }
+});
+
+// Debug endpoint - shows tenant isolation status
+app.get("/api/debug/tenant", async (req: Request, res: Response) => {
   const orgId = getOrgIdFromRequest(req);
   if (!orgId) {
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
 
-  res.json({
-    id: "user-123",
-    name: "Dummy Administrator",
-    email: "admin@admin.com",
-    roles: ["admin"],
-    tenant_id: orgId,
-    permissions: ["manage_fleet", "view_reports"],
-  });
+  try {
+    const tables = [EMPLOYEE_TABLE, VEHICLE_TABLE, DRIVER_TABLE, ROLE_TABLE, PERMISSION_TABLE];
+    const tableStatus: Record<string, any> = {};
+
+    for (const table of tables) {
+      try {
+        const cols = await getTableColumns(table);
+        const hasOrgId = cols.has("org_id");
+        
+        let rowCount = 0;
+        let orgRowCount = 0;
+        try {
+          const allRows = await pool.query(`SELECT COUNT(*) as cnt FROM ${table}`);
+          rowCount = allRows.rows[0]?.cnt || 0;
+          
+          if (hasOrgId) {
+            const scopedRows = await pool.query(`SELECT COUNT(*) as cnt FROM ${table} WHERE org_id = $1`, [orgId]);
+            orgRowCount = scopedRows.rows[0]?.cnt || 0;
+          }
+        } catch {
+          rowCount = -1;
+          orgRowCount = -1;
+        }
+
+        tableStatus[table] = {
+          hasOrgIdColumn: hasOrgId,
+          totalRows: rowCount,
+          orgRows: hasOrgId ? orgRowCount : "N/A",
+          columns: Array.from(cols).slice(0, 10), // First 10 columns
+        };
+      } catch (e: any) {
+        tableStatus[table] = { error: e?.message || "Failed to check" };
+      }
+    }
+
+    res.json({
+      success: true,
+      currentOrgId: orgId,
+      tableStatus,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e?.message });
+  }
 });
 
 // Employees
@@ -411,6 +682,12 @@ app.get("/api/employees", async (req: Request, res: Response) => {
   const role = String(req.query.role || "").trim().toLowerCase();
 
   try {
+    const columns = await getTableColumns(EMPLOYEE_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for employees table" });
+      return;
+    }
+
     let rows = await fetchRowsWithOrgFallback(EMPLOYEE_TABLE, orgId);
 
     rows = rows.filter((row: any) => {
@@ -441,6 +718,11 @@ app.post("/api/employees", upload.any(), async (req: Request, res: Response) => 
 
   try {
     const columns = await getTableColumns(EMPLOYEE_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for employees table" });
+      return;
+    }
+
     const payload = toEmployeePayload(req.body as Record<string, unknown>, columns);
     
     if (columns.has("org_id")) payload.org_id = orgId;
@@ -479,14 +761,13 @@ app.get("/api/employees/:id", async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   try {
     const columns = await getTableColumns(EMPLOYEE_TABLE);
-    let row;
-    if (columns.has("org_id")) {
-      const scoped = await pool.query(`SELECT * FROM ${EMPLOYEE_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
-      row = scoped.rows[0];
-    } else {
-      const all = await pool.query(`SELECT * FROM ${EMPLOYEE_TABLE} WHERE id = $1 LIMIT 1`, [id]);
-      row = all.rows[0];
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for employees table" });
+      return;
     }
+
+    const scoped = await pool.query(`SELECT * FROM ${EMPLOYEE_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
+    const row = scoped.rows[0];
 
     if (!row) {
       res.status(404).json({ success: false, message: "Employee not found" });
@@ -508,6 +789,11 @@ app.put("/api/employees/:id", upload.any(), async (req: Request, res: Response) 
 
   try {
     const columns = await getTableColumns(EMPLOYEE_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for employees table" });
+      return;
+    }
+
     const payload = toEmployeePayload(req.body as Record<string, unknown>, columns);
     if (columns.has("updated_at")) payload.updated_at = new Date().toISOString();
 
@@ -518,8 +804,8 @@ app.put("/api/employees/:id", upload.any(), async (req: Request, res: Response) 
     }
 
     const setClause = updateKeys.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
-    const whereClause = columns.has("org_id") ? `WHERE id = $${updateKeys.length + 1} AND org_id = $${updateKeys.length + 2}` : `WHERE id = $${updateKeys.length + 1}`;
-    const params = columns.has("org_id") ? [...updateKeys.map(k => payload[k]), id, orgId] : [...updateKeys.map(k => payload[k]), id];
+    const whereClause = `WHERE id = $${updateKeys.length + 1} AND org_id = $${updateKeys.length + 2}`;
+    const params = [...updateKeys.map(k => payload[k]), id, orgId];
 
     const result = await pool.query(
       `UPDATE ${EMPLOYEE_TABLE} SET ${setClause} ${whereClause} RETURNING *`,
@@ -546,8 +832,13 @@ app.delete("/api/employees/:id", async (req: Request, res: Response) => {
 
   try {
     const columns = await getTableColumns(EMPLOYEE_TABLE);
-    const whereClause = columns.has("org_id") ? `WHERE id = $1 AND org_id = $2` : `WHERE id = $1`;
-    const params = columns.has("org_id") ? [id, orgId] : [id];
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for employees table" });
+      return;
+    }
+
+    const whereClause = `WHERE id = $1 AND org_id = $2`;
+    const params = [id, orgId];
     
     const result = await pool.query(`DELETE FROM ${EMPLOYEE_TABLE} ${whereClause}`, params);
     if (result.rowCount === 0) {
@@ -571,12 +862,18 @@ app.get("/api/vehicles", async (req: Request, res: Response) => {
   const { page, perPage, offset } = getPagination(req);
 
   try {
+    const columns = await getTableColumns(VEHICLE_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for vehicles table" });
+      return;
+    }
+
     const rows = await fetchRowsWithOrgFallback(VEHICLE_TABLE, orgId);
     const total = rows.length;
     const paged = rows.slice(offset, offset + perPage).map((row: any) => normalizeVehicleRow(row));
     res.json(paginatedPayload(paged, page, perPage, total));
-  } catch {
-    res.json(paginatedPayload([], page, perPage, 0));
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e?.message || "Failed to fetch vehicles" });
   }
 });
 
@@ -595,21 +892,18 @@ app.get("/api/vehicles/:id", async (req: Request, res: Response) => {
 
   try {
     const columns = await getTableColumns(VEHICLE_TABLE);
-    if (columns.has("org_id")) {
-      const scoped = await pool.query(`SELECT * FROM ${VEHICLE_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
-      if (scoped.rows.length) {
-        res.json({ success: true, data: normalizeVehicleRow(scoped.rows[0]) });
-        return;
-      }
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for vehicles table" });
+      return;
     }
 
-    const all = await pool.query(`SELECT * FROM ${VEHICLE_TABLE} WHERE id = $1 LIMIT 1`, [id]);
-    if (!all.rows.length) {
+    const scoped = await pool.query(`SELECT * FROM ${VEHICLE_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
+    if (!scoped.rows.length) {
       res.status(404).json({ success: false, message: "Vehicle not found" });
       return;
     }
 
-    res.json({ success: true, data: normalizeVehicleRow(all.rows[0]) });
+    res.json({ success: true, data: normalizeVehicleRow(scoped.rows[0]) });
   } catch {
     res.status(500).json({ success: false, message: "Failed to fetch vehicle" });
   }
@@ -630,6 +924,11 @@ app.post("/api/vehicles", upload.any(), async (req: Request, res: Response) => {
 
   try {
     const columns = await getTableColumns(VEHICLE_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for vehicles table" });
+      return;
+    }
+
     const payload = toVehiclePayload(req.body as Record<string, unknown>, columns);
     if (columns.has("vehicle_number")) payload.vehicle_number = vehicleNumber;
     if (columns.has("org_id")) payload.org_id = orgId;
@@ -673,6 +972,11 @@ app.put("/api/vehicles/:id", upload.any(), async (req: Request, res: Response) =
 
   try {
     const columns = await getTableColumns(VEHICLE_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for vehicles table" });
+      return;
+    }
+
     const payload = toVehiclePayload(req.body as Record<string, unknown>, columns);
     if (columns.has("updated_at")) payload.updated_at = new Date().toISOString();
 
@@ -685,13 +989,9 @@ app.put("/api/vehicles/:id", upload.any(), async (req: Request, res: Response) =
     const setClause = updates.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
     const values = updates.map((key) => payload[key]);
 
-    const whereClause = columns.has("org_id")
-      ? `id = $${values.length + 1} AND org_id = $${values.length + 2}`
-      : `id = $${values.length + 1}`;
+    const whereClause = `id = $${values.length + 1} AND org_id = $${values.length + 2}`;
 
-    const params = columns.has("org_id")
-      ? [...values, id, orgId]
-      : [...values, id];
+    const params = [...values, id, orgId];
 
     const result = await pool.query(
       `UPDATE ${VEHICLE_TABLE}
@@ -727,9 +1027,12 @@ app.delete("/api/vehicles/:id", async (req: Request, res: Response) => {
 
   try {
     const columns = await getTableColumns(VEHICLE_TABLE);
-    const result = columns.has("org_id")
-      ? await pool.query(`DELETE FROM ${VEHICLE_TABLE} WHERE org_id = $1 AND id = $2`, [orgId, id])
-      : await pool.query(`DELETE FROM ${VEHICLE_TABLE} WHERE id = $1`, [id]);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for vehicles table" });
+      return;
+    }
+
+    const result = await pool.query(`DELETE FROM ${VEHICLE_TABLE} WHERE org_id = $1 AND id = $2`, [orgId, id]);
     if (!result.rowCount) {
       res.status(404).json({ success: false, message: "Vehicle not found" });
       return;
@@ -751,12 +1054,18 @@ app.get("/api/drivers", async (req: Request, res: Response) => {
   const { page, perPage, offset } = getPagination(req);
 
   try {
+    const columns = await getTableColumns(DRIVER_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for drivers table" });
+      return;
+    }
+
     const rows = await fetchRowsWithOrgFallback(DRIVER_TABLE, orgId);
     const total = rows.length;
     const paged = rows.slice(offset, offset + perPage).map(r => normalizeDriverRow(r));
     res.json(paginatedPayload(paged, page, perPage, total));
-  } catch {
-    res.json(paginatedPayload([], page, perPage, 0));
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e?.message || "Failed to fetch drivers" });
   }
 });
 
@@ -775,21 +1084,18 @@ app.get("/api/drivers/:id", async (req: Request, res: Response) => {
 
   try {
     const columns = await getTableColumns(DRIVER_TABLE);
-    if (columns.has("org_id")) {
-      const scoped = await pool.query(`SELECT * FROM ${DRIVER_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
-      if (scoped.rows.length) {
-        res.json({ success: true, data: normalizeDriverRow(scoped.rows[0]) });
-        return;
-      }
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for drivers table" });
+      return;
     }
 
-    const all = await pool.query(`SELECT * FROM ${DRIVER_TABLE} WHERE id = $1 LIMIT 1`, [id]);
-    if (!all.rows.length) {
+    const scoped = await pool.query(`SELECT * FROM ${DRIVER_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
+    if (!scoped.rows.length) {
       res.status(404).json({ success: false, message: "Driver not found" });
       return;
     }
 
-    res.json({ success: true, data: normalizeDriverRow(all.rows[0]) });
+    res.json({ success: true, data: normalizeDriverRow(scoped.rows[0]) });
   } catch {
     res.status(500).json({ success: false, message: "Failed to fetch driver" });
   }
@@ -804,6 +1110,11 @@ app.post("/api/drivers", upload.any(), async (req: Request, res: Response) => {
 
   try {
     const columns = await getTableColumns(DRIVER_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for drivers table" });
+      return;
+    }
+
     const payload = toDriverPayload(req.body as Record<string, unknown>, columns);
     
     if (columns.has("org_id")) payload.org_id = orgId;
@@ -832,7 +1143,7 @@ app.post("/api/drivers", upload.any(), async (req: Request, res: Response) => {
   }
 });
 
-app.post("/api/drivers/:id", upload.any(), async (req: Request, res: Response) => {
+app.put("/api/drivers/:id", upload.any(), async (req: Request, res: Response) => {
   const orgId = getOrgIdFromRequest(req);
   if (!orgId) {
     res.status(401).json({ message: "Unauthorized" });
@@ -847,6 +1158,11 @@ app.post("/api/drivers/:id", upload.any(), async (req: Request, res: Response) =
 
   try {
     const columns = await getTableColumns(DRIVER_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for drivers table" });
+      return;
+    }
+
     const payload = toDriverPayload(req.body as Record<string, unknown>, columns);
     if (columns.has("updated_at")) payload.updated_at = new Date().toISOString();
 
@@ -859,13 +1175,9 @@ app.post("/api/drivers/:id", upload.any(), async (req: Request, res: Response) =
     const setClause = updates.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
     const values = updates.map((key) => payload[key]);
 
-    const whereClause = columns.has("org_id")
-      ? `id = $${values.length + 1} AND org_id = $${values.length + 2}`
-      : `id = $${values.length + 1}`;
+    const whereClause = `id = $${values.length + 1} AND org_id = $${values.length + 2}`;
 
-    const params = columns.has("org_id")
-      ? [...values, id, orgId]
-      : [...values, id];
+    const params = [...values, id, orgId];
 
     const result = await pool.query(
       `UPDATE ${DRIVER_TABLE}
@@ -902,7 +1214,14 @@ app.get("/api/active-vehicles/for/dropdown", async (req: Request, res: Response)
   }
 
   try {
+    const columns = await getTableColumns(VEHICLE_TABLE);
+    if (!columns.has("org_id")) {
+      res.status(500).json({ success: false, message: "Tenant isolation not configured for vehicles table" });
+      return;
+    }
+
     const rows = await fetchRowsWithOrgFallback(VEHICLE_TABLE, orgId);
+    console.log(`[TENANT] Fetching active vehicles dropdown for org_id: ${orgId}`);
     const active = rows
       .filter((row: any) => String(row.status || "active").toLowerCase() === "active")
       .map((row: any) => ({
@@ -911,7 +1230,8 @@ app.get("/api/active-vehicles/for/dropdown", async (req: Request, res: Response)
         vehicle_name: row.vehicle_name || row.vehicle_number,
       }));
     res.json(active);
-  } catch {
+  } catch (e: any) {
+    console.error(`[TENANT] Dropdown fetch failed: ${e.message}`);
     res.json([]);
   }
 });
@@ -986,8 +1306,8 @@ app.post("/api/roles", async (req: Request, res: Response) => {
     if (permissionIds.length > 0) {
       for (const pId of permissionIds) {
         await pool.query(
-          `INSERT INTO ${ROLE_PERMISSION_MAP_TABLE} (role_id, permission_id) VALUES ($1, $2)`,
-          [newRole.id, pId]
+          `INSERT INTO ${ROLE_PERMISSION_MAP_TABLE} (role_id, permission_id, org_id) VALUES ($1, $2, $3)`,
+          [newRole.id, pId, orgId]
         ).catch(e => console.error("Failed to map permission", e));
       }
     }
@@ -1075,11 +1395,11 @@ app.put("/api/roles/:id", async (req: Request, res: Response) => {
     const permissionIds = Array.isArray(req.body?.permissions) ? req.body.permissions : null;
     if (permissionIds !== null) {
       // Sync logic: delete old, insert new (simple approach)
-      await pool.query(`DELETE FROM ${ROLE_PERMISSION_MAP_TABLE} WHERE role_id = $1`, [roleId]);
+      await pool.query(`DELETE FROM ${ROLE_PERMISSION_MAP_TABLE} WHERE role_id = $1 AND org_id = $2`, [roleId, orgId]);
       for (const pId of permissionIds) {
         await pool.query(
-          `INSERT INTO ${ROLE_PERMISSION_MAP_TABLE} (role_id, permission_id) VALUES ($1, $2)`,
-          [roleId, pId]
+          `INSERT INTO ${ROLE_PERMISSION_MAP_TABLE} (role_id, permission_id, org_id) VALUES ($1, $2, $3)`,
+          [roleId, pId, orgId]
         ).catch(e => console.error("Failed to sync permission", e));
       }
     }
@@ -1104,13 +1424,17 @@ app.delete("/api/roles/:id", async (req: Request, res: Response) => {
   }
 
   try {
+    // 1. Delete Mappings
+    await pool.query(`DELETE FROM ${ROLE_PERMISSION_MAP_TABLE} WHERE org_id = $1 AND role_id = $2`, [orgId, roleId]);
+    // 2. Delete Role
     const result = await pool.query(`DELETE FROM ${ROLE_TABLE} WHERE org_id = $1 AND id = $2`, [orgId, roleId]);
     if (!result.rowCount) {
       res.status(404).json({ success: false, message: "Role not found" });
       return;
     }
     res.json({ success: true, message: "Role deleted successfully" });
-  } catch {
+  } catch (e: any) {
+    console.error(`[TENANT] Role deletion failed: ${e.message}`);
     res.status(500).json({ success: false, message: "Failed to delete role" });
   }
 });
@@ -1123,9 +1447,10 @@ app.get("/api/permissions", async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await pool.query(`SELECT id, name FROM ${PERMISSION_TABLE} ORDER BY id ASC`);
+    const result = await pool.query(`SELECT id, org_id, name FROM ${PERMISSION_TABLE} WHERE org_id = $1 ORDER BY id ASC`, [orgId]);
     res.json({ success: true, data: result.rows });
-  } catch {
+  } catch (e: any) {
+    console.error(`[TENANT] Failed to fetch permissions:`, e.message);
     res.json({ success: true, data: [] });
   }
 });
@@ -1144,7 +1469,7 @@ app.post("/api/permissions", async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await pool.query(`INSERT INTO ${PERMISSION_TABLE} (name) VALUES ($1) RETURNING id, name`, [name]);
+    const result = await pool.query(`INSERT INTO ${PERMISSION_TABLE} (org_id, name) VALUES ($1, $2) RETURNING id, org_id, name`, [orgId, name]);
     res.status(201).json({ success: true, data: result.rows[0], message: "Permission created successfully" });
   } catch (e: any) {
     if (e?.code === "23505") {
@@ -1169,13 +1494,17 @@ app.delete("/api/permissions/:id", async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await pool.query(`DELETE FROM ${PERMISSION_TABLE} WHERE id = $1`, [permissionId]);
+    // 1. Delete Mappings
+    await pool.query(`DELETE FROM ${ROLE_PERMISSION_MAP_TABLE} WHERE org_id = $1 AND permission_id = $2`, [orgId, permissionId]);
+    // 2. Delete Permission
+    const result = await pool.query(`DELETE FROM ${PERMISSION_TABLE} WHERE org_id = $1 AND id = $2`, [orgId, permissionId]);
     if (!result.rowCount) {
       res.status(404).json({ success: false, message: "Permission not found" });
       return;
     }
     res.json({ success: true, message: "Permission deleted successfully" });
-  } catch {
+  } catch (e: any) {
+    console.error(`[TENANT] Permission deletion failed: ${e.message}`);
     res.status(500).json({ success: false, message: "Failed to delete permission" });
   }
 });
@@ -1207,21 +1536,72 @@ app.get("/api/masters/forms/dropdowns/districts/:state", (req: Request, res: Res
   res.json(districts);
 });
 
-app.get("/api/stats/summary", (_req: Request, res: Response) => {
-  res.json({
-    success: true,
-    data: {
-      totalVehicles: 0,
-      activeVehicles: 0,
-      totalStaff: 0,
-      activeTrips: 0,
-    },
-  });
+app.get("/api/stats/summary", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const [vRes, eRes] = await Promise.all([
+      pool.query(`SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE status = 'active') as active FROM ${VEHICLE_TABLE} WHERE org_id = $1`, [orgId]),
+      pool.query(`SELECT COUNT(*) as total FROM ${EMPLOYEE_TABLE} WHERE org_id = $1`, [orgId]),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalVehicles: parseInt(vRes.rows[0]?.total || "0"),
+        activeVehicles: parseInt(vRes.rows[0]?.active || "0"),
+        totalStaff: parseInt(eRes.rows[0]?.total || "0"),
+        activeTrips: 0, // trip module not yet implemented with org_id
+      },
+    });
+  } catch (e: any) {
+    console.error(`[TENANT] Stats summary failed: ${e.message}`);
+    res.status(500).json({ success: false, message: "Failed to fetch stats" });
+  }
 });
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
+
+async function ensureTables() {
+  try {
+    await pool.query(`CREATE SCHEMA IF NOT EXISTS schemaa`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS schemaa."officePermissions" (
+        id SERIAL PRIMARY KEY,
+        org_id VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        UNIQUE(org_id, name)
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS schemaa."officeRoles" (
+        id SERIAL PRIMARY KEY,
+        org_id VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        UNIQUE(org_id, name)
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS schemaa."officeRolePermissions" (
+        id SERIAL PRIMARY KEY,
+        role_id INTEGER NOT NULL REFERENCES schemaa."officeRoles"(id) ON DELETE CASCADE,
+        permission_id INTEGER NOT NULL REFERENCES schemaa."officePermissions"(id) ON DELETE CASCADE,
+        org_id VARCHAR(255) NOT NULL,
+        UNIQUE(role_id, permission_id)
+      )
+    `);
+    console.log("[STARTUP] Roles & Permissions tables ensured.");
+  } catch (e: any) {
+    console.error("[STARTUP] Failed to ensure tables:", e.message);
+  }
+}
 
 app.listen(PORT, async () => {
   let dbStatus = "disconnected";
@@ -1229,6 +1609,7 @@ app.listen(PORT, async () => {
     const conn = await pool.connect();
     conn.release();
     dbStatus = "connected";
+    await ensureTables();
   } catch {
     dbStatus = "disconnected";
   }

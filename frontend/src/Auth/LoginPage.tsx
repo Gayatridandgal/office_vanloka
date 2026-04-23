@@ -42,7 +42,7 @@ const LoginPage = () => {
           />
         </div>
         <h2 className="text-4xl mt-5 font-bold mb-4 text-shadow-lg text-center text-purple-600">
-          Login abccccc
+          Login
         </h2>
 
         <form onSubmit={handleLogin} className="space-y-6">
