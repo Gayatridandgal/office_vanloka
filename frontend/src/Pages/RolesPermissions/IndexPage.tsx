@@ -1,7 +1,7 @@
 // src/components/roles/IndexPage.tsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter, Edit3, Trash2, Shield, Plus } from "lucide-react";
+import { Search, Filter, Edit3, Trash2, Shield, Plus, Eye } from "lucide-react";
 
 // Components
 import { Loader } from "../../Components/UI/Loader";
@@ -196,8 +196,11 @@ const IndexPage = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-center items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                          <Link to={`/roles_permissions/show/${role.id}`} className="p-2 bg-white hover:bg-slate-50 text-slate-500 rounded-lg shadow-sm border border-slate-100 transition-all hover:-translate-y-0.5" title="View Role">
+                            <Eye size={16} />
+                          </Link>
                           <Link to={`/roles_permissions/edit/${role.id}`} className="p-2 bg-white hover:bg-indigo-50 text-indigo-600 rounded-lg shadow-sm border border-slate-100 transition-all hover:-translate-y-0.5" title="Edit Role">
                             <Edit3 size={16} />
                           </Link>

@@ -4,6 +4,7 @@ import Sidebar from "../Components/Sidebar";
 import IndexPage from "../Pages/RolesPermissions/IndexPage";
 import EditPage from "../Pages/RolesPermissions/EditPage";
 import CreatePage from "../Pages/RolesPermissions/CreatePage";
+import RoleShowPage from "../Pages/RolesPermissions/ShowPage";
 import MobileHeader from "../Components/MobileHeader";
 import VehicleIndexPage from "../Pages/Vehicles/VehicleIndexPage";
 import VehicleShowPage from "../Pages/Vehicles/VehicleShowPage";
@@ -59,6 +60,7 @@ const AuthLayout = () => {
               <Route path="roles_permissions" element={<IndexPage />} />
               <Route path="roles_permissions/create" element={<CreatePage />} />
               <Route path="roles_permissions/edit/:id" element={<EditPage />} />
+              <Route path="roles_permissions/show/:id" element={<RoleShowPage />} />
 
               {/* Staff Management */}
               <Route path="staff" element={<StaffIndexPage />} />

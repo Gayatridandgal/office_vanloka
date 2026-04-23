@@ -284,7 +284,7 @@ const DriverEditPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FileInputField
                       label="Photo"
-                      name="photo"
+                      name="profile_photo"
                       register={register}
                       errors={errors}
                     />

@@ -58,7 +58,7 @@ const VehicleShowPage = () => {
   return (
     <div className="min-h-screen bg-white pb-10">
       <div className="sticky top-0 z-50 bg-white shadow-sm">
-        <PageHeaderBack title="Back" buttonLink="/vehicles" />
+        <PageHeaderBack title="Vehicle Details" buttonLink="/vehicles" />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">

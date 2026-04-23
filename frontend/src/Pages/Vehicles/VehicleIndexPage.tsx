@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { Link } from "react-router-dom";
 
 // Icons (Lucide)
@@ -17,7 +20,10 @@ import {
   AlertCircle,
   CheckCircle2,
   XCircle,
-  Truck
+  Truck,
+  Upload,
+  X,
+  Image as ImageIcon
 } from "lucide-react";
 
 // Components
@@ -33,12 +39,19 @@ import { formatDateTime } from "../../Utils/Toolkit";
 const VehicleIndexPage = () => {
   const { showAlert } = useAlert();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const perPage = 15;
+  
+  // Export Modal State
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedLogo, setSelectedLogo] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // 1. Fetch Data (Logic preserved)
   const fetchVehicles = async () => {
@@ -107,6 +120,141 @@ const VehicleIndexPage = () => {
     { label: "Inactive", value: vehicles.filter(v => (v.status || "").toLowerCase() === 'inactive').length, icon: <XCircle size={20} />, iconBg: "bg-rose-50", iconCol: "text-rose-600" }
   ];
 
+  const exportToPDF = (logoDataUrl: string | null = null) => {
+    const doc = new jsPDF();
+    
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, 'PNG', 14, 10, 30, 30);
+      doc.setFontSize(20);
+      doc.text("Vehicle Management Report", 50, 25);
+    } else {
+      doc.setFontSize(20);
+      doc.text("Vehicle Management Report", 14, 22);
+    }
+    
+    // Check if autoTable function exists
+    if (typeof autoTable === 'function') {
+      autoTable(doc, {
+        startY: logoDataUrl ? 45 : 30,
+        head: [['S.No', 'Vehicle Name', 'Number', 'Make & Model', 'Status', 'Battery']],
+        body: filteredVehicles.map((v, i) => [
+          (i + 1).toString(),
+          v.vehicle_name || 'N/A',
+          v.vehicle_number || 'N/A',
+          `${v.make || ''} ${v.model || ''}`,
+          v.status || 'N/A',
+          v.battery ? `${v.battery}%` : 'N/A'
+        ]),
+      });
+    }
+
+    doc.save("vehicle_management_report.pdf");
+    showAlert("PDF exported successfully.", "success");
+    setShowExportModal(false);
+    setSelectedLogo(null);
+  };
+
+  const handleExportClick = () => {
+    setShowExportModal(true);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        exportToPDF(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    if (logoInputRef.current) logoInputRef.current.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => setSelectedLogo(event.target?.result as string);
+        reader.readAsDataURL(file);
+    } else {
+        showAlert("Please drop a valid image file.", "warning");
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json<any>(worksheet);
+
+      if (jsonData.length === 0) {
+        showAlert("No data found in the file.", "error");
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const row of jsonData) {
+        const payload = {
+          vehicle_name: row.VehicleName || row.vehicle_name || row['Vehicle Name'] || '',
+          vehicle_number: row.VehicleNumber || row.vehicle_number || row['Vehicle Number'] || '',
+          model: row.Model || row.model || '',
+          make: row.Make || row.make || '',
+          capacity: row.Capacity || row.capacity || null,
+          status: (row.Status || row.status || 'active').toLowerCase(),
+          battery: row.Battery || row.battery || 100
+        };
+
+        if (!payload.vehicle_number) {
+          failCount++;
+          continue;
+        }
+
+        try {
+          await tenantApi.post("/vehicles", payload);
+          successCount++;
+        } catch (err) {
+          console.error("Failed to import row:", row, err);
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        showAlert(`Successfully imported ${successCount} vehicles. ${failCount > 0 ? `Failed: ${failCount}` : ''}`, "success");
+        void fetchVehicles();
+      } else {
+        showAlert("Failed to import any vehicle from file. Please check format.", "error");
+      }
+
+    } catch (error) {
+      console.error("Error parsing file:", error);
+      showAlert("Invalid file format.", "error");
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
     <div className="min-h-screen bg-transparent">
       {/* Header Segment */}
@@ -124,11 +272,27 @@ const VehicleIndexPage = () => {
         </div>
 
         <div className="flex gap-3">
-          <button className="btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+          {/* Hidden inputs for imports/logo */}
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+            className="hidden" 
+          />
+          <input 
+            type="file" 
+            ref={logoInputRef} 
+            onChange={handleLogoUpload} 
+            accept="image/*" 
+            className="hidden" 
+          />
+
+          <button onClick={handleImportClick} className="btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Import Excel</span>
           </button>
-          <button className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+          <button onClick={handleExportClick} className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Export PDF</span>
           </button>
@@ -341,6 +505,95 @@ const VehicleIndexPage = () => {
           )}
         </div>
       </div>
+
+      {/* Premium Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="px-6 py-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+              <div>
+                <h3 className="text-sm font-900 text-slate-800 uppercase tracking-wider">Export Settings</h3>
+                <p className="text-[10px] font-700 text-slate-400 uppercase tracking-widest mt-0.5">Customize your fleet report</p>
+              </div>
+              <button 
+                onClick={() => { setShowExportModal(false); setSelectedLogo(null); }}
+                className="p-2 hover:bg-white hover:text-rose-500 rounded-xl transition-all text-slate-400"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="text-[10px] font-900 text-slate-500 uppercase tracking-widest mb-3 block">Company Logo <span className="text-slate-300 font-700">(Optional)</span></label>
+                
+                {selectedLogo ? (
+                  <div className="relative group">
+                    <img src={selectedLogo} className="w-full h-40 object-contain rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 p-4" alt="Logo Preview" />
+                    <button 
+                      onClick={() => setSelectedLogo(null)}
+                      className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur shadow-sm text-rose-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all border border-rose-100"
+                    >
+                      <X size={14} />
+                    </button>
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-white text-[9px] font-900 uppercase tracking-widest rounded-full shadow-lg">
+                      Logo Uploaded
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => logoInputRef.current?.click()}
+                    className={`h-40 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
+                      isDragging ? 'border-primary bg-primary/5 scale-[0.98]' : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className={`p-3 rounded-full ${isDragging ? 'bg-primary/20 text-primary' : 'bg-white text-slate-400 shadow-sm'}`}>
+                       <Upload size={24} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] font-800 text-slate-700 uppercase tracking-wider">Drag & Drop Logo</p>
+                      <p className="text-[9px] font-600 text-slate-400 mt-1 uppercase tracking-tight">or click to browse files</p>
+                    </div>
+                  </div>
+                )}
+                <input type="file" ref={logoInputRef} onChange={handleLogoUpload} accept="image/*" className="hidden" />
+              </div>
+
+              <div className="space-y-3">
+                 <div className="flex items-center gap-3 p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                    <div className="p-2 bg-white rounded-lg text-indigo-500 shadow-sm italic font-900 text-xs">PDF</div>
+                    <div>
+                       <p className="text-[10px] font-800 text-slate-800 uppercase tracking-wide">Vehicle_Report.pdf</p>
+                       <p className="text-[9px] font-600 text-slate-400 uppercase tracking-tight">Includes {filteredVehicles.length} vehicles</p>
+                    </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-50 flex gap-3">
+              <button 
+                onClick={() => { setShowExportModal(false); setSelectedLogo(null); }}
+                className="btn btn-outline flex-1 py-3 text-[11px]"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => exportToPDF(selectedLogo)}
+                className="btn btn-primary flex-1 py-3 px-4 shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 text-[11px]"
+              >
+                <FileText size={16} />
+                Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

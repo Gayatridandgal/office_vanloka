@@ -1,5 +1,7 @@
-// src/Pages/Staffs/StaffIndexPage.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { Link } from "react-router-dom";
 
 // Icons (Lucide)
@@ -13,7 +15,12 @@ import {
   UserX,
   ChevronDown,
   Mail,
-  Phone
+  Phone,
+  Upload,
+  X,
+  Image as ImageIcon,
+  Edit3,
+  Trash2
 } from "lucide-react";
 
 // Components
@@ -44,6 +51,13 @@ const StaffIndexPage = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [perPage] = useState(10);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const staffImportRef = useRef<HTMLInputElement>(null);
+
+  // Export Modal State
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedLogo, setSelectedLogo] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // 1. Fetch Staff Data
   const fetchStaff = async () => {
@@ -82,6 +96,144 @@ const StaffIndexPage = () => {
     }
   };
 
+  const exportToPDF = (logoDataUrl: string | null = null) => {
+    const doc = new jsPDF();
+    
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, 'PNG', 14, 10, 30, 30);
+      doc.setFontSize(20);
+      doc.text("Staff Management Report", 50, 25);
+    } else {
+      doc.setFontSize(20);
+      doc.text("Staff Management Report", 14, 22);
+    }
+    
+    autoTable(doc, {
+      startY: logoDataUrl ? 45 : 30,
+      head: [['Employee ID', 'Name', 'Role', 'Email', 'Phone', 'Status']],
+      body: staffList.map((s) => [
+        s.employee_id || '-',
+        `${s.first_name || ''} ${s.last_name || ''}`,
+        s.designation || 'Staff',
+        s.email || '-',
+        s.phone || '-',
+        s.status || 'active'
+      ]),
+    });
+
+    doc.save("staff_report.pdf");
+    showAlert("Staff report exported successfully.", "success");
+    setShowExportModal(false);
+    setSelectedLogo(null);
+  };
+
+  const handleExportClick = () => {
+    setShowExportModal(true);
+  };
+
+  const handleDelete = async (staff: Employee) => {
+    if (!window.confirm(`Are you sure you want to delete ${staff.first_name}?`)) return;
+    try {
+      await tenantApi.delete(`/employees/${staff.id}`);
+      showAlert("Staff member deleted successfully", "success");
+      fetchStaff();
+    } catch {
+      showAlert("Failed to delete staff member", "error");
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setSelectedLogo(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    if (logoInputRef.current) logoInputRef.current.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => setSelectedLogo(event.target?.result as string);
+        reader.readAsDataURL(file);
+    } else {
+        showAlert("Please drop a valid image file.", "warning");
+    }
+  };
+
+  const handleImportClick = () => {
+    staffImportRef.current?.click();
+  };
+
+  const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: "binary" });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+
+        if (data.length === 0) {
+          showAlert("The file is empty.", "warning");
+          return;
+        }
+
+        showAlert(`Importing ${data.length} staff records...`, "info");
+
+        let successCount = 0;
+        for (const row of data as any[]) {
+          const payload = {
+            employee_id: row["Employee ID"] || row["ID"] || "",
+            first_name: row["First Name"] || row["Name"]?.split(" ")[0] || "",
+            last_name: row["Last Name"] || row["Name"]?.split(" ").slice(1).join(" ") || "",
+            email: row["Email"] || "",
+            phone: row["Phone"] || row["Mobile"] || "",
+            designation: row["Role"] || row["Designation"] || "Staff",
+            status: row["Status"]?.toLowerCase() || "active",
+            joining_date: row["Joining Date"] || new Date().toISOString().split('T')[0],
+            roles: [row["Role"] || "Staff"]
+          };
+
+          try {
+            await tenantApi.post("/employees", payload);
+            successCount++;
+          } catch (err) {
+            console.error("Failed to import row:", row, err);
+          }
+        }
+
+        showAlert(`Successfully imported ${successCount} staff records.`, "success");
+        fetchStaff();
+      } catch (err) {
+        console.error("Import failed:", err);
+        showAlert("Failed to parse Excel file.", "error");
+      }
+    };
+    reader.readAsBinaryString(file);
+    if (staffImportRef.current) staffImportRef.current.value = "";
+  };
+
   useEffect(() => {
     fetchRoles();
   }, []);
@@ -117,11 +269,12 @@ const StaffIndexPage = () => {
            </div>
         </div>
         <div className="flex gap-3">
-          <button className="btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+          <button onClick={handleImportClick} className="btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Import Excel</span>
           </button>
-          <button className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+          <input type="file" ref={staffImportRef} onChange={handleFileImport} accept=".xlsx, .xls, .csv" className="hidden" />
+          <button onClick={handleExportClick} className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Export PDF</span>
           </button>
@@ -258,7 +411,7 @@ const StaffIndexPage = () => {
                           <Link to={`/staff/show/${row.id}`} className="p-1.5 hover:bg-info/10 text-info rounded-md transition-colors" title="View Details">
                             <Eye size={16} />
                           </Link>
-                          <button className="p-1.5 hover:bg-primary/10 text-primary rounded-md transition-colors" title="Export PDF">
+                          <button onClick={() => handleExportClick()} className="p-1.5 hover:bg-emerald-100/50 text-emerald-600 rounded-md transition-colors" title="Export PDF">
                             <FileText size={16} />
                           </button>
                         </div>
@@ -280,6 +433,95 @@ const StaffIndexPage = () => {
           )}
         </div>
       </div>
+
+      {/* Premium Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="px-6 py-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+              <div>
+                <h3 className="text-sm font-900 text-slate-800 uppercase tracking-wider">Export Staff Report</h3>
+                <p className="text-[10px] font-700 text-slate-400 uppercase tracking-widest mt-0.5">Customize your document</p>
+              </div>
+              <button 
+                onClick={() => { setShowExportModal(false); setSelectedLogo(null); }}
+                className="p-2 hover:bg-white hover:text-rose-500 rounded-xl transition-all text-slate-400"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="text-[10px] font-900 text-slate-500 uppercase tracking-widest mb-3 block">Company Logo <span className="text-slate-300 font-700">(Optional)</span></label>
+                
+                {selectedLogo ? (
+                  <div className="relative group">
+                    <img src={selectedLogo} className="w-full h-40 object-contain rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 p-4" alt="Logo Preview" />
+                    <button 
+                      onClick={() => setSelectedLogo(null)}
+                      className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur shadow-sm text-rose-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all border border-rose-100"
+                    >
+                      <X size={14} />
+                    </button>
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-white text-[9px] font-900 uppercase tracking-widest rounded-full shadow-lg">
+                      Logo Uploaded
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => logoInputRef.current?.click()}
+                    className={`h-40 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
+                      isDragging ? 'border-primary bg-primary/5 scale-[0.98]' : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className={`p-3 rounded-full ${isDragging ? 'bg-primary/20 text-primary' : 'bg-white text-slate-400 shadow-sm'}`}>
+                       <Upload size={24} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] font-800 text-slate-700 uppercase tracking-wider">Drag & Drop Logo</p>
+                      <p className="text-[9px] font-600 text-slate-400 mt-1 uppercase tracking-tight">or click to browse files</p>
+                    </div>
+                  </div>
+                )}
+                <input type="file" ref={logoInputRef} onChange={handleLogoUpload} accept="image/*" className="hidden" />
+              </div>
+
+              <div className="space-y-3">
+                 <div className="flex items-center gap-3 p-3 bg-purple-50/50 rounded-2xl border border-purple-100/50">
+                    <div className="p-2 bg-white rounded-lg text-purple-500 shadow-sm italic font-900 text-xs">PDF</div>
+                    <div>
+                       <p className="text-[10px] font-800 text-slate-800 uppercase tracking-wide">Staff_Records.pdf</p>
+                       <p className="text-[9px] font-600 text-slate-400 uppercase tracking-tight">Includes {staffList.length} employees</p>
+                    </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-50 flex gap-3">
+              <button 
+                onClick={() => { setShowExportModal(false); setSelectedLogo(null); }}
+                className="btn btn-outline flex-1 py-3 text-[11px]"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => exportToPDF(selectedLogo)}
+                className="btn btn-primary flex-1 py-3 px-4 shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 text-[11px]"
+              >
+                <FileText size={16} />
+                Generate PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

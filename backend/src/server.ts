@@ -13,6 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "dummy-secret-for-now";
 const DUMMY_ORG_ID = "00000000-0000-0000-0000-000000000001";
 const ROLE_TABLE = 'schemaa."officeRoles"';
 const PERMISSION_TABLE = 'schemaa."officePermissions"';
+const ROLE_PERMISSION_MAP_TABLE = 'schemaa."officeRolePermissions"';
 const EMPLOYEE_TABLE = 'schemaa."officeEmployees"';
 const VEHICLE_TABLE = 'schemaa."officeVehicles"';
 const DRIVER_TABLE = 'schemaa."officeDrivers"';
@@ -63,6 +64,14 @@ app.use(
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+import path from "path";
+import fs from "fs";
+const STORAGE_DIR = path.join(process.cwd(), "storage");
+if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR);
+
+app.use("/tenancy/assets", express.static(STORAGE_DIR));
+app.use("/storage", express.static(STORAGE_DIR));
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
@@ -243,6 +252,93 @@ function toVehiclePayload(body: Record<string, unknown>, allowed: Set<string>) {
   return payload;
 }
 
+function normalizeDriverRow(row: any) {
+  if (row.license_insurance && typeof row.license_insurance === "string") {
+    try {
+      row.license_insurance = JSON.parse(row.license_insurance);
+    } catch {
+      row.license_insurance = [];
+    }
+  }
+  return row;
+}
+
+function normalizeEmployeeRow(row: any) {
+  if (row.roles && typeof row.roles === "string") {
+    try {
+      row.roles = JSON.parse(row.roles);
+    } catch {
+      row.roles = [];
+    }
+  }
+  if (row.dependants && typeof row.dependants === "string") {
+    try {
+      row.dependants = JSON.parse(row.dependants);
+    } catch {
+      row.dependants = [];
+    }
+  }
+  return row;
+}
+
+function toEmployeePayload(body: Record<string, unknown>, allowed: Set<string>) {
+  const payload: Record<string, unknown> = {};
+  const keys = [
+    "employee_id", "photo", "employment_type", "designation", "joining_date",
+    "first_name", "last_name", "gender", "marital_status", "date_of_birth", "email", "phone",
+    "dependants", "address_line_1", "address_line_2", "landmark", "state", "district", "city", "pin_code",
+    "primary_person_name", "primary_person_email", "primary_person_phone_1", "primary_person_phone_2",
+    "secondary_person_name", "secondary_person_email", "secondary_person_phone_1", "secondary_person_phone_2",
+    "account_holder_name", "account_number", "ifsc_code", "bank_name",
+    "aadhaar_card", "pan_card", "bank_proof", "status", "remarks", "roles"
+  ];
+
+  for (const key of keys) {
+    if (!allowed.has(key)) continue;
+    let value = body[key];
+    
+    // Handle roles[] from FormData
+    if (key === "roles" && body["roles[]"]) {
+      value = body["roles[]"];
+    }
+
+    if (value === undefined || value === null || value === "") continue;
+    
+    // Stringify JSON fields if they are objects
+    if (["dependants", "roles"].includes(key) && typeof value === "object") {
+      payload[key] = JSON.stringify(value);
+    } else {
+      payload[key] = value;
+    }
+  }
+  return payload;
+}
+
+function toDriverPayload(body: Record<string, unknown>, allowed: Set<string>) {
+  const payload: Record<string, unknown> = {};
+  const keys = [
+    "first_name", "last_name", "gender", "date_of_birth", "email", "mobile_number",
+    "blood_group", "marital_status", "number_of_dependents", "profile_photo",
+    "primary_person_name", "primary_person_email", "primary_person_phone_1", "primary_person_phone_2",
+    "secondary_person_name", "secondary_person_email", "secondary_person_phone_1", "secondary_person_phone_2",
+    "address_line_1", "address_line_2", "landmark", "city", "district", "state", "pin_code",
+    "employment_type", "employee_id", "safety_training_completion", "safety_training_completion_date",
+    "medical_fitness", "medical_fitness_exp_date", "driving_experience", "police_verification", "police_verification_date",
+    "bank_name", "account_holder_name", "account_number", "ifsc_code",
+    "license_insurance", "beacon_id", "vehicle", "driving_license", "aadhaar_card", "pan_card",
+    "police_verification_doc", "medical_fitness_certificate", "address_proof_doc", "training_certificate_doc",
+    "status", "remarks"
+  ];
+
+  for (const key of keys) {
+    if (!allowed.has(key)) continue;
+    const value = body[key];
+    if (value === undefined || value === null || value === "") continue;
+    payload[key] = value;
+  }
+  return payload;
+}
+
 app.get("/health", async (_req: Request, res: Response) => {
   try {
     const conn = await pool.connect();
@@ -329,10 +425,138 @@ app.get("/api/employees", async (req: Request, res: Response) => {
     });
 
     const total = rows.length;
-    const paged = rows.slice(offset, offset + perPage);
+    const paged = rows.slice(offset, offset + perPage).map(r => normalizeEmployeeRow(r));
     res.json(paginatedPayload(paged, page, perPage, total));
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e?.message || "Failed to fetch employees" });
+  }
+});
+
+app.post("/api/employees", upload.any(), async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const columns = await getTableColumns(EMPLOYEE_TABLE);
+    const payload = toEmployeePayload(req.body as Record<string, unknown>, columns);
+    
+    if (columns.has("org_id")) payload.org_id = orgId;
+    if (columns.has("status") && !payload.status) payload.status = "active";
+    if (columns.has("created_at")) payload.created_at = new Date().toISOString();
+    if (columns.has("updated_at")) payload.updated_at = new Date().toISOString();
+
+    const insertColumns = Object.keys(payload);
+    if (!insertColumns.length) {
+      res.status(400).json({ success: false, message: "No valid employee fields to save" });
+      return;
+    }
+
+    const placeholders = insertColumns.map((_, idx) => `$${idx + 1}`).join(", ");
+    const values = insertColumns.map((key) => payload[key]);
+
+    const result = await pool.query(
+      `INSERT INTO ${EMPLOYEE_TABLE} (${insertColumns.join(", ")})
+       VALUES (${placeholders})
+       RETURNING *`,
+      values
+    );
+    res.status(201).json({ success: true, data: normalizeEmployeeRow(result.rows[0]), message: "Employee created successfully" });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e?.message || "Failed to create employee" });
+  }
+});
+
+app.get("/api/employees/:id", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  const id = Number(req.params.id);
+  try {
+    const columns = await getTableColumns(EMPLOYEE_TABLE);
+    let row;
+    if (columns.has("org_id")) {
+      const scoped = await pool.query(`SELECT * FROM ${EMPLOYEE_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
+      row = scoped.rows[0];
+    } else {
+      const all = await pool.query(`SELECT * FROM ${EMPLOYEE_TABLE} WHERE id = $1 LIMIT 1`, [id]);
+      row = all.rows[0];
+    }
+
+    if (!row) {
+      res.status(404).json({ success: false, message: "Employee not found" });
+      return;
+    }
+    res.json({ success: true, data: normalizeEmployeeRow(row) });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: "Failed to fetch employee" });
+  }
+});
+
+app.put("/api/employees/:id", upload.any(), async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  const id = Number(req.params.id);
+  if (!orgId || !id) {
+    res.status(401).json({ message: "Unauthorized or invalid ID" });
+    return;
+  }
+
+  try {
+    const columns = await getTableColumns(EMPLOYEE_TABLE);
+    const payload = toEmployeePayload(req.body as Record<string, unknown>, columns);
+    if (columns.has("updated_at")) payload.updated_at = new Date().toISOString();
+
+    const updateKeys = Object.keys(payload);
+    if (!updateKeys.length) {
+      res.json({ success: true, message: "No fields to update" });
+      return;
+    }
+
+    const setClause = updateKeys.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
+    const whereClause = columns.has("org_id") ? `WHERE id = $${updateKeys.length + 1} AND org_id = $${updateKeys.length + 2}` : `WHERE id = $${updateKeys.length + 1}`;
+    const params = columns.has("org_id") ? [...updateKeys.map(k => payload[k]), id, orgId] : [...updateKeys.map(k => payload[k]), id];
+
+    const result = await pool.query(
+      `UPDATE ${EMPLOYEE_TABLE} SET ${setClause} ${whereClause} RETURNING *`,
+      params
+    );
+
+    if (!result.rows.length) {
+      res.status(404).json({ success: false, message: "Employee not found" });
+      return;
+    }
+    res.json({ success: true, data: normalizeEmployeeRow(result.rows[0]), message: "Employee updated successfully" });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e?.message || "Failed to update employee" });
+  }
+});
+
+app.delete("/api/employees/:id", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  const id = Number(req.params.id);
+  if (!orgId || !id) {
+    res.status(401).json({ message: "Unauthorized or invalid ID" });
+    return;
+  }
+
+  try {
+    const columns = await getTableColumns(EMPLOYEE_TABLE);
+    const whereClause = columns.has("org_id") ? `WHERE id = $1 AND org_id = $2` : `WHERE id = $1`;
+    const params = columns.has("org_id") ? [id, orgId] : [id];
+    
+    const result = await pool.query(`DELETE FROM ${EMPLOYEE_TABLE} ${whereClause}`, params);
+    if (result.rowCount === 0) {
+      res.status(404).json({ success: false, message: "Employee not found" });
+      return;
+    }
+    res.json({ success: true, message: "Employee deleted successfully" });
   } catch {
-    res.json(paginatedPayload([], page, perPage, 0));
+    res.status(500).json({ success: false, message: "Failed to delete employee" });
   }
 });
 
@@ -529,7 +753,7 @@ app.get("/api/drivers", async (req: Request, res: Response) => {
   try {
     const rows = await fetchRowsWithOrgFallback(DRIVER_TABLE, orgId);
     const total = rows.length;
-    const paged = rows.slice(offset, offset + perPage);
+    const paged = rows.slice(offset, offset + perPage).map(r => normalizeDriverRow(r));
     res.json(paginatedPayload(paged, page, perPage, total));
   } catch {
     res.json(paginatedPayload([], page, perPage, 0));
@@ -550,10 +774,13 @@ app.get("/api/drivers/:id", async (req: Request, res: Response) => {
   }
 
   try {
-    const scoped = await pool.query(`SELECT * FROM ${DRIVER_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
-    if (scoped.rows.length) {
-      res.json({ success: true, data: scoped.rows[0] });
-      return;
+    const columns = await getTableColumns(DRIVER_TABLE);
+    if (columns.has("org_id")) {
+      const scoped = await pool.query(`SELECT * FROM ${DRIVER_TABLE} WHERE org_id = $1 AND id = $2 LIMIT 1`, [orgId, id]);
+      if (scoped.rows.length) {
+        res.json({ success: true, data: normalizeDriverRow(scoped.rows[0]) });
+        return;
+      }
     }
 
     const all = await pool.query(`SELECT * FROM ${DRIVER_TABLE} WHERE id = $1 LIMIT 1`, [id]);
@@ -562,42 +789,50 @@ app.get("/api/drivers/:id", async (req: Request, res: Response) => {
       return;
     }
 
-    res.json({ success: true, data: all.rows[0] });
+    res.json({ success: true, data: normalizeDriverRow(all.rows[0]) });
   } catch {
     res.status(500).json({ success: false, message: "Failed to fetch driver" });
   }
 });
 
-app.post("/api/drivers", upload.none(), async (req: Request, res: Response) => {
+app.post("/api/drivers", upload.any(), async (req: Request, res: Response) => {
   const orgId = getOrgIdFromRequest(req);
   if (!orgId) {
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
 
-  const firstName = String(req.body?.first_name || "").trim();
-  const lastName = String(req.body?.last_name || "").trim();
-  const mobileNumber = String(req.body?.mobile_number || "").trim();
-
-  if (!firstName || !lastName || !mobileNumber) {
-    res.status(400).json({ success: false, message: "first_name, last_name and mobile_number are required" });
-    return;
-  }
-
   try {
+    const columns = await getTableColumns(DRIVER_TABLE);
+    const payload = toDriverPayload(req.body as Record<string, unknown>, columns);
+    
+    if (columns.has("org_id")) payload.org_id = orgId;
+    if (columns.has("status") && !payload.status) payload.status = "active";
+    if (columns.has("created_at")) payload.created_at = new Date().toISOString();
+    if (columns.has("updated_at")) payload.updated_at = new Date().toISOString();
+
+    const insertColumns = Object.keys(payload);
+    if (!insertColumns.length) {
+      res.status(400).json({ success: false, message: "No valid driver fields to save" });
+      return;
+    }
+
+    const placeholders = insertColumns.map((_, idx) => `$${idx + 1}`).join(", ");
+    const values = insertColumns.map((key) => payload[key]);
+
     const result = await pool.query(
-      `INSERT INTO ${DRIVER_TABLE} (org_id, first_name, last_name, mobile_number, status, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      `INSERT INTO ${DRIVER_TABLE} (${insertColumns.join(", ")})
+       VALUES (${placeholders})
        RETURNING *`,
-      [orgId, firstName, lastName, mobileNumber, String(req.body?.status || "active")]
+      values
     );
-    res.status(201).json({ success: true, data: result.rows[0], message: "Driver created successfully" });
+    res.status(201).json({ success: true, data: normalizeDriverRow(result.rows[0]), message: "Driver created successfully" });
   } catch (e: any) {
     res.status(500).json({ success: false, message: e?.message || "Failed to create driver" });
   }
 });
 
-app.post("/api/drivers/:id", upload.none(), async (req: Request, res: Response) => {
+app.post("/api/drivers/:id", upload.any(), async (req: Request, res: Response) => {
   const orgId = getOrgIdFromRequest(req);
   if (!orgId) {
     res.status(401).json({ message: "Unauthorized" });
@@ -610,22 +845,34 @@ app.post("/api/drivers/:id", upload.none(), async (req: Request, res: Response) 
     return;
   }
 
-  const firstName = req.body?.first_name ? String(req.body.first_name).trim() : null;
-  const lastName = req.body?.last_name ? String(req.body.last_name).trim() : null;
-  const mobileNumber = req.body?.mobile_number ? String(req.body.mobile_number).trim() : null;
-  const status = req.body?.status ? String(req.body.status).trim() : null;
-
   try {
+    const columns = await getTableColumns(DRIVER_TABLE);
+    const payload = toDriverPayload(req.body as Record<string, unknown>, columns);
+    if (columns.has("updated_at")) payload.updated_at = new Date().toISOString();
+
+    const updates = Object.keys(payload);
+    if (!updates.length) {
+      res.status(400).json({ success: false, message: "No fields provided for update" });
+      return;
+    }
+
+    const setClause = updates.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
+    const values = updates.map((key) => payload[key]);
+
+    const whereClause = columns.has("org_id")
+      ? `id = $${values.length + 1} AND org_id = $${values.length + 2}`
+      : `id = $${values.length + 1}`;
+
+    const params = columns.has("org_id")
+      ? [...values, id, orgId]
+      : [...values, id];
+
     const result = await pool.query(
       `UPDATE ${DRIVER_TABLE}
-       SET first_name = COALESCE($3, first_name),
-           last_name = COALESCE($4, last_name),
-           mobile_number = COALESCE($5, mobile_number),
-           status = COALESCE($6, status),
-           updated_at = NOW()
-       WHERE id = $2
+       SET ${setClause}
+       WHERE ${whereClause}
        RETURNING *`,
-      [orgId, id, firstName, lastName, mobileNumber, status]
+      params
     );
 
     if (!result.rows.length) {
@@ -633,7 +880,7 @@ app.post("/api/drivers/:id", upload.none(), async (req: Request, res: Response) 
       return;
     }
 
-    res.json({ success: true, data: result.rows[0], message: "Driver updated successfully" });
+    res.json({ success: true, data: normalizeDriverRow(result.rows[0]), message: "Driver updated successfully" });
   } catch (e: any) {
     res.status(500).json({ success: false, message: e?.message || "Failed to update driver" });
   }
@@ -732,7 +979,20 @@ app.post("/api/roles", async (req: Request, res: Response) => {
       `INSERT INTO ${ROLE_TABLE} (org_id, name, description) VALUES ($1, $2, $3) RETURNING id, org_id, name, description, created_at, updated_at`,
       [orgId, name, description]
     );
-    res.status(201).json({ success: true, data: result.rows[0], message: "Role created successfully" });
+    const newRole = result.rows[0];
+
+    // Handle Permissions
+    const permissionIds = Array.isArray(req.body?.permissions) ? req.body.permissions : [];
+    if (permissionIds.length > 0) {
+      for (const pId of permissionIds) {
+        await pool.query(
+          `INSERT INTO ${ROLE_PERMISSION_MAP_TABLE} (role_id, permission_id) VALUES ($1, $2)`,
+          [newRole.id, pId]
+        ).catch(e => console.error("Failed to map permission", e));
+      }
+    }
+
+    res.status(201).json({ success: true, data: newRole, message: "Role created successfully" });
   } catch (e: any) {
     if (e?.code === "23505") {
       res.status(409).json({ success: false, message: "Role already exists" });
@@ -766,7 +1026,16 @@ app.get("/api/roles/:id", async (req: Request, res: Response) => {
       return;
     }
 
-    res.json({ success: true, data: result.rows[0] });
+    const role = result.rows[0];
+    const permsResult = await pool.query(
+      `SELECT p.id, p.name FROM ${PERMISSION_TABLE} p 
+       JOIN ${ROLE_PERMISSION_MAP_TABLE} rpm ON p.id = rpm.permission_id
+       WHERE rpm.role_id = $1`,
+      [roleId]
+    );
+    role.permissions = permsResult.rows;
+
+    res.json({ success: true, data: role });
   } catch {
     res.status(500).json({ success: false, message: "Failed to fetch role" });
   }
@@ -800,6 +1069,19 @@ app.put("/api/roles/:id", async (req: Request, res: Response) => {
     if (!result.rows.length) {
       res.status(404).json({ success: false, message: "Role not found" });
       return;
+    }
+
+    // Update Permissions
+    const permissionIds = Array.isArray(req.body?.permissions) ? req.body.permissions : null;
+    if (permissionIds !== null) {
+      // Sync logic: delete old, insert new (simple approach)
+      await pool.query(`DELETE FROM ${ROLE_PERMISSION_MAP_TABLE} WHERE role_id = $1`, [roleId]);
+      for (const pId of permissionIds) {
+        await pool.query(
+          `INSERT INTO ${ROLE_PERMISSION_MAP_TABLE} (role_id, permission_id) VALUES ($1, $2)`,
+          [roleId, pId]
+        ).catch(e => console.error("Failed to sync permission", e));
+      }
     }
 
     res.json({ success: true, data: result.rows[0], message: "Role updated successfully" });

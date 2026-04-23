@@ -183,9 +183,7 @@ const StaffEditPage = () => {
       if (data.pan_card && data.pan_card.length > 0) formData.append("pan_card", data.pan_card[0]);
       if (data.bank_proof && data.bank_proof.length > 0) formData.append("bank_proof", data.bank_proof[0]);
 
-      formData.append("_method", "PUT");
-
-      const response = await tenantApi.post(`/employees/${id}`, formData, {
+      const response = await tenantApi.put(`/employees/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
