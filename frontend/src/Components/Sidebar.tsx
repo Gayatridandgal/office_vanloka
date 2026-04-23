@@ -95,10 +95,10 @@ const Sidebar = ({ isOpen, closeSidebar }: Props) => {
                 <h3 className="text-[16px] font-bold text-slate-800 leading-tight">Office</h3>
                 <p className="text-[11px] font-bold text-slate-400 tracking-wide mt-0.5 uppercase">Admin Panel</p>
              </div>
-             <div className="relative w-10 h-10 bg-slate-100 rounded-xl text-slate-500 flex items-center justify-center cursor-pointer hover:text-[#6366f1] transition-all shrink-0">
+             <Link to="/notifications" className="relative w-10 h-10 bg-slate-100 rounded-xl text-slate-500 flex items-center justify-center cursor-pointer hover:text-[#6366f1] transition-all shrink-0">
                 <Bell size={20} />
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 rounded-full text-[11px] text-white flex items-center justify-center font-bold shadow-sm">3</span>
-             </div>
+             </Link>
           </div>
         </div>
 

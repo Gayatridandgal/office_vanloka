@@ -29,6 +29,8 @@ import StaffShowPage from "../Pages/Staffs/StaffShowPage";
 import DashboardPage from "../Pages/DashboardPage";
 import { CompliancePage } from "../Pages/ComplianceLaws/Compliance";
 import { ComplianceCreate } from "../Pages/ComplianceLaws/ComplianceCreate";
+import NotificationsPage from "../Pages/Notifications/NotificationsPage";
+
 
 const AuthLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -51,7 +53,7 @@ const AuthLayout = () => {
         {/* Mobile Header (Fixed at top inside main) */}
         <MobileHeader title="Admin Panel" toggleSidebar={toggleSidebar} />
 
-        <div className="flex-1 h-full w-full mt-4">
+        <div className="flex-1 h-full w-full mt-4 overflow-y-auto">
           <div className="mx-auto w-full h-full">
             <Routes>
               <Route path="dashboard" element={<DashboardPage />} />
@@ -100,6 +102,10 @@ const AuthLayout = () => {
               <Route path="travellers" element={<TravellerIndexPage />} />
               <Route path="travellers/show/:id" element={<TravellerShowPage />} />
               <Route path="travellers/edit/:id" element={<TravellerEditPage />} />
+
+              {/* Notifications */}
+              <Route path="notifications" element={<NotificationsPage />} />
+
 
             </Routes>
           </div>

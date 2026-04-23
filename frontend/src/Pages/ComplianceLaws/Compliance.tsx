@@ -27,7 +27,9 @@ import {
   type ComplianceRecord,
   INITIAL_COMPLIANCE,
   complianceStatusVariant,
+  categoryVariant,
 } from "./complianceData";
+
 
 // --- Components ---
 const Badge = ({ variant, children }: { variant: string; children: React.ReactNode }) => {
@@ -37,11 +39,15 @@ const Badge = ({ variant, children }: { variant: string; children: React.ReactNo
     blue: "bg-blue-50 text-blue-600 border-blue-100",
     purple: "bg-purple-50 text-purple-600 border-purple-100",
     amber: "bg-amber-50 text-amber-600 border-amber-100",
+    rose: "bg-rose-50 text-rose-600 border-rose-100",
+    emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    indigo: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    teal: "bg-teal-50 text-teal-600 border-teal-100",
     slate: "bg-slate-50 text-slate-500 border-slate-100",
   };
   const styleClass = variants[variant] ?? variants.slate;
   return (
-    <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${styleClass}`}>
+    <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-900 uppercase tracking-wider ${styleClass}`}>
       {children}
     </span>
   );
@@ -165,33 +171,80 @@ export const CompliancePage = () => {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <table className="w-full text-left">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
+          <table className="w-full text-left min-w-[800px]">
             <thead className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <tr>
-                <th className="px-6 py-4">Document</th>
+                <th className="px-6 py-4">Document & Category</th>
                 <th className="px-6 py-4">Authority</th>
-                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Last Updated</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {filtered.map((record) => (
-                <tr key={record.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    <ShieldCheck size={18} className="text-slate-300" />
-                    <div><p className="font-bold text-slate-700">{record.documentName}</p><p className="text-[10px] text-slate-400">#{record.id}</p></div>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-slate-600">{record.authority}</td>
-                  <td className="px-6 py-4 text-slate-500 font-mono text-xs">{record.issueDate}</td>
-                  <td className="px-6 py-4"><Badge variant={complianceStatusVariant(record.status)}>{record.status}</Badge></td>
+                <tr key={record.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <div className="flex justify-center gap-2">
-                       <button onClick={() => setViewRecord(record)} className="p-2 text-slate-400 hover:text-primary"><Eye size={16} /></button>
-                       <button onClick={() => navigate(`/compliance/edit/${record.id}`)} className="p-2 text-slate-400 hover:text-amber-500"><Edit size={16} /></button>
-                       {record.videoUrl && <button onClick={() => setVideoUrl(record.videoUrl)} className="p-2 text-slate-400 hover:text-rose-500"><PlayCircle size={16} /></button>}
-                       <button onClick={() => setDeleteRecord(record)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 size={16} /></button>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                        <ShieldCheck size={18} />
+                      </div>
+                      <div>
+                        <p className="font-900 text-slate-800 uppercase tracking-tight line-clamp-1">{record.documentName}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                           <p className="text-[9px] text-slate-400 font-bold uppercase">#{record.id}</p>
+                           <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                           <Badge variant={categoryVariant(record.category)}>{record.category}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">{record.authority}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{record.subLaw}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[10px] uppercase">
+                       <Clock size={12} strokeWidth={3} />
+                       {record.issueDate}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Badge variant={complianceStatusVariant(record.status)}>{record.status}</Badge>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center items-center gap-1">
+                       <button 
+                         onClick={() => setViewRecord(record)} 
+                         title="View Details"
+                         className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                       >
+                         <Eye size={16} />
+                       </button>
+                       <button 
+                         onClick={() => navigate(`/compliance/edit/${record.id}`)} 
+                         title="Edit"
+                         className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                       >
+                         <Edit size={16} />
+                       </button>
+                       {record.videoUrl && (
+                         <button 
+                           onClick={() => setVideoUrl(record.videoUrl!)} 
+                           title="Watch Video"
+                           className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all animate-pulse hover:animate-none"
+                         >
+                           <PlayCircle size={18} strokeWidth={2.5} />
+                         </button>
+                       )}
+                       <button 
+                         onClick={() => setDeleteRecord(record)} 
+                         title="Delete"
+                         className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                       >
+                         <Trash2 size={16} />
+                       </button>
                     </div>
                   </td>
                 </tr>

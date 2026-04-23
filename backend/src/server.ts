@@ -1294,9 +1294,13 @@ app.post("/api/roles", async (req: Request, res: Response) => {
     return;
   }
 
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
-      `INSERT INTO ${ROLE_TABLE} (org_id, name, description) VALUES ($1, $2, $3) RETURNING id, org_id, name, description, created_at, updated_at`,
+    await client.query("BEGIN");
+    console.log("[ROLES] Creating role for org:", orgId, "Body:", req.body);
+    
+    const result = await client.query(
+      `INSERT INTO ${ROLE_TABLE} (org_id, name, description) VALUES ($1, $2, $3) RETURNING *`,
       [orgId, name, description]
     );
     const newRole = result.rows[0];
@@ -1305,20 +1309,25 @@ app.post("/api/roles", async (req: Request, res: Response) => {
     const permissionIds = Array.isArray(req.body?.permissions) ? req.body.permissions : [];
     if (permissionIds.length > 0) {
       for (const pId of permissionIds) {
-        await pool.query(
+        await client.query(
           `INSERT INTO ${ROLE_PERMISSION_MAP_TABLE} (role_id, permission_id, org_id) VALUES ($1, $2, $3)`,
           [newRole.id, pId, orgId]
-        ).catch(e => console.error("Failed to map permission", e));
+        );
       }
     }
 
+    await client.query("COMMIT");
     res.status(201).json({ success: true, data: newRole, message: "Role created successfully" });
   } catch (e: any) {
+    await client.query("ROLLBACK");
+    console.error("[ROLES] Create role failed:", e);
     if (e?.code === "23505") {
       res.status(409).json({ success: false, message: "Role already exists" });
       return;
     }
-    res.status(500).json({ success: false, message: "Failed to create role" });
+    res.status(500).json({ success: false, message: "Failed to create role: " + e.message });
+  } finally {
+    client.release();
   }
 });
 
@@ -1405,8 +1414,9 @@ app.put("/api/roles/:id", async (req: Request, res: Response) => {
     }
 
     res.json({ success: true, data: result.rows[0], message: "Role updated successfully" });
-  } catch {
-    res.status(500).json({ success: false, message: "Failed to update role" });
+  } catch (e: any) {
+    console.error("[ROLES] Update role failed:", e);
+    res.status(500).json({ success: false, message: "Failed to update role: " + e.message });
   }
 });
 
@@ -1447,11 +1457,28 @@ app.get("/api/permissions", async (req: Request, res: Response) => {
   }
 
   try {
+    const checkResult = await pool.query(`SELECT id FROM ${PERMISSION_TABLE} WHERE org_id = $1 LIMIT 1`, [orgId]);
+    
+    if (checkResult.rows.length === 0) {
+      // Seed default permissions
+      const defaults = [
+        "view_dashboard", "manage_vehicles", "manage_drivers", 
+        "manage_staff", "manage_trips", "manage_roles", "view_reports"
+      ];
+      
+      for (const name of defaults) {
+        await pool.query(
+          `INSERT INTO ${PERMISSION_TABLE} (org_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [orgId, name]
+        );
+      }
+    }
+
     const result = await pool.query(`SELECT id, org_id, name FROM ${PERMISSION_TABLE} WHERE org_id = $1 ORDER BY id ASC`, [orgId]);
     res.json({ success: true, data: result.rows });
   } catch (e: any) {
     console.error(`[TENANT] Failed to fetch permissions:`, e.message);
-    res.json({ success: true, data: [] });
+    res.status(500).json({ success: false, message: "Failed to fetch permissions" });
   }
 });
 
@@ -1585,18 +1612,29 @@ async function ensureTables() {
         org_id VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
         description TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
         UNIQUE(org_id, name)
       )
     `);
+    
+    // Add columns if they don't exist (migration)
+    await pool.query(`ALTER TABLE schemaa."officeRoles" ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
+    await pool.query(`ALTER TABLE schemaa."officeRoles" ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`);
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS schemaa."officeRolePermissions" (
         id SERIAL PRIMARY KEY,
         role_id INTEGER NOT NULL REFERENCES schemaa."officeRoles"(id) ON DELETE CASCADE,
         permission_id INTEGER NOT NULL REFERENCES schemaa."officePermissions"(id) ON DELETE CASCADE,
-        org_id VARCHAR(255) NOT NULL,
+        org_id VARCHAR(255),
         UNIQUE(role_id, permission_id)
       )
     `);
+
+    // Migration for join table
+    await pool.query(`ALTER TABLE schemaa."officeRolePermissions" ADD COLUMN IF NOT EXISTS org_id VARCHAR(255)`);
+
     console.log("[STARTUP] Roles & Permissions tables ensured.");
   } catch (e: any) {
     console.error("[STARTUP] Failed to ensure tables:", e.message);

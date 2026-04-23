@@ -93,8 +93,9 @@ const CreatePage = () => {
         console.error("Validation errors:", err.response.data.errors);
         showAlert("Validation failed: " + err.response.data.message, "error");
       } else {
+        const errorMessage = err.response?.data?.message || "An error occurred while creating the role.";
         console.error("An error occurred while creating the role:", err);
-        showAlert("An error occurred. Please try again.", "error");
+        showAlert(errorMessage, "error");
       }
     } finally {
       setIsSubmitting(false);
