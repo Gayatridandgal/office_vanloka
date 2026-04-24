@@ -17,11 +17,26 @@ export interface ComplianceRecord {
 }
 
 const YOUTUBE_LINKS = [
-  "https://youtu.be/2COpnrHSvDU?si=K_z-oi1WwLyg4tAI",
-  "https://youtu.be/-p4zOmoAITI?si=1QiMd_ZFQZVVhbfB",
-  "https://youtu.be/hkgZe1q33ko?si=pH-1AtkttjcyeZFu",
-  "https://youtu.be/BaYQQi_9ImM?si=fcFlx3WsleefHByP",
-  "https://youtu.be/QSr0QW1fues?si=8JpNUxBNT8sZVz8h"
+  "https://youtu.be/OKiyZfaHhd4?si=-DI7XGCyKjNbl3-e",
+  "https://youtu.be/3DzkK8WLYXQ?si=zvMdzRjSxEpxSP1M",
+  "https://youtu.be/nHI-YYtM7bY?si=f-8vYv01BQV4mWnf",
+  "https://youtu.be/sbmG3zCpzEA?si=ozS7Kn5k154vUL8y",
+  "https://youtu.be/lBb7ogwjOPU?si=29T5h7j5e8TAUXEA",
+  "https://youtu.be/S79V5DAsKQ0?si=yehnbtnXonCsPmMo",
+  "https://youtu.be/hWAzAPX5OlU?si=IS040mJetxnvjeI0",
+  "https://youtu.be/hWAzAPX5OlU?si=fm8hazFkE2VNG2sz",
+  "https://youtu.be/6Gbz4fkFKdQ?si=V4_Bodw2uvsb56Ht",
+  "https://youtu.be/hkgZe1q33ko?si=2-dXAhJtBzTtPT_0",
+  "https://youtu.be/XUdz2bPPRuE?si=gxO1O2nO_dU_zkF3",
+  "https://youtu.be/BaYQQi_9AmM?si=OWOLUm6Am5SCKoSe",
+  "https://youtu.be/16gw6nO5cOo?si=o6Nf2rui7veLyiAZ",
+  "https://youtu.be/K6BPJ2NPKY8?si=WPpTNPkaHa0d1yjJ",
+  "https://youtu.be/QSr0QW1fues?si=uxTeEZs-cguivPOS",
+  "https://youtu.be/auGvE4nnLt0?si=lDjXGbCxIpgMR9V6",
+  "https://youtu.be/-p4zOmoAITI?si=3hU126lRuzlNFz6J",
+  "https://youtu.be/Wkwv8_iliGs?si=n_P9so68cz5s3dpZ",
+  "https://youtu.be/X5Oc99zufMU?si=-t1E2_Md22a_RQ47",
+  "https://youtu.be/2COpnrHSvDU?si=CpW9qrCvZ3bXTMSc"
 ];
 
 export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
@@ -113,7 +128,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Learn about service record compliance under Contract Labour Act Section 30. Maintaining proof of work ensures accountability and avoids disputes. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-01T10:00:00Z",
-    videoUrl: YOUTUBE_LINKS[0]
+    videoUrl: YOUTUBE_LINKS[5]
   },
   {
     id: "KA-CMP-2007",
@@ -128,7 +143,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "This video explains risk reporting requirements under Companies Act Section 134. Organizations must disclose operational risks and safety measures for accountability and governance. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-03-15T14:20:00Z",
-    videoUrl: YOUTUBE_LINKS[1]
+    videoUrl: YOUTUBE_LINKS[6]
   },
   {
     id: "KA-CMP-2008",
@@ -143,7 +158,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Understand audit requirements under Companies Act Section 143. Maintaining verifiable records ensures audit readiness and transparency in operations. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-03-10T09:00:00Z",
-    videoUrl: YOUTUBE_LINKS[2]
+    videoUrl: YOUTUBE_LINKS[7]
   },
   {
     id: "KA-CMP-2009",
@@ -158,7 +173,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "This video covers risk management under Companies Act Section 177. Organizations must identify and manage risks to ensure stability and accountability. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-03-05T16:30:00Z",
-    videoUrl: YOUTUBE_LINKS[3]
+    videoUrl: YOUTUBE_LINKS[8]
   },
   {
     id: "KA-CMP-2010",
@@ -173,7 +188,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Learn about vehicle permit requirements under Motor Vehicles Act Section 66. Valid permits are essential for legal and smooth transport operations. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-18T11:45:00Z",
-    videoUrl: YOUTUBE_LINKS[4]
+    videoUrl: YOUTUBE_LINKS[9]
   },
   {
     id: "KA-CMP-2011",
@@ -188,7 +203,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "This video explains driver licensing requirements under Motor Vehicles Act Section 3. Ensuring valid licences improves safety and compliance. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-12T08:50:00Z",
-    videoUrl: YOUTUBE_LINKS[0]
+    videoUrl: YOUTUBE_LINKS[10]
   },
   {
     id: "KA-CMP-2012",
@@ -203,7 +218,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Understand safety gear requirements under Motor Vehicles Act Section 129. Helmets and seatbelts play a key role in reducing accident risks. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-02T13:10:00Z",
-    videoUrl: YOUTUBE_LINKS[1]
+    videoUrl: YOUTUBE_LINKS[11]
   },
   {
     id: "KA-CMP-2013",
@@ -218,7 +233,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "This video explains vehicle insurance requirements under Motor Vehicles Act Section 146. Insurance ensures financial protection and compliance. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-03-20T10:15:00Z",
-    videoUrl: YOUTUBE_LINKS[2]
+    videoUrl: YOUTUBE_LINKS[12]
   },
   {
     id: "KA-CMP-2014",
@@ -233,7 +248,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Learn about invoicing compliance under GST Act Section 31. Proper invoices ensure transparency and accurate tax reporting. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-01T15:00:00Z",
-    videoUrl: YOUTUBE_LINKS[3]
+    videoUrl: YOUTUBE_LINKS[13]
   },
   {
     id: "KA-CMP-2015",
@@ -248,7 +263,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "This video covers record-keeping requirements under GST Act Section 35. Maintaining proper records ensures audit readiness and transparency. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-01T16:00:00Z",
-    videoUrl: YOUTUBE_LINKS[4]
+    videoUrl: YOUTUBE_LINKS[14]
   },
   {
     id: "KA-CMP-2016",
@@ -263,7 +278,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Understand workplace safety requirements under the POSH Act. Ensuring safe transport and environment protects women employees and builds trust. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-15T09:00:00Z",
-    videoUrl: YOUTUBE_LINKS[0]
+    videoUrl: YOUTUBE_LINKS[15]
   },
   {
     id: "KA-CMP-2017",
@@ -278,7 +293,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "This video explains working hours and employee welfare under the Shops and Establishments Act. Proper conditions ensure fairness and compliance. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-03-25T11:30:00Z",
-    videoUrl: YOUTUBE_LINKS[1]
+    videoUrl: YOUTUBE_LINKS[16]
   },
   {
     id: "KA-CMP-2018",
@@ -293,7 +308,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Learn about fair working conditions under the Industrial Disputes Act. Proper practices help prevent disputes and maintain workplace harmony. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-03-18T14:45:00Z",
-    videoUrl: YOUTUBE_LINKS[2]
+    videoUrl: YOUTUBE_LINKS[17]
   },
   {
     id: "KA-CMP-2019",
@@ -308,7 +323,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "This video explains ESG reporting requirements under SEBI norms. Transparency in safety and governance builds trust with stakeholders. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-01T12:00:00Z",
-    videoUrl: YOUTUBE_LINKS[3]
+    videoUrl: YOUTUBE_LINKS[18]
   },
   {
     id: "KA-CMP-2020",
@@ -323,7 +338,7 @@ export const INITIAL_COMPLIANCE: ComplianceRecord[] = [
     remarks: "Understand emission compliance under the Environmental Protection Act. Maintaining vehicle standards helps reduce pollution and ensures sustainability. Transform your Daily Travel Struggles with VanLoka.",
     consent: true,
     consentTimestamp: "2026-04-10T14:00:00Z",
-    videoUrl: YOUTUBE_LINKS[4]
+    videoUrl: YOUTUBE_LINKS[19]
   }
 ];
 

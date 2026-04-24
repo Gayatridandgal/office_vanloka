@@ -6,7 +6,7 @@ const hostname = window.location.hostname;
 hostname.split('.')[0];
 
 // Update baseURL for local development
-const baseURL = `http://localhost:4000/api/`;
+const baseURL = `http://localhost:4000/api`;
 export const tenantAsset = `http://localhost:4000/tenancy/assets/`
 
 export const centralAsset = `http://localhost:4000/storage/`

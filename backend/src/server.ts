@@ -1271,11 +1271,16 @@ app.get("/api/roles", async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      `SELECT id, org_id, name, description, created_at, updated_at FROM ${ROLE_TABLE} WHERE org_id = $1 ORDER BY id DESC`,
+      `SELECT r.id, r.org_id, r.name, r.description, r.created_at, r.updated_at,
+       (SELECT COUNT(*) FROM ${ROLE_PERMISSION_MAP_TABLE} rpm WHERE rpm.role_id = r.id) as permissions_count
+       FROM ${ROLE_TABLE} r 
+       WHERE r.org_id = $1 
+       ORDER BY r.id DESC`,
       [orgId]
     );
     res.json({ success: true, data: result.rows });
-  } catch {
+  } catch (e: any) {
+    console.error("[ROLES] Fetch failed:", e);
     res.json({ success: true, data: [] });
   }
 });
@@ -1457,27 +1462,36 @@ app.get("/api/permissions", async (req: Request, res: Response) => {
   }
 
   try {
-    const checkResult = await pool.query(`SELECT id FROM ${PERMISSION_TABLE} WHERE org_id = $1 LIMIT 1`, [orgId]);
-    
-    if (checkResult.rows.length === 0) {
-      // Seed default permissions
-      const defaults = [
-        "view_dashboard", "manage_vehicles", "manage_drivers", 
-        "manage_staff", "manage_trips", "manage_roles", "view_reports"
-      ];
-      
+    // Definining standard permissions
+    const modules = [
+      "dashboard", "roles", "staff", "employees", "vehicles", 
+      "drivers", "travellers", "bookings", "vendors", 
+      "feedbacks", "reports", "settings", "compliance"
+    ];
+    const actions = ["view", "create", "edit", "delete"];
+    const defaults: string[] = [];
+    modules.forEach(mod => actions.forEach(act => defaults.push(`${mod}-${act}`)));
+    defaults.push("compliance-analyze", "reports-export");
+
+    // Check current count
+    const countRes = await pool.query(`SELECT COUNT(*) as cnt FROM ${PERMISSION_TABLE} WHERE org_id = $1`, [orgId]);
+    const currentCount = parseInt(countRes.rows[0].cnt || "0");
+
+    // If missing many permissions, re-seed (idempotent)
+    if (currentCount < (defaults.length / 2)) {
+      console.log(`[SEED] Ensuring permissions for org: ${orgId}`);
       for (const name of defaults) {
         await pool.query(
-          `INSERT INTO ${PERMISSION_TABLE} (org_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          `INSERT INTO ${PERMISSION_TABLE} (org_id, name) VALUES ($1, $2) ON CONFLICT (org_id, name) DO NOTHING`,
           [orgId, name]
         );
       }
     }
 
-    const result = await pool.query(`SELECT id, org_id, name FROM ${PERMISSION_TABLE} WHERE org_id = $1 ORDER BY id ASC`, [orgId]);
+    const result = await pool.query(`SELECT id, org_id, name FROM ${PERMISSION_TABLE} WHERE org_id = $1 ORDER BY name ASC`, [orgId]);
     res.json({ success: true, data: result.rows });
   } catch (e: any) {
-    console.error(`[TENANT] Failed to fetch permissions:`, e.message);
+    console.error(`[TENANT] Failed to fetch/seed permissions:`, e.message);
     res.status(500).json({ success: false, message: "Failed to fetch permissions" });
   }
 });
@@ -1602,9 +1616,13 @@ async function ensureTables() {
       CREATE TABLE IF NOT EXISTS schemaa."officePermissions" (
         id SERIAL PRIMARY KEY,
         org_id VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        UNIQUE(org_id, name)
+        name VARCHAR(255) NOT NULL
       )
+    `);
+    // Ensure unique constraint exists for (org_id, name)
+    await pool.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS office_permissions_org_id_name_uidx 
+      ON schemaa."officePermissions" (org_id, name)
     `);
     await pool.query(`
       CREATE TABLE IF NOT EXISTS schemaa."officeRoles" (

@@ -29,34 +29,34 @@ const iv: Variants = {
 import { PDFExportModal } from "./PDFExportModal";
 
 /* ─── Mock Data ─────── */
-const instructorLicenses = [
+const staffCompliance = [
   {
     name: "Rajesh Kumar",
-    licNo: "TN-0012-2021",
+    id: "EMP-0012-2021",
     expiry: "Aug 2026",
     status: "Valid",
   },
   {
     name: "Priya Sharma",
-    licNo: "KA-0045-2022",
+    id: "EMP-0045-2022",
     expiry: "Jan 2027",
     status: "Valid",
   },
   {
     name: "Anil Verma",
-    licNo: "MH-0078-2020",
+    id: "EMP-0078-2020",
     expiry: "Apr 2026",
     status: "Expiring",
   },
   {
     name: "Sunita Patil",
-    licNo: "KA-0033-2023",
+    id: "EMP-0033-2023",
     expiry: "Oct 2027",
     status: "Valid",
   },
   {
     name: "Deepak Nair",
-    licNo: "KL-0092-2019",
+    id: "EMP-0092-2019",
     expiry: "Feb 2025",
     status: "Expired",
   },
@@ -103,15 +103,15 @@ const vehicleCompliance = [
 const auditLog = [
   {
     user: "Admin",
-    action: "Modified session entry",
-    module: "Sessions",
+    action: "Modified policy entry",
+    module: "Policies",
     time: "Mar 28, 2026 · 11:02",
     risk: "High",
   },
   {
     user: "Manager",
-    action: "Added new trainee",
-    module: "Trainees",
+    action: "Added new employee",
+    module: "HR",
     time: "Mar 27, 2026 · 09:45",
     risk: "Low",
   },
@@ -131,7 +131,7 @@ const auditLog = [
   },
   {
     user: "Manager",
-    action: "Exported trainee list",
+    action: "Exported employee list",
     module: "Reports",
     time: "Mar 24, 2026 · 10:00",
     risk: "Low",
@@ -300,7 +300,7 @@ export const ComplianceReport = () => {
           <AdvancedReport embedded />
 
           {/* ════════════════════════════════════
-               PAGE 7 — RTO COMPLIANCE DASHBOARD
+               PAGE 7 — REGULATORY COMPLIANCE DASHBOARD
               ════════════════════════════════════ */}
 
           <ComplianceScore score={72} />
@@ -308,25 +308,25 @@ export const ComplianceReport = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                label: "Registered Trainees",
+                label: "Registered Employees",
                 val: "142 / 150",
-                sub: "RTO Quota: 150",
+                sub: "Campus Capacity: 150",
                 ok: true,
               },
               {
-                label: "Min Hours Compliant",
+                label: "Safety Training Compliant",
                 val: "89%",
                 sub: "11% not yet at required hours",
                 ok: true,
               },
               {
-                label: "DL Test Pass Rate",
+                label: "Onboarding Pass Rate",
                 val: "76%",
-                sub: "Submitted to RTO",
+                sub: "Submitted to HR",
                 ok: true,
               },
               {
-                label: "Pending RTO Filings",
+                label: "Pending Statutory Filings",
                 val: "3",
                 sub: "Due within 7 days",
                 ok: false,
@@ -424,10 +424,10 @@ export const ComplianceReport = () => {
                     margin: 0,
                   }}
                 >
-                  Instructor License Status
+                  Staff Compliance Status
                 </h3>
                 <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>
-                  Government-issued driving instructor certification validity
+                  Corporate certifications & policy adherence validity
                 </p>
               </div>
             </div>
@@ -436,9 +436,9 @@ export const ComplianceReport = () => {
                 <thead style={{ background: "#F8FAFC" }}>
                   <tr>
                     {[
-                      "Instructor",
-                      "License No.",
-                      "Expiry Date",
+                      "Staff Member",
+                      "Employee ID",
+                      "Credential Expiry",
                       "Status",
                       "Action Required",
                     ].map((h) => (
@@ -459,7 +459,7 @@ export const ComplianceReport = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {instructorLicenses.map((r, i) => (
+                  {staffCompliance.map((r, i) => (
                     <tr
                       key={i}
                       style={{
@@ -486,7 +486,7 @@ export const ComplianceReport = () => {
                           fontFamily: "monospace",
                         }}
                       >
-                        {r.licNo}
+                        {r.id}
                       </td>
                       <td
                         style={{
@@ -512,7 +512,7 @@ export const ComplianceReport = () => {
                           ? "None"
                           : r.status === "Expiring"
                             ? "⚠ Renew within 30 days"
-                            : "🚨 Suspend until renewed"}
+                            : "🚨 Suspend from duties"}
                       </td>
                     </tr>
                   ))}
@@ -534,8 +534,8 @@ export const ComplianceReport = () => {
                   margin: 0,
                 }}
               >
-                🤖 AI Flag: Deepak Nair's license expired Feb 2025 — immediate
-                suspension from training duty required. RTO liability risk.
+                🤖 AI Flag: Deepak Nair's credentials expired Feb 2025 — immediate
+                suspension from office duties required. Statutory liability risk.
               </p>
             </div>
           </motion.div>
@@ -694,7 +694,7 @@ export const ComplianceReport = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                label: "KYC Complete Trainees",
+                label: "Verified Employees",
                 val: "94%",
                 sub: "6% missing documents",
                 ok: true,
@@ -702,7 +702,7 @@ export const ComplianceReport = () => {
               {
                 label: "Document Upload Rate",
                 val: "96.8%",
-                sub: "of trainee profiles",
+                sub: "of employee profiles",
                 ok: true,
               },
               {
@@ -944,7 +944,7 @@ export const ComplianceReport = () => {
                   margin: 0,
                 }}
               >
-                Compliance Summary — Motor Driving School · March 2026
+                Compliance Summary — VanLoka Corporate Office · March 2026
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

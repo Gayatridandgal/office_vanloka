@@ -1,30 +1,35 @@
-// src/components/vehicles/VehicleFormPage.tsx
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, type SubmitHandler, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-// Icons
-import {
-  FaTruck,
-  FaShieldAlt,
-  FaFileAlt,
-  FaCog,
-  FaClipboardCheck,
-  FaUserTie,
-  FaStickyNote,
-  FaCircle,
-} from "react-icons/fa";
-import { MdGpsFixed } from "react-icons/md";
+import { 
+  Truck, 
+  ShieldCheck, 
+  FileText, 
+  Settings, 
+  ClipboardCheck, 
+  UserPlus, 
+  StickyNote, 
+  Info,
+  Navigation as NavigationIcon,
+  ArrowLeft,
+  ChevronRight,
+  Shield,
+  Clock,
+  PlusCircle,
+  Save,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  MapPin,
+  Flame,
+  Camera,
+  Activity,
+  HardDrive
+} from "lucide-react";
 
 // Components
-import PageHeaderBack from "../../Components/UI/PageHeaderBack";
-import SaveButton from "../../Components/Form/SaveButton";
-import CancelButton from "../../Components/Form/CancelButton";
-import InputField from "../../Components/Form/InputField";
-import SelectInputField from "../../Components/Form/SelectInputField";
-import FileInputField from "../../Components/Form/FileInputField";
-import LoadingSpinner from "../../Components/UI/LoadingSpinner"; // Added for consistency
+import { Loader } from "../../Components/UI/Loader";
 
 // Services & Context
 import tenantApi, { centralUrl } from "../../Services/ApiService";
@@ -54,23 +59,111 @@ type VehicleFormPageProps = {
   vehicleId?: string;
 };
 
+/* ── UI Components ────────────────────────── */
+const SectionCard = ({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) => (
+  <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden mb-6 ring-1 ring-slate-100/50 transition-all hover:shadow-md">
+    <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-50 flex items-center gap-3">
+      <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-indigo-600 shadow-sm">
+        <Icon size={18} className="stroke-[2.5]" />
+      </div>
+      <h3 className="text-[11px] font-900 tracking-wider text-slate-500 uppercase">{title}</h3>
+    </div>
+    <div className="p-6">{children}</div>
+  </div>
+);
+
+const FormLabel = ({ children, required }: { children: React.ReactNode, required?: boolean }) => (
+  <label className="block text-[10px] font-900 text-slate-400 tracking-widest uppercase mb-2">
+    {children}
+    {required && <span className="text-rose-500 ml-1 italic">*</span>}
+  </label>
+);
+
+const InputField = ({ label, name, register, required, errors, type = "text", placeholder }: any) => (
+  <div>
+    <FormLabel required={!!required}>{label}</FormLabel>
+    <input
+      type={type}
+      placeholder={placeholder}
+      className={`w-full px-4 py-3 rounded-xl border ${errors[name] ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/30'} text-xs font-700 text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all`}
+      {...register(name, required ? { required: "Field is required" } : {})}
+    />
+    {errors[name] && (
+      <div className="flex items-center gap-1.5 mt-1.5 text-rose-500 text-[10px] font-800 uppercase tracking-tight">
+        <AlertCircle size={12} />
+        {errors[name]?.message}
+      </div>
+    )}
+  </div>
+);
+
+const SelectField = ({ label, name, register, required, errors, options }: any) => (
+  <div>
+    <FormLabel required={!!required}>{label}</FormLabel>
+    <select
+      className={`w-full px-4 py-3 rounded-xl border ${errors[name] ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/30'} text-xs font-700 text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none`}
+      {...register(name, required ? { required: "Field is required" } : {})}
+    >
+      <option value="">Choose Option</option>
+      {options.map((opt: any) => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
+    {errors[name] && (
+      <div className="flex items-center gap-1.5 mt-1.5 text-rose-500 text-[10px] font-800 uppercase tracking-tight">
+        <AlertCircle size={12} />
+        {errors[name]?.message}
+      </div>
+    )}
+  </div>
+);
+
+const FileUpload = ({ label, name, register, required, errors }: any) => (
+  <div>
+    <FormLabel required={!!required}>{label}</FormLabel>
+    <div className="relative">
+      <input
+        type="file"
+        className="hidden"
+        id={`file-${name}`}
+        {...register(name, required ? { required: "Document is required" } : {})}
+      />
+      <label 
+        htmlFor={`file-${name}`}
+        className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 cursor-pointer hover:bg-slate-50 hover:border-indigo-400 transition-all group"
+      >
+        <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 shadow-sm transition-colors">
+          <FileText size={16} />
+        </div>
+        <span className="text-[10px] font-800 text-slate-400 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">
+          Upload Document
+        </span>
+      </label>
+    </div>
+    {errors[name] && (
+      <div className="flex items-center gap-1.5 mt-1.5 text-rose-500 text-[10px] font-800 uppercase tracking-tight">
+        <AlertCircle size={12} />
+        {errors[name]?.message}
+      </div>
+    )}
+  </div>
+);
+
+/* ── Main Component ────────────────────────── */
 const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
 
   const {
     register,
-    control, // Added for useWatch
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormInputs>({
-    defaultValues: {
-      status: "active",
-    },
+    defaultValues: { status: "active" },
   });
 
-  // State for dropdown data
   const [vehicleTypes, setVehicleTypes] = useState<FormDropdown[]>([]);
   const [fuelTypes, setFuelTypes] = useState<FormDropdown[]>([]);
   const [permitTypes, setPermitTypes] = useState<FormDropdown[]>([]);
@@ -79,22 +172,13 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
   const [gps, setBeacons] = useState<BeaconDevice[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Watch ownership type for conditional vendor fields
   const ownershipType = useWatch({ control, name: "ownership_type" });
 
-  // Fetch initial dropdown data
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const [
-          vehicleTypes,
-          fuelTypes,
-          permitTypes,
-          ownershipTypes,
-          statuses,
-          gps,
-        ] = await Promise.all([
+        const [vt, ft, pt, ot, st, gd] = await Promise.all([
           axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=vehicle&field=vehicle_type`),
           axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=vehicle&field=fuel_type`),
           axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=vehicle&field=permit_type`),
@@ -102,433 +186,275 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
           axios.get(`${centralUrl}/masters/forms/dropdowns/fields?type=common&field=status`),
           tenantApi.get(`/gps-device/for/dropdown`),
         ]);
-
-        setVehicleTypes(vehicleTypes.data || []);
-        setFuelTypes(fuelTypes.data || []);
-        setPermitTypes(permitTypes.data || []);
-        setOwnershipTypes(ownershipTypes.data || []);
-        setStatuses(statuses.data || []);
-        setBeacons(gps.data || []);
+        setVehicleTypes(vt.data || []);
+        setFuelTypes(ft.data || []);
+        setPermitTypes(pt.data || []);
+        setOwnershipTypes(ot.data || []);
+        setStatuses(st.data || []);
+        setBeacons(gd.data || []);
       } catch (error) {
-        console.error("Error fetching form data:", error);
-        showAlert("Failed to load form data. Please refresh.", "error");
+        console.error(error);
+        showAlert("Failed to load configuration data.", "error");
       } finally {
         setLoading(false);
       }
     };
-
     fetchInitialData();
   }, [showAlert]);
+
+  useEffect(() => {
+    const loadVehicle = async () => {
+      if (mode !== "edit" || !vehicleId) return;
+      try {
+        const res = await tenantApi.get<{ success: boolean; data: Vehicle }>(`/vehicles/${vehicleId}`);
+        if (res.data.success) reset(res.data.data);
+      } catch (error) {
+        showAlert("Failed to load vehicle record.", "error");
+      }
+    };
+    loadVehicle();
+  }, [mode, vehicleId, reset, showAlert]);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     try {
       const formData = new FormData();
-
-      // Basic Information
-      const basicFields = [
-        "vehicle_number", "vehicle_type", "rc_number", "rc_isued_date",
-        "rc_expiry_date", "manufacturer", "vehicle_model", "manufacturing_year",
-        "fuel_type", "seating_capacity", "vehicle_color", "kilometers_driven",
-        "driver", "route", "tax_renewable_date",
-      ];
-      basicFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(field, String(value));
-        }
-      });
-
-      // Tracking
-      const trackingFields = ["gps_device", "gps_installation_date"];
-      trackingFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(field, String(value));
-        }
-      });
-
-      // Permit & Compliance
-      const permitFields = [
-        "permit_type", "permit_number", "permit_issue_date", "permit_expiry_date",
-      ];
-      permitFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(field, String(value));
-        }
-      });
-
-      // Ownership
-      const ownershipFields = [
-        "ownership_type", "vendor_name", "vendor_aadhar_number",
-        "vendor_pan_number", "vendor_contact_number", "vendor_organization_name",
-      ];
-      ownershipFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(field, String(value));
-        }
-      });
-
-      // Insurance & Fitness
-      const insuranceFields = [
-        "insurance_provider_name", "insurance_policy_number", "insurance_issued_date",
-        "insurance_expiry_date", "fitness_certificate_number", "fitness_issued_date",
-        "fitness_expiry_date", "pollution_certificate_number", "pollution_issued_date",
-        "pollution_expiry_date",
-      ];
-      insuranceFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(field, String(value));
-        }
-      });
-
-      // Service & Maintenance
-      const serviceFields = [
-        "last_service_date", "next_service_due_date",
-        "tyre_replacement_due_date", "battery_replacement_due_date",
-      ];
-      serviceFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(field, String(value));
-        }
-      });
-
-      // Safety
-      const safetyFields = [
-        "fire_extinguisher", "first_aid_kit",
-        "cctv_installed", "panic_button_installed",
-      ];
-      safetyFields.forEach((field) => {
-        const value = data[field as keyof FormInputs];
-        if (value !== undefined && value !== null && value !== "") {
-          formData.append(field, String(value));
-        }
-      });
-
-      // Status & Remarks
-      if (data.status) formData.append("status", data.status);
-      if (data.remarks) formData.append("vehicle_remarks", data.remarks);
-
-      // File uploads
-      const fileFields: Array<keyof FormInputs> = [
-        "insurance_doc", "rc_book_doc", "puc_doc", "fitness_certificate",
-        "permit_copy", "gps_installation_proof", "vendor_pan", "vendor_adhaar",
-        "vendor_bank_proof", "vendor_contract_proof", "vedor_company_registration_doc",
-        "saftey_certificate",
-      ];
-
-      fileFields.forEach((field) => {
-        const files = data[field] as FileList | undefined;
-        if (files && files.length > 0) {
-          formData.append(field, files[0]);
+      Object.keys(data).forEach((key) => {
+        const val = (data as any)[key];
+        if (val instanceof FileList) {
+          if (val.length > 0) formData.append(key, val[0]);
+        } else if (val !== undefined && val !== null && val !== "") {
+          formData.append(key, String(val));
         }
       });
 
       const response = mode === "create"
-        ? await tenantApi.post<{ success: boolean; data: Vehicle; message: string; }>(
-          "/vehicles",
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        )
-        : await tenantApi.put<{ success: boolean; data: Vehicle; message: string; }>(
-          `/vehicles/${vehicleId}`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
+        ? await tenantApi.post("/vehicles", formData, { headers: { "Content-Type": "multipart/form-data" } })
+        : await tenantApi.put(`/vehicles/${vehicleId}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
 
       if (response.data.success) {
-        showAlert(
-          mode === "create"
-            ? `Vehicle ${data.vehicle_number} created successfully!`
-            : `Vehicle ${data.vehicle_number} updated successfully!`,
-          "success",
-        );
+        showAlert(mode === "create" ? "Vehicle added successfully!" : "Vehicle updated successfully!", "success");
         navigate("/vehicles");
       }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.message || "Failed to create vehicle";
-        showAlert(`Error: ${errorMessage}`, "error");
-      } else {
-        showAlert("An unexpected error occurred", "error");
-      }
+    } catch (error: any) {
+      showAlert(error.response?.data?.message || "Operation failed", "error");
     }
   };
 
-  useEffect(() => {
-    const loadVehicleForEdit = async () => {
-      if (mode !== "edit" || !vehicleId) return;
-
-      try {
-        const response = await tenantApi.get<{ success: boolean; data: Vehicle }>(`/vehicles/${vehicleId}`);
-        if (!response.data.success || !response.data.data) return;
-
-        const data = response.data.data;
-        reset({
-          ...data,
-          insurance_doc: undefined,
-          rc_book_doc: undefined,
-          puc_doc: undefined,
-          fitness_certificate: undefined,
-          permit_copy: undefined,
-          gps_installation_proof: undefined,
-          vendor_pan: undefined,
-          vendor_adhaar: undefined,
-          vendor_bank_proof: undefined,
-          vendor_contract_proof: undefined,
-          vedor_company_registration_doc: undefined,
-          saftey_certificate: undefined,
-        });
-      } catch (error) {
-        console.error("Error loading vehicle for edit:", error);
-        showAlert("Failed to load vehicle details.", "error");
-      }
-    };
-
-    void loadVehicleForEdit();
-  }, [mode, vehicleId, reset, showAlert]);
-
-  if (loading) return <LoadingSpinner fullScreen />;
+  if (loading) return <Loader fullScreen />;
 
   return (
-    <div className="min-h-screen bg-white pb-12">
-      {/* 1. Sticky Header */}
+    <div className="min-h-screen bg-transparent">
+      {/* Header Segment */}
+      <div className="px-6 pt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+           <div className="flex items-center gap-2 text-indigo-600 mb-1">
+              <Truck size={22} className="stroke-[2.5]" />
+              <h1 className="text-xl font-900 tracking-wider uppercase">
+                {mode === "create" ? "Register New Vehicle" : "Edit Vehicle Configuration"}
+              </h1>
+           </div>
+           <div className="flex items-center gap-2 text-[11px] font-800 text-muted uppercase tracking-widest px-1">
+             <span>Admin</span>
+             <span className="text-slate-300">/</span>
+             <span>Fleet Inventory</span>
+             <span className="text-slate-300">/</span>
+             <span className="text-primary-dark uppercase">{mode === "create" ? "Add Vehicle" : "Modify Details"}</span>
+           </div>
+        </div>
 
-      <PageHeaderBack title={mode === "create" ? "Add Vehicle" : "Edit Vehicle"} buttonLink="/vehicles" />
+        <button 
+          onClick={() => navigate("/vehicles")}
+          className="btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50"
+        >
+          <ArrowLeft size={14} /> Back to List
+        </button>
+      </div>
 
-
-      {/* 2. Main Container */}
-      <div className="max-w-5xl mx-auto px-4 mt-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-          {/* 3. The Form Card */}
-          <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-
-            {/* Card Header */}
-            <div className="bg-blue-50 px-8 py-2 border-b border-blue-100 flex items-center gap-4">
-              <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100">
-                <FaTruck size={20} />
+      <div className="p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-[1100px] mx-auto space-y-6 pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Identity & Basic Info */}
+            <SectionCard icon={Info} title="Universal Identity">
+              <div className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Vehicle Number" name="vehicle_number" register={register} errors={errors} required placeholder="e.g. MH12AB1234" />
+                  <SelectField label="Vehicle Type" name="vehicle_type" register={register} errors={errors} required options={vehicleTypes.map(d => ({ label: d.value, value: d.value }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Manufacturer" name="manufacturer" register={register} errors={errors} placeholder="e.g. Tata Motors" />
+                  <InputField label="Model Series" name="vehicle_model" register={register} errors={errors} placeholder="e.g. Nexon EV" />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <InputField label="Mfg Year" name="manufacturing_year" type="number" register={register} errors={errors} placeholder="2024" />
+                  <SelectField label="Fuel Source" name="fuel_type" register={register} errors={errors} options={fuelTypes.map(d => ({ label: d.value, value: d.value }))} />
+                  <InputField label="Seats" name="seating_capacity" type="number" register={register} errors={errors} placeholder="4" />
+                </div>
               </div>
-              <div>
-                <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-wide">
-                  {mode === "create" ? "Add Vehicle Details" : "Edit Vehicle Details"}
-                </h2>
-              </div>
+            </SectionCard>
+
+            <div className="space-y-6">
+              {/* Registration Details */}
+              <SectionCard icon={FileText} title="Registration & RTO Compliance">
+                <div className="space-y-5">
+                  <InputField label="RC Serial Number" name="rc_number" register={register} errors={errors} required placeholder="Enter RC Number" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputField label="RC Issuance" name="rc_isued_date" type="date" register={register} errors={errors} required />
+                    <InputField label="RC Expiry" name="rc_expiry_date" type="date" register={register} errors={errors} required />
+                  </div>
+                </div>
+              </SectionCard>
+
+              {/* Tracking Device */}
+              <SectionCard icon={NavigationIcon} title="Tracking Architecture">
+                <div className="grid grid-cols-2 gap-4">
+                  <SelectField label="GPS Module" name="gps_device" register={register} errors={errors} options={gps.map(d => ({ label: `${d.device_id} (${d.imei_number})`, value: d.imei_number }))} />
+                  <InputField label="Install Date" name="gps_installation_date" type="date" register={register} errors={errors} />
+                </div>
+              </SectionCard>
             </div>
+          </div>
 
-            {/* Scrollable Area */}
-            <div className="overflow-y-auto h-[70vh] p-8 space-y-8">
-
-              {/* SECTION: Basic Information */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaTruck className="text-blue-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Basic Information</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <InputField label="Vehicle Number" name="vehicle_number" register={register} errors={errors} required="Required" />
-                    <SelectInputField label="Vehicle Type" name="vehicle_type" register={register} errors={errors} options={vehicleTypes.map(d => ({ label: d.value, value: d.value }))} required />
-
-                    <InputField label="RC Number" name="rc_number" register={register} errors={errors} required="Required" />
-                    <InputField label="RC Issued Date" name="rc_isued_date" type="date" register={register} errors={errors} required="Required" />
-                    <InputField label="RC Expiry Date" name="rc_expiry_date" type="date" register={register} errors={errors} required="Required" />
-
-                    <InputField label="Manufacturer" name="manufacturer" register={register} errors={errors} required="Required" />
-                    <InputField label="Vehicle Model" name="vehicle_model" register={register} errors={errors} />
-                    <InputField label="Mfg Year" name="manufacturing_year" type="number" register={register} errors={errors} />
-
-                    <SelectInputField label="Fuel Type" name="fuel_type" register={register} errors={errors} options={fuelTypes.map(d => ({ label: d.value, value: d.value }))} />
-                    <InputField label="Seating Capacity" name="seating_capacity" type="number" register={register} errors={errors} />
-                    <InputField label="Color" name="vehicle_color" register={register} errors={errors} />
-                    <InputField label="Current Odometer (KM)" name="kilometers_driven" type="number" register={register} errors={errors} />
-                    <InputField label="Assign Route" name="route" register={register} errors={errors} />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION: Device Assignment */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <MdGpsFixed className="text-red-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Device Assignment</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <SelectInputField label="GPS Device" name="gps_device" register={register} errors={errors} options={gps.map(d => ({ label: `${d.device_id} (${d.imei_number})`, value: d.imei_number }))} />
-                    <InputField label="Installation Date" name="gps_installation_date" type="date" register={register} errors={errors} />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION: Ownership */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaUserTie className="text-amber-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Ownership Details</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                    <SelectInputField label="Ownership Type" name="ownership_type" register={register} errors={errors} options={ownershipTypes.map(d => ({ label: d.value, value: d.value }))} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             {/* Permits & Insurance */}
+             <SectionCard icon={ShieldCheck} title="Permits & Insurance Matrix">
+               <div className="space-y-6">
+                  <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <FormLabel>Regulatory Permit</FormLabel>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                       <SelectField label="Permit Type" name="permit_type" register={register} errors={errors} options={permitTypes.map(d => ({ label: d.value, value: d.value }))} />
+                       <InputField label="Permit #" name="permit_number" register={register} errors={errors} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                       <InputField label="Permit Issued" name="permit_issue_date" type="date" register={register} errors={errors} />
+                       <InputField label="Permit Expiry" name="permit_expiry_date" type="date" register={register} errors={errors} />
+                    </div>
                   </div>
 
-                  {/* Conditional Vendor Fields */}
-                  {(ownershipType === "Contract" || ownershipType === "contract") && (
-                    <div className="mt-6 border-t border-slate-200 pt-6">
-                      <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
-                        <FaCircle size={8} /> Vendor Information
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <InputField label="Vendor Name" name="vendor_name" register={register} errors={errors} />
-                        <InputField label="Organization Name" name="vendor_organization_name" register={register} errors={errors} />
-                        <InputField label="Aadhaar Number" name="vendor_aadhar_number" register={register} errors={errors} />
-                        <InputField label="PAN Number" name="vendor_pan_number" register={register} errors={errors} />
-                        <InputField label="Contact Number" name="vendor_contact_number" register={register} errors={errors} />
+                  <div className="p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/50">
+                    <FormLabel>Insurance Policy</FormLabel>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                       <InputField label="Provider" name="insurance_provider_name" register={register} errors={errors} placeholder="HDFC Ergo" />
+                       <InputField label="Policy #" name="insurance_policy_number" register={register} errors={errors} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                       <InputField label="Policy Start" name="insurance_issued_date" type="date" register={register} errors={errors} />
+                       <InputField label="Policy Expiry" name="insurance_expiry_date" type="date" register={register} errors={errors} />
+                    </div>
+                  </div>
+               </div>
+             </SectionCard>
+
+             <div className="space-y-6">
+               {/* Ownership */}
+               <SectionCard icon={UserPlus} title="Ownership Framework">
+                  <div className="space-y-5">
+                    <SelectField label="Operational Type" name="ownership_type" register={register} errors={errors} required options={ownershipTypes.map(d => ({ label: d.value, value: d.value }))} />
+                    
+                    {(ownershipType?.toLowerCase() === "contract") && (
+                      <div className="mt-4 p-5 bg-amber-50/30 rounded-[20px] border border-amber-100/50 animate-fade-in">
+                        <div className="flex items-center gap-2 mb-4 text-amber-600">
+                          <Activity size={14} />
+                          <h4 className="text-[10px] font-900 uppercase tracking-widest">Vendor Context</h4>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                          <InputField label="Vendor Name" name="vendor_name" register={register} errors={errors} />
+                          <div className="grid grid-cols-2 gap-4">
+                            <InputField label="PAN #" name="vendor_pan_number" register={register} errors={errors} />
+                            <InputField label="Aadhaar #" name="vendor_aadhar_number" register={register} errors={errors} />
+                          </div>
+                        </div>
                       </div>
+                    )}
+                  </div>
+               </SectionCard>
+
+               {/* Fitness & PUC */}
+               <SectionCard icon={ClipboardCheck} title="Technical Fitness">
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-3 gap-4">
+                       <div className="col-span-1"><InputField label="PUC #" name="pollution_certificate_number" register={register} errors={errors} /></div>
+                       <InputField label="PUC Issued" name="pollution_issued_date" type="date" register={register} errors={errors} />
+                       <InputField label="PUC Expiry" name="pollution_expiry_date" type="date" register={register} errors={errors} />
                     </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="col-span-1"><InputField label="Fit #" name="fitness_certificate_number" register={register} errors={errors} /></div>
+                        <InputField label="Fit Issued" name="fitness_issued_date" type="date" register={register} errors={errors} />
+                        <InputField label="Fit Expiry" name="fitness_expiry_date" type="date" register={register} errors={errors} />
+                    </div>
+                  </div>
+               </SectionCard>
+             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             {/* Maintenance & Safety */}
+             <SectionCard icon={Settings} title="Maintenance & Safety Controls">
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputField label="Last Service" name="last_service_date" type="date" register={register} errors={errors} />
+                    <InputField label="Next Due" name="next_service_due_date" type="date" register={register} errors={errors} />
+                  </div>
+                  <div className="grid grid-cols-4 gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <SelectField label="Fire Ext" name="fire_extinguisher" register={register} errors={errors} options={[{label:'YES',value:'YES'},{label:'NO',value:'NO'}]} />
+                    <SelectField label="First Aid" name="first_aid_kit" register={register} errors={errors} options={[{label:'YES',value:'YES'},{label:'NO',value:'NO'}]} />
+                    <SelectField label="CCTV" name="cctv_installed" register={register} errors={errors} options={[{label:'YES',value:'YES'},{label:'NO',value:'NO'}]} />
+                    <SelectField label="Panic Btn" name="panic_button_installed" register={register} errors={errors} options={[{label:'YES',value:'YES'},{label:'NO',value:'NO'}]} />
+                  </div>
+                </div>
+             </SectionCard>
+
+             {/* Documents */}
+             <SectionCard icon={HardDrive} title="Digital Vault (Documents)">
+                <div className="grid grid-cols-2 gap-4">
+                  <FileUpload label="RC Book Copy" name="rc_book_doc" register={register} errors={errors} required={mode==='create'} />
+                  <FileUpload label="Insurance Copy" name="insurance_doc" register={register} errors={errors} required={mode==='create'} />
+                  <FileUpload label="Permit Copy" name="permit_copy" register={register} errors={errors} />
+                  <FileUpload label="PUC Cert" name="puc_doc" register={register} errors={errors} />
+                </div>
+             </SectionCard>
+          </div>
+
+          {/* Bottom Action Card */}
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[1100px] px-6 z-50">
+            <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[32px] p-4 flex items-center justify-between">
+              <div className="hidden md:flex items-center gap-4 px-4 border-r border-slate-100">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${mode==='create' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                  {mode==='create' ? <PlusCircle size={20} /> : <Save size={20} />}
+                </div>
+                <div>
+                   <p className="text-[10px] font-900 text-slate-400 uppercase tracking-widest">Configuration Status</p>
+                   <p className="text-xs font-800 text-slate-700">{mode==='create' ? 'Ready to Register' : 'Changes Pending'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 w-full md:w-auto">
+                <button 
+                  type="button" 
+                  onClick={() => navigate("/vehicles")}
+                  className="flex-1 md:flex-none px-8 py-4 rounded-[20px] text-[11px] font-900 border border-slate-100 text-slate-500 uppercase tracking-widest hover:bg-slate-50 transition-all"
+                >
+                  Discard
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 md:flex-none px-10 py-4 bg-indigo-600 text-white rounded-[20px] shadow-xl shadow-indigo-600/20 font-900 uppercase tracking-widest text-[11px] hover:scale-[1.05] active:scale-95 transition-all flex items-center justify-center gap-3"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Syncing...</span>
+                    </>
+                  ) : (
+                    <>
+                      {mode === 'create' ? <PlusCircle size={18} /> : <CheckCircle2 size={18} />}
+                      <span>{mode === 'create' ? 'Register Vehicle' : 'Commit Changes'}</span>
+                    </>
                   )}
-                </div>
+                </button>
               </div>
-
-              {/* SECTION: Permits & Compliance */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaClipboardCheck className="text-purple-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Permits & Compliance</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100 space-y-6">
-
-                  {/* Permit */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <SelectInputField label="Permit Type" name="permit_type" register={register} errors={errors} options={permitTypes.map(d => ({ label: d.value, value: d.value }))} />
-                    <InputField label="Permit Number" name="permit_number" register={register} errors={errors} />
-                    <InputField label="Issue Date" name="permit_issue_date" type="date" register={register} errors={errors} />
-                    <InputField label="Expiry Date" name="permit_expiry_date" type="date" register={register} errors={errors} />
-                  </div>
-
-
-                  {/* Insurance */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <InputField label="Insurance Provider" name="insurance_provider_name" register={register} errors={errors} />
-                    <InputField label="Policy Number" name="insurance_policy_number" register={register} errors={errors} />
-                    <InputField label="Ins. Issue Date" name="insurance_issued_date" type="date" register={register} errors={errors} />
-                    <InputField label="Ins. Expiry Date" name="insurance_expiry_date" type="date" register={register} errors={errors} />
-                  </div>
-
-                  {/* Fitness & PUC */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <InputField label="Fitness Cert No." name="fitness_certificate_number" register={register} errors={errors} />
-                    <InputField label="Fit. Issued" name="fitness_issued_date" type="date" register={register} errors={errors} />
-                    <InputField label="Fit. Expiry" name="fitness_expiry_date" type="date" register={register} errors={errors} />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <InputField label="PUC Number" name="pollution_certificate_number" register={register} errors={errors} />
-                    <InputField label="PUC Issued" name="pollution_issued_date" type="date" register={register} errors={errors} />
-                    <InputField label="PUC Expiry" name="pollution_expiry_date" type="date" register={register} errors={errors} />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION: Service & Maintenance */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaCog className="text-indigo-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Service & Maintenance</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <InputField label="Last Service Date" name="last_service_date" type="date" register={register} errors={errors} />
-                    <InputField label="Next Service Due" name="next_service_due_date" type="date" register={register} errors={errors} />
-                    <InputField label="Tyre Replacement Due" name="tyre_replacement_due_date" type="date" register={register} errors={errors} />
-                    <InputField label="Battery Replacement Due" name="battery_replacement_due_date" type="date" register={register} errors={errors} />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION: Safety Features */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaShieldAlt className="text-red-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Safety Features</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <SelectInputField label="Fire Extinguisher" name="fire_extinguisher" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
-                    <SelectInputField label="First Aid Kit" name="first_aid_kit" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
-                    <SelectInputField label="CCTV Installed" name="cctv_installed" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
-                    <SelectInputField label="Panic Button" name="panic_button_installed" register={register} errors={errors} options={[{ label: "YES", value: "YES" }, { label: "NO", value: "NO" }]} />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION: Documents */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaFileAlt className="text-green-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Required Documents</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <FileInputField label="Insurance Document" name="insurance_doc" register={register} errors={errors} required="Required" />
-                    <FileInputField label="RC Book" name="rc_book_doc" register={register} errors={errors} required="Required" />
-                    <FileInputField label="PUC Document" name="puc_doc" register={register} errors={errors} />
-                    <FileInputField label="Fitness Certificate" name="fitness_certificate" register={register} errors={errors} />
-                    <FileInputField label="Permit Copy" name="permit_copy" register={register} errors={errors} />
-                    <FileInputField label="Safety Certificate" name="saftey_certificate" register={register} errors={errors} />
-                    <FileInputField label="GPS Install Proof" name="gps_installation_proof" register={register} errors={errors} />
-                  </div>
-
-                  {(ownershipType === "Contract") && (
-                    <div className="mt-6 border-t border-slate-200 pt-6">
-                      <h4 className="text-xs font-bold text-indigo-600 uppercase mb-4 flex items-center gap-2">
-                        <FaCircle size={8} /> Vendor Documents
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <FileInputField label="Vendor PAN" name="vendor_pan" register={register} errors={errors} />
-                        <FileInputField label="Vendor Aadhaar" name="vendor_adhaar" register={register} errors={errors} />
-                        <FileInputField label="Bank Proof" name="vendor_bank_proof" register={register} errors={errors} />
-                        <FileInputField label="Contract Agreement" name="vendor_contract_proof" register={register} errors={errors} />
-                        <FileInputField label="Company Reg. Doc" name="vedor_company_registration_doc" register={register} errors={errors} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* SECTION: Remarks & Status */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FaStickyNote className="text-amber-400" />
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Status & Remarks</h3>
-                </div>
-                <div className="bg-gray-50 p-6 rounded-xl border border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    <SelectInputField label="Status" name="status" register={register} errors={errors} options={statuses.map(d => ({ label: d.value, value: d.value }))} />
-                    <div>
-                      <label className="block text-sm font-semibold text-purple-950 mb-2 uppercase">Additional Notes</label>
-                      <textarea
-                        {...register("remarks")}
-                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        rows={1}
-                        placeholder="Enter any remarks..."
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
             </div>
-
-            {/* Footer */}
-            <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-wrap justify-start items-center gap-4">
-              <CancelButton label="cancel" type="button" onClick={() => navigate("/vehicles")} />
-              <SaveButton label="Save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
-            </div>
-
           </div>
         </form>
       </div>

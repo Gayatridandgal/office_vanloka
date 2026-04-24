@@ -41,7 +41,7 @@ type Errs = Partial<Record<keyof Form, string>>;
 
 const CATEGORIES = [
   "License", "Insurance", "Safety", "Environmental", "Tax & Finance", 
-  "Labour", "Vehicle Certification", "Penalty", "Driving Rules", "Other"
+  "Labour", "Vehicle Certification", "Penalty", "Office Policies", "Other"
 ];
 
 const AUTHORITIES = [
@@ -50,7 +50,7 @@ const AUTHORITIES = [
 ];
 
 const APPLIES_TO_OPTIONS = [
-  "All Vehicles", "All Instructors", "All Staff", "All Trainees", "Premises / Infrastructure", "Management"
+  "All Vehicles", "All Managers", "All Staff", "All Employees", "Premises / Infrastructure", "Management"
 ];
 
 const STATUS_OPTIONS = [
@@ -231,7 +231,7 @@ export const ComplianceCreate = () => {
                   <FormLabel required>Document / Rule Name</FormLabel>
                   <input 
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    placeholder="e.g. Driving School License"
+                    placeholder="e.g. Office Security Policy"
                     value={form.documentName}
                     onChange={f("documentName")}
                   />

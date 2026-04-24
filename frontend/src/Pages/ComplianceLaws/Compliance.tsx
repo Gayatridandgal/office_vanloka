@@ -148,10 +148,6 @@ export const CompliancePage = () => {
             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 underline">Total Rules</p>
             <p className="text-xl font-bold">{records.length}</p>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-emerald-500">
-            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Compliant</p>
-            <p className="text-xl font-bold">{records.filter(r => r.status === 'Compliant').length}</p>
-          </div>
         </div>
 
         {/* Filter Bar */}
@@ -178,7 +174,6 @@ export const CompliancePage = () => {
                 <th className="px-6 py-4">Document & Category</th>
                 <th className="px-6 py-4">Authority</th>
                 <th className="px-6 py-4">Last Updated</th>
-                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>
@@ -209,9 +204,6 @@ export const CompliancePage = () => {
                        <Clock size={12} strokeWidth={3} />
                        {record.issueDate}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge variant={complianceStatusVariant(record.status)}>{record.status}</Badge>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center items-center gap-1">
@@ -261,7 +253,13 @@ export const CompliancePage = () => {
         <div className="fixed inset-0 z-[1100] bg-black/90 flex items-center justify-center p-6" onClick={() => setVideoUrl(null)}>
            <div className="w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden relative">
              <button className="absolute top-4 right-4 z-20 text-white" onClick={() => setVideoUrl(null)}><X size={24} /></button>
-             <iframe src={videoUrl.replace("watch?v=", "embed/")} className="w-full h-full" allowFullScreen />
+             <iframe 
+               src={videoUrl.includes("youtu.be/") 
+                 ? `https://www.youtube.com/embed/${videoUrl.split("youtu.be/")[1].split("?")[0]}` 
+                 : videoUrl.replace("watch?v=", "embed/")} 
+               className="w-full h-full" 
+               allowFullScreen 
+             />
            </div>
         </div>
       )}
