@@ -287,7 +287,7 @@ const DriverCreatePage = () => {
 
         <button 
           onClick={() => navigate("/drivers")}
-          className="btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50"
+          className="w-full md:w-auto justify-center btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50"
         >
           <ArrowLeft size={14} /> Back to Directory
         </button>
@@ -300,19 +300,19 @@ const DriverCreatePage = () => {
             {/* Identity Profile */}
             <SectionCard icon={IdCard} title="Personal Identity Profile">
               <div className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField label="First Name" name="first_name" register={register} errors={errors} required placeholder="John" />
                   <InputField label="Last Name" name="last_name" register={register} errors={errors} required placeholder="Doe" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField label="Mobile Contact" name="mobile_number" register={register} errors={errors} required placeholder="+91 98765 43210" />
                   <InputField label="Email Address" name="email" type="email" register={register} errors={errors} placeholder="john@example.com" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField label="Date of Birth" name="date_of_birth" type="date" register={register} errors={errors} required />
                   <SelectField label="Blood Group" name="blood_group" register={register} errors={errors} options={dropdowns.bloodGroups.map(d => ({ label: d.value, value: d.value }))} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    <SelectField label="Gender" name="gender" register={register} errors={errors} required options={dropdowns.genders.map(d => ({ label: d.value, value: d.value }))} />
                    <SelectField label="Marital Status" name="marital_status" register={register} errors={errors} options={dropdowns.maritalStatuses.map(d => ({ label: d.value, value: d.value }))} />
                 </div>
@@ -326,11 +326,11 @@ const DriverCreatePage = () => {
               <SectionCard icon={MapPin} title="Residency & Location Matrix">
                 <div className="space-y-5">
                    <InputField label="Address Line 1" name="address_line_1" register={register} errors={errors} placeholder="House #, Street" />
-                   <div className="grid grid-cols-2 gap-4">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <SelectField label="State Region" name="state" register={register} errors={errors} options={dropdowns.states.map(s => ({ label: s.state, value: s.state }))} />
                       <SelectField label="District / zone" name="district" register={register} errors={errors} options={districts.map(d => ({ label: d.district, value: d.district }))} disabled={!selectedState} />
                    </div>
-                   <div className="grid grid-cols-2 gap-4">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <InputField label="City / Town" name="city" register={register} errors={errors} />
                       <InputField label="Postal Code" name="pin_code" register={register} errors={errors} />
                    </div>
@@ -340,10 +340,10 @@ const DriverCreatePage = () => {
               {/* Employment context */}
               <SectionCard icon={Briefcase} title="Professional Engagement">
                  <div className="space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
-                       <SelectField label="Contract Type" name="employment_type" register={register} errors={errors} options={dropdowns.employmentTypes.map(d => ({ label: d.value, value: d.value }))} />
-                       <InputField label="Corporate ID" name="employee_id" register={register} errors={errors} placeholder="OFF-DRV-001" />
-                    </div>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <SelectField label="Contract Type" name="employment_type" register={register} errors={errors} options={dropdowns.employmentTypes.map(d => ({ label: d.value, value: d.value }))} />
+                        <InputField label="Corporate ID" name="employee_id" register={register} errors={errors} placeholder="OFF-DRV-001" />
+                     </div>
                     <InputField label="Industry Experience (Years)" name="driving_experience" type="number" register={register} errors={errors} />
                  </div>
               </SectionCard>
@@ -451,46 +451,32 @@ const DriverCreatePage = () => {
              </SectionCard>
           </div>
 
-          {/* Bottom Action Card */}
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[1100px] px-6 z-50">
-            <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[32px] p-4 flex items-center justify-between">
-              <div className="hidden md:flex items-center gap-4 px-4 border-r border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                   <PlusCircle size={20} />
-                </div>
-                <div>
-                   <p className="text-[10px] font-900 text-slate-400 uppercase tracking-widest">Entry Protocol</p>
-                   <p className="text-xs font-800 text-slate-700">Verification Pending</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 w-full md:w-auto">
-                <button 
-                  type="button" 
-                  onClick={() => navigate("/drivers")}
-                  className="flex-1 md:flex-none px-8 py-4 rounded-[20px] text-[11px] font-900 border border-slate-100 text-slate-500 uppercase tracking-widest hover:bg-slate-50 transition-all"
-                >
-                  Discard
-                </button>
-                <button 
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 md:flex-none px-10 py-4 bg-indigo-600 text-white rounded-[20px] shadow-xl shadow-indigo-600/20 font-900 uppercase tracking-widest text-[11px] hover:scale-[1.05] active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Verifying...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={18} />
-                      <span>Commit Onboarding</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+          {/* Action Center */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4 p-6 sm:p-8 bg-white border border-slate-100 rounded-[32px] shadow-lg">
+             <button 
+               type="button"
+               onClick={() => navigate("/drivers")}
+               className="px-8 py-4 text-[11px] font-900 text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors w-full sm:w-auto"
+             >
+               Cancel
+             </button>
+             <button 
+               type="submit"
+               disabled={isSubmitting}
+               className="w-full sm:w-auto justify-center px-10 py-4 bg-indigo-600 text-white rounded-[20px] shadow-xl shadow-indigo-600/20 font-900 uppercase tracking-widest text-[11px] hover:scale-[1.05] active:scale-95 transition-all flex items-center gap-3"
+             >
+               {isSubmitting ? (
+                 <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Verifying...</span>
+                 </div>
+               ) : (
+                 <>
+                   <CheckCircle2 size={18} />
+                   <span>Commit Onboarding</span>
+                 </>
+               )}
+             </button>
           </div>
         </form>
       </div>

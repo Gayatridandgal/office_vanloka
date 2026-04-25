@@ -492,7 +492,7 @@ const StaffEditPage = () => {
             </div>
 
             {/* Footer */}
-            <div className="bg-slate-50 px-8 py-3 border-t border-slate-200 flex flex-wrap justify-start items-center gap-4">
+            <div className="bg-slate-50 px-8 py-4 border-t border-slate-200 flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-4">
               <CancelButton label="cancel" type="button" onClick={() => navigate("/staff")} />
               <SaveButton type="submit" label="save" isSaving={isSubmitting} onClick={handleSubmit(onSubmit)} />
             </div>

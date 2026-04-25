@@ -172,14 +172,14 @@ const StaffShowPage = () => {
             </div>
           </div>
         </div>
-        <div className="flex gap-3">
-          <button className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <button className="flex-1 sm:flex-none justify-center btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
             <Share2 size={16} />
-            <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Share</span>
+            <span className="md:inline font-800 text-[11px] uppercase tracking-wider">Share</span>
           </button>
-          <Link to={`/staff/edit/${id}`} className="btn btn-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
+          <Link to={`/staff/edit/${id}`} className="flex-1 sm:flex-none justify-center btn btn-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
             <Edit3 size={16} />
-            <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Edit Profile</span>
+            <span className="md:inline font-800 text-[11px] uppercase tracking-wider">Edit Profile</span>
           </Link>
         </div>
       </div>

@@ -1,0 +1,25 @@
+{
+  "name": "mds-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "prestart": "powershell -NoProfile -Command \".\\node_modules\\.bin\\tsc; if ($?) { Copy-Item host.json dist/host.json -Force; Copy-Item dist-package.json dist/package.json -Force }\"",
+    "start": "func start --script-root dist",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.12.0",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "typescript": "^5.3.0"
+  }
+}

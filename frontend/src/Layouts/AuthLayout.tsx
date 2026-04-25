@@ -30,6 +30,7 @@ import DashboardPage from "../Pages/DashboardPage";
 import { CompliancePage } from "../Pages/ComplianceLaws/Compliance";
 import { ComplianceCreate } from "../Pages/ComplianceLaws/ComplianceCreate";
 import NotificationsPage from "../Pages/Notifications/NotificationsPage";
+import SettingsPage from "../Pages/Settings/SettingIndex";
 
 
 const AuthLayout = () => {
@@ -105,6 +106,9 @@ const AuthLayout = () => {
 
               {/* Notifications */}
               <Route path="notifications" element={<NotificationsPage />} />
+
+              {/* Settings */}
+              <Route path="settings" element={<SettingsPage />} />
 
 
             </Routes>

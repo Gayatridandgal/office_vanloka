@@ -214,7 +214,7 @@ export const ComplianceCreate = () => {
 
         <button 
           onClick={() => navigate("/compliance")}
-          className="btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50"
+          className="w-full md:w-auto justify-center btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50"
         >
           <ArrowLeft size={14} /> Back to List
         </button>
@@ -246,7 +246,7 @@ export const ComplianceCreate = () => {
                     onChange={f("subLaw")}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    <div>
                       <FormLabel required>Registration Number</FormLabel>
                       <input 
@@ -432,18 +432,18 @@ export const ComplianceCreate = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 p-8 bg-white border border-slate-100 rounded-[32px] shadow-lg">
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-8 bg-white border border-slate-100 rounded-[32px] shadow-lg">
              <button 
                type="button"
                onClick={() => navigate("/compliance")}
-               className="px-8 py-4 text-[11px] font-900 text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors"
+               className="w-full sm:w-auto px-8 py-4 text-[11px] font-900 text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors"
              >
                Cancel
              </button>
              <button 
                type="submit"
                disabled={isSubmitting}
-               className="px-10 py-4 bg-indigo-600 text-white rounded-[20px] shadow-xl shadow-indigo-600/20 font-900 uppercase tracking-widest text-[11px] hover:scale-[1.05] active:scale-95 transition-all flex items-center gap-3"
+               className="w-full sm:w-auto justify-center px-10 py-4 bg-indigo-600 text-white rounded-[20px] shadow-xl shadow-indigo-600/20 font-900 uppercase tracking-widest text-[11px] hover:scale-[1.05] active:scale-95 transition-all flex items-center gap-3"
              >
                {isSubmitting ? (
                  <div className="flex items-center gap-2">

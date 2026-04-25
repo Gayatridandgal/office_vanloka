@@ -129,14 +129,14 @@ export const CompliancePage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2 tracking-tight uppercase">
             <Gavel size={24} /> Compliance & Laws
           </h1>
           <p className="text-xs text-slate-500 font-medium">Manage legal rules and fleet compliance.</p>
         </div>
-        <button className="btn btn-primary flex items-center gap-2" onClick={() => navigate("/compliance/create")}>
+        <button className="w-full md:w-auto justify-center btn btn-primary flex items-center gap-2" onClick={() => navigate("/compliance/create")}>
           <Plus size={16} /> Add Record
         </button>
       </div>
@@ -151,7 +151,7 @@ export const CompliancePage = () => {
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-white p-3 rounded-xl border border-slate-200 flex gap-4">
+        <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
             <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />

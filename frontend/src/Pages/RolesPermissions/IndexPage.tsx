@@ -134,14 +134,14 @@ const IndexPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2 tracking-tight uppercase">
             <Shield size={24} /> Roles & Permissions
           </h1>
           <p className="text-xs text-slate-500 font-medium">Configure system access and user authorities.</p>
         </div>
-        <button className="btn btn-primary flex items-center gap-2" onClick={() => navigate("/roles_permissions/create")}>
+        <button className="w-full sm:w-auto btn btn-primary flex justify-center items-center gap-2" onClick={() => navigate("/roles_permissions/create")}>
           <Plus size={16} /> Add Role
         </button>
       </div>

@@ -7,6 +7,7 @@ The project uses a clean, modern SaaS aesthetic with a focus on high readability
 - **Base Font Size**: 13px (standard for most text elements).
 - **Line Heights**: Typically `1.1` to `1.2` for headings, `1.5` to `1.7` for body content.
 - **Letter Spacing**: Used frequently for uppercase labels (e.g., `0.08em`).
+lucid icons
 
 ## 2. Global Color Palette
 The application follows a strict color system defined in `:root` and `@theme`.

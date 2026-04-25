@@ -138,16 +138,16 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white shadow-sm">
+      <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white shadow-sm">
         <h1 className="text-xl font-bold uppercase text-slate-800">Dashboard</h1>
-        <button onClick={fetchLiveVehicles} disabled={isButtonDisabled || loading} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase transition-all">
+        <button onClick={fetchLiveVehicles} disabled={isButtonDisabled || loading} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase transition-all">
           <FaSync className={loading ? "animate-spin" : ""} /> {loading ? "Syncing..." : isButtonDisabled ? `Wait ${countdown}s` : "Refresh"}
         </button>
       </div>
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[75vh]">
-          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 relative overflow-hidden shadow-sm">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 h-auto lg:h-[75vh]">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 relative overflow-hidden shadow-sm h-[50vh] lg:h-auto">
             <LoadScript googleMapsApiKey={googleMapsApiKey}>
               <GoogleMapDisplay vehicles={vehicles} selectedVehicleNumber={selectedVehicleNumber} onVehicleSelect={handleVehicleSelect} />
             </LoadScript>

@@ -194,7 +194,7 @@ const EditPage = () => {
 
         <button 
           onClick={() => navigate("/roles_permissions")}
-          className="btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50 shadow-sm"
+          className="w-full md:w-auto justify-center btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50 shadow-sm"
         >
           <ArrowLeft size={14} /> Back to List
         </button>
@@ -224,18 +224,18 @@ const EditPage = () => {
                 <p className="text-[10px] font-900 text-slate-800 uppercase tracking-tight">Active Access Control</p>
                 <p className="text-[9px] font-700 text-slate-400 uppercase tracking-widest">Update system module access for this specific authority</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={handleSelectAll}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-900 uppercase tracking-widest bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all"
+                  className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-900 uppercase tracking-widest bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all"
                 >
                   <CheckCheck size={12} /> Select All
                 </button>
                 <button
                   type="button"
                   onClick={handleDeselectAll}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-900 uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all"
+                  className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-900 uppercase tracking-widest bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all"
                 >
                   <XCircle size={12} /> Deselect All
                 </button>
@@ -316,11 +316,11 @@ const EditPage = () => {
           </SectionCard>
 
           {/* Action Center */}
-          <div className="flex items-center justify-end gap-4 p-8 bg-white border border-slate-100 rounded-[32px] shadow-lg">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4 p-6 sm:p-8 bg-white border border-slate-100 rounded-[32px] shadow-lg">
              <button 
                type="button"
                onClick={() => navigate("/roles_permissions")}
-               className="px-8 py-4 text-[11px] font-900 text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors"
+               className="px-8 py-4 text-[11px] font-900 text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors w-full sm:w-auto"
              >
                Cancel
              </button>

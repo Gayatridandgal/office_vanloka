@@ -74,7 +74,7 @@ const ShowPage = () => {
 
               <Link
                 to={`/roles_permissions/edit/${role.id}`}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 rounded-xl font-800 text-xs uppercase tracking-wider shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all"
+                className="flex items-center justify-center w-full md:w-auto gap-2 px-6 py-3 bg-white text-indigo-600 rounded-xl font-800 text-xs uppercase tracking-wider shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all"
               >
                 <Edit3 size={16} />
                 Edit Configuration

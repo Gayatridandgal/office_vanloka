@@ -271,7 +271,7 @@ const VehicleIndexPage = () => {
            </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           {/* Hidden inputs for imports/logo */}
           <input 
             type="file" 
@@ -288,17 +288,17 @@ const VehicleIndexPage = () => {
             className="hidden" 
           />
 
-          <button onClick={handleImportClick} className="btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+          <button onClick={handleImportClick} className="flex-1 sm:flex-none justify-center btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Import Excel</span>
           </button>
-          <button onClick={handleExportClick} className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+          <button onClick={handleExportClick} className="flex-1 sm:flex-none justify-center btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Export PDF</span>
           </button>
-          <Link to="create" className="btn btn-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
+          <Link to="create" className="flex-1 sm:flex-none justify-center w-full sm:w-auto btn btn-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
              <Plus size={16} />
-             <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Add New Vehicle</span>
+             <span className="md:inline font-800 text-[11px] uppercase tracking-wider">Add New</span>
           </Link>
         </div>
       </div>
@@ -335,7 +335,7 @@ const VehicleIndexPage = () => {
             />
           </div>
           
-          <div className="flex gap-4 w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             <div className="relative min-w-[160px] flex-1 lg:flex-initial">
               <select 
                 className="w-full pl-4 pr-10 py-3 bg-slate-50/50 border-none rounded-xl text-[11px] font-900 uppercase tracking-widest appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/10"

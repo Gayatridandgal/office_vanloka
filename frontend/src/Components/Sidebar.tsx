@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useToolkit } from "../Utils/Toolkit";
 
 // Icons
-import { MdDashboard, MdLogout, MdDevices } from "react-icons/md";
-import { FaAngleDown, FaUserShield, FaRegAddressBook, FaBusinessTime, FaFilePdf } from "react-icons/fa6";
+import { MdDashboard, MdDevices } from "react-icons/md";
+import { FaUserShield, FaRegAddressBook, FaBusinessTime, FaFilePdf } from "react-icons/fa6";
 import { FaUsersCog, FaUsers, FaBalanceScale } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
 import { BsBusFront } from "react-icons/bs";
@@ -12,8 +10,9 @@ import { SiGooglemessages } from "react-icons/si";
 import { PiUsersThreeFill } from "react-icons/pi";
 import { IoSettings } from "react-icons/io5";
 import { logout } from "../Services/AuthService";
-import { Search, Bell, Bus, LogOut } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import type { SidebarLinkType } from "../Types/Index";
+import { useAuth } from "../Context/AuthContext";
 
 // Define app_features locally
 const app_features = [
@@ -53,23 +52,21 @@ interface Props {
 
 const Sidebar = ({ isOpen, closeSidebar }: Props) => {
   const location = useLocation();
-  const { canAny, roles } = useToolkit();
-  const isAdmin = roles.some((role) => role?.toLowerCase?.() === "admin");
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const userName = user?.name || "User";
+  const userEmail = user?.email || "-";
+  const initials = userName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("") || "U";
 
   const accessibleLinks = sidebarLinks.filter((link) => {
     if (!app_features.includes(link.feature)) return false;
     return true; // Simplified for restore
   });
-
-  const activeParent = accessibleLinks.find((link) =>
-    link.subLinks?.some((sub) => location.pathname.startsWith(sub.path))
-  );
-  const [openDropdown, setOpenDropdown] = useState<string | null>(activeParent?.name || null);
-
-  const handleDropdownToggle = (name: string) => {
-    setOpenDropdown((current) => (current === name ? null : name));
-  };
 
   const handleLogout = () => {
     logout();
@@ -127,11 +124,11 @@ const Sidebar = ({ isOpen, closeSidebar }: Props) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-full bg-[#f3e8ff] text-[#9333ea] flex items-center justify-center font-bold text-sm tracking-wide">
-                  DU
+                {initials}
                </div>
                <div>
-                  <h4 className="text-[15px] font-bold text-slate-800 leading-tight">Dev User</h4>
-                  <p className="text-[13px] font-medium text-slate-400 mt-0.5">hr@tcs.com</p>
+                <h4 className="text-[15px] font-bold text-slate-800 leading-tight">{userName}</h4>
+                <p className="text-[13px] font-medium text-slate-400 mt-0.5">{userEmail}</p>
                </div>
             </div>
             <button className="text-slate-400 hover:text-rose-500 transition-colors p-2 -mr-2" onClick={handleLogout}>

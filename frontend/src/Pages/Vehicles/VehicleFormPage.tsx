@@ -264,7 +264,7 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
 
         <button 
           onClick={() => navigate("/vehicles")}
-          className="btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50"
+          className="w-full md:w-auto justify-center btn flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-900 uppercase tracking-widest transition-all bg-white border border-slate-100 hover:bg-slate-50"
         >
           <ArrowLeft size={14} /> Back to List
         </button>
@@ -277,15 +277,15 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
             {/* Identity & Basic Info */}
             <SectionCard icon={Info} title="Universal Identity">
               <div className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField label="Vehicle Number" name="vehicle_number" register={register} errors={errors} required placeholder="e.g. MH12AB1234" />
                   <SelectField label="Vehicle Type" name="vehicle_type" register={register} errors={errors} required options={vehicleTypes.map(d => ({ label: d.value, value: d.value }))} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField label="Manufacturer" name="manufacturer" register={register} errors={errors} placeholder="e.g. Tata Motors" />
                   <InputField label="Model Series" name="vehicle_model" register={register} errors={errors} placeholder="e.g. Nexon EV" />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <InputField label="Mfg Year" name="manufacturing_year" type="number" register={register} errors={errors} placeholder="2024" />
                   <SelectField label="Fuel Source" name="fuel_type" register={register} errors={errors} options={fuelTypes.map(d => ({ label: d.value, value: d.value }))} />
                   <InputField label="Seats" name="seating_capacity" type="number" register={register} errors={errors} placeholder="4" />
@@ -415,46 +415,32 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
              </SectionCard>
           </div>
 
-          {/* Bottom Action Card */}
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[1100px] px-6 z-50">
-            <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[32px] p-4 flex items-center justify-between">
-              <div className="hidden md:flex items-center gap-4 px-4 border-r border-slate-100">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${mode==='create' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                  {mode==='create' ? <PlusCircle size={20} /> : <Save size={20} />}
-                </div>
-                <div>
-                   <p className="text-[10px] font-900 text-slate-400 uppercase tracking-widest">Configuration Status</p>
-                   <p className="text-xs font-800 text-slate-700">{mode==='create' ? 'Ready to Register' : 'Changes Pending'}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 w-full md:w-auto">
-                <button 
-                  type="button" 
-                  onClick={() => navigate("/vehicles")}
-                  className="flex-1 md:flex-none px-8 py-4 rounded-[20px] text-[11px] font-900 border border-slate-100 text-slate-500 uppercase tracking-widest hover:bg-slate-50 transition-all"
-                >
-                  Discard
-                </button>
-                <button 
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 md:flex-none px-10 py-4 bg-indigo-600 text-white rounded-[20px] shadow-xl shadow-indigo-600/20 font-900 uppercase tracking-widest text-[11px] hover:scale-[1.05] active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Syncing...</span>
-                    </>
-                  ) : (
-                    <>
-                      {mode === 'create' ? <PlusCircle size={18} /> : <CheckCircle2 size={18} />}
-                      <span>{mode === 'create' ? 'Register Vehicle' : 'Commit Changes'}</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+          {/* Action Center */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4 p-6 sm:p-8 bg-white border border-slate-100 rounded-[32px] shadow-lg">
+             <button 
+               type="button"
+               onClick={() => navigate("/vehicles")}
+               className="px-8 py-4 text-[11px] font-900 text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors w-full sm:w-auto"
+             >
+               Cancel
+             </button>
+             <button 
+               type="submit"
+               disabled={isSubmitting}
+               className="w-full sm:w-auto justify-center px-10 py-4 bg-indigo-600 text-white rounded-[20px] shadow-xl shadow-indigo-600/20 font-900 uppercase tracking-widest text-[11px] hover:scale-[1.05] active:scale-95 transition-all flex items-center gap-3"
+             >
+               {isSubmitting ? (
+                 <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Syncing...</span>
+                 </div>
+               ) : (
+                 <>
+                   {mode === 'create' ? <PlusCircle size={18} /> : <CheckCircle2 size={18} />}
+                   <span>{mode === 'create' ? 'Register Vehicle' : 'Commit Changes'}</span>
+                 </>
+               )}
+             </button>
           </div>
         </form>
       </div>

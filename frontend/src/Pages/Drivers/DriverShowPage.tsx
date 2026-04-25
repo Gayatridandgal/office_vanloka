@@ -151,9 +151,9 @@ const DriverShowPage = () => {
                         {/* Action Button */}
                         <button
                             onClick={() => navigate(`/drivers/edit/${id}`)}
-                            className="text-blue-700 text-xs font-bold uppercase rounded-lg p-2 hover:bg-blue-100 transition-colors flex-shrink-0"
+                            className="w-full sm:w-auto mt-4 sm:mt-0 flex items-center justify-center gap-2 text-blue-700 bg-blue-50 text-xs font-bold uppercase rounded-lg p-2 px-4 hover:bg-blue-100 border border-blue-200 transition-colors flex-shrink-0"
                         >
-                            <FaEdit size={18} className="sm:w-5 sm:h-5" />
+                            <FaEdit size={18} className="sm:w-5 sm:h-5" /> <span className="sm:hidden">Edit Profile</span>
                         </button>
                     </div>
                 </div>

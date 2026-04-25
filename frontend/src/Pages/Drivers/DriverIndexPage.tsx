@@ -148,10 +148,10 @@ const DriverIndexPage = () => {
            </div>
         </div>
 
-        <div className="flex gap-3">
-          <Link to="create" className="btn btn-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+          <Link to="create" className="w-full sm:w-auto justify-center btn btn-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg">
              <UserPlus size={16} />
-             <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Add Driver</span>
+             <span className="md:inline font-800 text-[11px] uppercase tracking-wider">Add Driver</span>
           </Link>
         </div>
       </div>
@@ -187,7 +187,7 @@ const DriverIndexPage = () => {
             />
           </div>
           
-          <div className="flex gap-4 w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             <div className="relative min-w-[150px] flex-1 lg:flex-initial">
               <select 
                 value={selectedCity}

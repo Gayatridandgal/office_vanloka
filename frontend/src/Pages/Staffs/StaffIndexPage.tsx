@@ -256,7 +256,7 @@ const StaffIndexPage = () => {
   return (
     <div className="min-h-screen bg-transparent">
       {/* Header */}
-      <div className="px-6 pt-6 flex justify-between items-start">
+      <div className="px-6 pt-6 flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
            <div className="flex items-center gap-2 text-purple-600 mb-1">
               <Users size={18} />
@@ -268,13 +268,13 @@ const StaffIndexPage = () => {
              <span className="text-primary-dark">Staff Management</span>
            </div>
         </div>
-        <div className="flex gap-3">
-          <button onClick={handleImportClick} className="btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onClick={handleImportClick} className="flex-1 sm:flex-none justify-center btn btn-success flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Import Excel</span>
           </button>
           <input type="file" ref={staffImportRef} onChange={handleFileImport} accept=".xlsx, .xls, .csv" className="hidden" />
-          <button onClick={handleExportClick} className="btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
+          <button onClick={handleExportClick} className="flex-1 sm:flex-none justify-center btn btn-outline border-slate-200 text-slate-600 flex items-center gap-2 transition-all hover:translate-y-[-2px] hover:shadow-lg focus:ring-0">
              <FileText size={16} />
              <span className="hidden md:inline font-800 text-[11px] uppercase tracking-wider">Export PDF</span>
           </button>
@@ -313,7 +313,7 @@ const StaffIndexPage = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-surface border-none rounded-[10px] text-sm focus:ring-2 focus:ring-primary/10 transition-all outline-none"
             />
           </div>
-          <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
             <div className="relative min-w-[160px] flex-1 md:flex-initial">
               <select 
                 value={roleFilter}

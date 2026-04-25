@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "PG_HOST": "vanloka-postgres.postgres.database.azure.com",
+    "PG_PORT": "5432",
+    "PG_USER": "vanloka_admin",
+    "PG_PASSWORD": "MyNewPass@123",
+    "PG_DATABASE": "postgres",
+    "JWT_SECRET": "cea7046277434c3a05e3b111e72a6ebe3643ea8d1ce1869741b373a22a10df774d6e0ab41d38978fe0962379657417e4",
+    "JWT_EXPIRES_IN": "86400",
+    "ALLOWED_ORIGIN": "http://localhost:5173"
+  }
+}

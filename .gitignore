@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+local.settings.json
+*.log
+IOT_Api_Text.txt
+*.docx
+backend/.env
+api/local.settings.json
+api-office/local.settings.json
+storage/
