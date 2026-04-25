@@ -438,7 +438,7 @@ const DriverCreatePage = () => {
              <SectionCard icon={NavigationIcon} title="Operational assignment">
                 <div className="grid grid-cols-2 gap-4">
                    <SelectField label="Fleet Unit" name="vehicle" register={register} errors={errors} options={dropdowns.vehicles.map(v => ({ label: v.vehicle_number, value: v.vehicle_number }))} />
-                   <SelectField label="Tracking Node" name="beacon_id" register={register} errors={errors} options={dropdowns.beacons.map(b => ({ label: `${b.device_id} (${b.imei_number})`, value: b.imei_number }))} />
+                   <SelectField label="Tracking Node" name="beacon_id" register={register} errors={errors} options={dropdowns.beacons.map(b => ({ label: (b as any).label, value: (b as any).label }))} />
                 </div>
              </SectionCard>
 

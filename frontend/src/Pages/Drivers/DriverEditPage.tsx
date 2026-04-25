@@ -491,7 +491,7 @@ const DriverEditPage = () => {
                 <div className="space-y-5">
                    <div className="grid grid-cols-2 gap-4">
                       <SelectField label="Fleet Unit" name="vehicle" register={register} errors={errors} options={dropdowns.vehicles.map(v => ({ label: v.vehicle_number, value: v.vehicle_number }))} />
-                      <SelectField label="Tracking Node" name="beacon_id" register={register} errors={errors} options={dropdowns.beacons.map(b => ({ label: `${b.device_id} (${b.imei_number})`, value: b.imei_number }))} />
+                      <SelectField label="Tracking Node" name="beacon_id" register={register} errors={errors} options={dropdowns.beacons.map(b => ({ label: (b as any).label, value: (b as any).label }))} />
                    </div>
                    {driverData?.beacon_id && <p className="text-[10px] font-900 text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1 rounded-full border border-amber-100 inline-block">Active Lock: {driverData.beacon_id}</p>}
                 </div>

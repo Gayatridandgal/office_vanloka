@@ -21,12 +21,20 @@ const DRIVER_TABLE = 'schemaa."officeDrivers"';
 const GPS_DEVICE_TABLE = 'schemaa."officeGpsDevices"';
 const BEACON_DEVICE_TABLE = 'schemaa."officeBeaconDevices"';
 const IOT_BASE_URL = process.env.IOT_BASE_URL || "https://vanloka-iot-function-a8eqh5b4euh6fxa2.southindia-01.azurewebsites.net/api";
-const IOT_AVAILABLE_GPS_URL = process.env.IOT_AVAILABLE_GPS_URL || `${IOT_BASE_URL}/getAvailableGPS`;
-const IOT_AVAILABLE_BEACONS_URL = process.env.IOT_AVAILABLE_BEACONS_URL || `${IOT_BASE_URL}/getAvailableBeacons`;
-const IOT_BEACONS_URL = process.env.IOT_BEACONS_URL || `${IOT_BASE_URL}/getBeacons`;
-const IOT_AVAILABLE_GPS_KEY = process.env.IOT_AVAILABLE_GPS_KEY || "";
-const IOT_AVAILABLE_BEACONS_KEY = process.env.IOT_AVAILABLE_BEACONS_KEY || "";
-const IOT_BEACONS_KEY = process.env.IOT_BEACONS_KEY || "";
+
+// IoT read keys
+const IOT_GET_AVAILABLE_GPS_KEY = process.env.IOT_GET_AVAILABLE_GPS_KEY || "";
+const IOT_GET_AVAILABLE_BEACONS_KEY = process.env.IOT_GET_AVAILABLE_BEACONS_KEY || "";
+const IOT_GET_BEACONS_KEY = process.env.IOT_GET_BEACONS_KEY || "";
+const IOT_GET_ASSIGNMENTS_KEY = process.env.IOT_GET_ASSIGNMENTS_KEY || "";
+
+// IoT write keys
+const IOT_ASSIGN_GPS_TO_VEHICLE_KEY = process.env.IOT_ASSIGN_GPS_TO_VEHICLE_KEY || "";
+const IOT_ASSIGN_BEACON_TO_DRIVER_KEY = process.env.IOT_ASSIGN_BEACON_TO_DRIVER_KEY || "";
+const IOT_ALLOCATE_BEACON_TO_TENANT_KEY = process.env.IOT_ALLOCATE_BEACON_TO_TENANT_KEY || "";
+const IOT_BULK_ALLOCATE_DEVICES_KEY = process.env.IOT_BULK_ALLOCATE_DEVICES_KEY || "";
+const IOT_ASSIGN_BEACON_KEY = process.env.IOT_ASSIGN_BEACON_KEY || "";
+const IOT_UNASSIGN_DEVICE_KEY = process.env.IOT_UNASSIGN_DEVICE_KEY || "";
 
 type DeviceRecord = {
   id: string;
@@ -662,112 +670,140 @@ async function fetchIotAvailableDevices(orgId: string, includeGps: boolean, incl
   if (typeof fetch !== "function") return [];
 
   const tasks: Array<Promise<DeviceRecord[]>> = [];
-  const normalizedIotOrgId = /^\d+$/.test(String(orgId || "").trim()) ? String(orgId).trim() : "1";
 
-  if (includeGps) {
-    const gpsUrl = `${IOT_AVAILABLE_GPS_URL}?orgId=${encodeURIComponent(normalizedIotOrgId)}`;
+  if (includeGps && IOT_GET_AVAILABLE_GPS_KEY) {
+    const gpsUrl = `${IOT_BASE_URL}/getAvailableGPS?code=${encodeURIComponent(IOT_GET_AVAILABLE_GPS_KEY)}`;
     tasks.push(
-      fetch(gpsUrl, {
-        headers: {
-          "x-functions-key": IOT_AVAILABLE_GPS_KEY,
-        },
-      })
+      fetch(gpsUrl)
         .then(async (response) => {
-          if (!response.ok) return [];
+          console.log(`[IOT] getAvailableGPS → ${response.status}`);
+          if (!response.ok) {
+            const body = await response.text().catch(() => "");
+            console.error(`[IOT] getAvailableGPS error body: ${body.substring(0, 500)}`);
+            return [];
+          }
           const payload = await response.json().catch(() => null);
+          console.log(`[IOT] getAvailableGPS payload keys:`, payload ? Object.keys(payload) : "null");
           return extractArrayPayload(payload).map((item, index) => toIotDeviceRecord(item, "GPS", index));
         })
-        .catch(() => [])
+        .catch((e) => { console.error(`[IOT] getAvailableGPS fetch error: ${e.message}`); return []; })
     );
   }
 
   if (includeBeacon) {
-    const beaconUrl = `${IOT_AVAILABLE_BEACONS_URL}?orgId=${encodeURIComponent(normalizedIotOrgId)}`;
-    const allBeaconUrl = `${IOT_BEACONS_URL}?orgId=${encodeURIComponent(normalizedIotOrgId)}`;
-    tasks.push(
-      fetch(beaconUrl, {
-        headers: {
-          "x-functions-key": IOT_AVAILABLE_BEACONS_KEY,
-        },
-      })
-        .then(async (response) => {
-          if (!response.ok) return [];
-          const payload = await response.json().catch(() => null);
-          return extractArrayPayload(payload).map((item, index) => toIotDeviceRecord(item, "BEACON", index));
-        })
-        .catch(() => [])
-    );
+    // Fetch available beacons
+    if (IOT_GET_AVAILABLE_BEACONS_KEY) {
+      const beaconUrl = `${IOT_BASE_URL}/getAvailableBeacons?code=${encodeURIComponent(IOT_GET_AVAILABLE_BEACONS_KEY)}`;
+      tasks.push(
+        fetch(beaconUrl)
+          .then(async (response) => {
+            console.log(`[IOT] getAvailableBeacons → ${response.status}`);
+            if (!response.ok) return [];
+            const payload = await response.json().catch(() => null);
+            console.log(`[IOT] getAvailableBeacons payload keys:`, payload ? Object.keys(payload) : "null");
+            return extractArrayPayload(payload).map((item, index) => toIotDeviceRecord(item, "BEACON", index));
+          })
+          .catch((e) => { console.error(`[IOT] getAvailableBeacons error: ${e.message}`); return []; })
+      );
+    }
 
-    tasks.push(
-      fetch(allBeaconUrl, {
-        headers: {
-          "x-functions-key": IOT_BEACONS_KEY,
-        },
-      })
-        .then(async (response) => {
-          if (!response.ok) return [];
-          const payload = await response.json().catch(() => null);
-          const beaconRows = Array.isArray((payload as any)?.beacons) ? (payload as any).beacons : null;
-          const rows = extractArrayPayload(beaconRows ? { devices: beaconRows } : payload);
-          return rows.map((item, index) => toIotDeviceRecord(item, "BEACON", index));
-        })
-        .catch(() => [])
-    );
+    // Fetch ALL beacons (includes assigned ones)
+    if (IOT_GET_BEACONS_KEY) {
+      const allBeaconUrl = `${IOT_BASE_URL}/getBeacons?code=${encodeURIComponent(IOT_GET_BEACONS_KEY)}`;
+      tasks.push(
+        fetch(allBeaconUrl)
+          .then(async (response) => {
+            console.log(`[IOT] getBeacons → ${response.status}`);
+            if (!response.ok) return [];
+            const payload = await response.json().catch(() => null);
+            console.log(`[IOT] getBeacons payload keys:`, payload ? Object.keys(payload) : "null");
+            const beaconRows = Array.isArray((payload as any)?.beacons) ? (payload as any).beacons : null;
+            const rows = extractArrayPayload(beaconRows ? { devices: beaconRows } : payload);
+            return rows.map((item, index) => toIotDeviceRecord(item, "BEACON", index));
+          })
+          .catch((e) => { console.error(`[IOT] getBeacons error: ${e.message}`); return []; })
+      );
+    }
   }
 
   if (!tasks.length) return [];
   const results = await Promise.all(tasks);
   const merged = results.flat();
 
+  // Deduplicate by composite key
   const deduped = new Map<string, DeviceRecord>();
   for (const item of merged) {
     const key = `${item.device_type}:${item.device_id || ""}:${item.imei_number || ""}:${item.serial_number || ""}`;
     deduped.set(key, item);
   }
 
-  const finalResults = Array.from(deduped.values());
-  if (finalResults.length === 0) {
-    // Generate mock mock data for development as upstream IoT handles orgId=1 empty
-    if (includeGps) {
-      finalResults.push({
-        id: "mock-gps-1",
-        source_id: 1,
-        device_type: "GPS",
-        sequnce_number: "SEQ-GPS-001",
-        device_id: "GPS-MOCK-001",
-        serial_number: "SN-GPS-1001",
-        imei_number: "IMEI-123456789012345",
-        manufacture_date: new Date().toISOString(),
-        status: "available",
-      });
-      finalResults.push({
-        id: "mock-gps-2",
-        source_id: 2,
-        device_type: "GPS",
-        sequnce_number: "SEQ-GPS-002",
-        device_id: "GPS-MOCK-002",
-        serial_number: "SN-GPS-1002",
-        imei_number: "IMEI-987654321098765",
-        manufacture_date: new Date().toISOString(),
-        status: "available",
-      });
-    }
-    if (includeBeacon) {
-      finalResults.push({
-        id: "mock-beacon-1",
-        source_id: 3,
-        device_type: "BEACON",
-        sequnce_number: "SEQ-BCN-001",
-        device_id: "BCN-MOCK-001",
-        serial_number: "SN-BCN-2001",
-        imei_number: "IMEI-BEACON-001",
-        manufacture_date: new Date().toISOString(),
-        status: "available",
-      });
-    }
-  }
+  return Array.from(deduped.values());
+}
 
-  return finalResults;
+/**
+ * Fetch current IoT assignments from the platform
+ */
+async function fetchIotAssignments(): Promise<any[]> {
+  if (!IOT_GET_ASSIGNMENTS_KEY) return [];
+  try {
+    const url = `${IOT_BASE_URL}/getAssignments?code=${encodeURIComponent(IOT_GET_ASSIGNMENTS_KEY)}`;
+    const response = await fetch(url);
+    if (!response.ok) return [];
+    const payload = await response.json().catch(() => null);
+    return extractArrayPayload(payload);
+  } catch (e: any) {
+    console.error(`[IOT] getAssignments error: ${e.message}`);
+    return [];
+  }
+}
+
+/**
+ * Call an IoT write endpoint (POST with JSON body, code= auth)
+ */
+async function callIotPost(endpoint: string, key: string, body: Record<string, unknown>): Promise<{ ok: boolean; data?: any; error?: string }> {
+  if (!key) return { ok: false, error: "No API key configured for this endpoint" };
+  try {
+    const url = `${IOT_BASE_URL}/${endpoint}?code=${encodeURIComponent(key)}`;
+    console.log(`[IOT] POST ${endpoint}`, JSON.stringify(body));
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const text = await response.text();
+    console.log(`[IOT] POST ${endpoint} → ${response.status}: ${text.substring(0, 300)}`);
+    if (!response.ok) return { ok: false, error: `IoT API returned ${response.status}: ${text.substring(0, 200)}` };
+    const data = text ? JSON.parse(text) : {};
+    return { ok: true, data };
+  } catch (e: any) {
+    console.error(`[IOT] POST ${endpoint} error: ${e.message}`);
+    return { ok: false, error: e.message };
+  }
+}
+
+/** Assign a GPS device to a vehicle via IoT platform */
+async function iotAssignGpsToVehicle(gpsId: string, vehicleId: string) {
+  return callIotPost("assignGPSToVehicle", IOT_ASSIGN_GPS_TO_VEHICLE_KEY, { gpsId, vehicleId });
+}
+
+/** Assign a Beacon to a driver via IoT platform */
+async function iotAssignBeaconToDriver(beaconId: string, driverId: string) {
+  return callIotPost("assignBeaconToDriver", IOT_ASSIGN_BEACON_TO_DRIVER_KEY, { beaconId, driverId });
+}
+
+/** Unassign a device via IoT platform */
+async function iotUnassignDevice(deviceId: string) {
+  return callIotPost("unassignDevice", IOT_UNASSIGN_DEVICE_KEY, { deviceId });
+}
+
+/** Assign a beacon generically */
+async function iotAssignBeacon(beaconId: string, assignedTo: string, assignedType: string) {
+  return callIotPost("assignBeacon", IOT_ASSIGN_BEACON_KEY, { beaconId, assignedTo, assignedType });
+}
+
+/** Allocate a beacon to a tenant org */
+async function iotAllocateBeaconToTenant(beaconId: string, tenantId: string) {
+  return callIotPost("allocateBeaconToTenant", IOT_ALLOCATE_BEACON_TO_TENANT_KEY, { beaconId, tenantId });
 }
 
 async function persistIotDevicesToDb(orgId: string, items: DeviceRecord[]): Promise<{ gpsUpserts: number; beaconUpserts: number }> {
@@ -1993,12 +2029,12 @@ app.get("/api/devices", async (req: Request, res: Response) => {
   try {
     if (includeGps) {
       const gpsColumns = await getTableColumns(GPS_DEVICE_TABLE);
-      const gpsParams: Array<string> = [];
+      // Always push orgId as $1 for the LEFT JOIN
+      const gpsParams: Array<string | number> = [orgId];
       const gpsWhere: string[] = [];
 
       if (gpsColumns.has("org_id")) {
-        gpsParams.push(orgId);
-        gpsWhere.push(`org_id = $${gpsParams.length}`);
+        gpsWhere.push(`a.org_id = $1`);
       }
 
       if (search) {
@@ -2006,30 +2042,32 @@ app.get("/api/devices", async (req: Request, res: Response) => {
         gpsParams.push(term);
         const marker = `$${gpsParams.length}`;
         gpsWhere.push(`(
-          LOWER(COALESCE(device_id, '')) LIKE ${marker} ESCAPE '\\'
-          OR LOWER(COALESCE(serial_number, '')) LIKE ${marker} ESCAPE '\\'
-          OR LOWER(COALESCE(imei_number, '')) LIKE ${marker} ESCAPE '\\'
-          OR LOWER(COALESCE(sequnce_number, '')) LIKE ${marker} ESCAPE '\\'
+          LOWER(COALESCE(a.device_id, '')) LIKE ${marker} ESCAPE '\\'
+          OR LOWER(COALESCE(a.serial_number, '')) LIKE ${marker} ESCAPE '\\'
+          OR LOWER(COALESCE(a.imei_number, '')) LIKE ${marker} ESCAPE '\\'
+          OR LOWER(COALESCE(a.sequnce_number, '')) LIKE ${marker} ESCAPE '\\'
         )`);
       }
 
       if (statusFilter) {
         gpsParams.push(statusFilter);
-        gpsWhere.push(`LOWER(COALESCE(status, '')) = $${gpsParams.length}`);
+        gpsWhere.push(`LOWER(COALESCE(a.status, '')) = $${gpsParams.length}`);
       }
 
       const gpsQuery = `
         SELECT
-          id,
-          sequnce_number,
-          device_id,
-          serial_number,
-          imei_number,
-          manufacture_date,
-          status
-        FROM ${GPS_DEVICE_TABLE}
+          a.id,
+          a.sequnce_number,
+          a.device_id,
+          a.serial_number,
+          a.imei_number,
+          a.manufacture_date,
+          a.status,
+          v.vehicle_number as assigned_to
+        FROM ${GPS_DEVICE_TABLE} a
+        LEFT JOIN ${VEHICLE_TABLE} v ON (a.device_id = v.gps_device OR a.imei_number = v.gps_device) AND v.org_id = $1
         ${gpsWhere.length ? `WHERE ${gpsWhere.join(" AND ")}` : ""}
-        ORDER BY id DESC
+        ORDER BY a.id DESC
       `;
 
       const gpsRows = await pool.query(gpsQuery, gpsParams);
@@ -2044,18 +2082,19 @@ app.get("/api/devices", async (req: Request, res: Response) => {
           imei_number: row.imei_number ? String(row.imei_number) : null,
           manufacture_date: row.manufacture_date ? String(row.manufacture_date) : null,
           status: row.status ? String(row.status) : null,
+          assigned_to: row.assigned_to ? String(row.assigned_to) : null,
         });
       }
     }
 
     if (includeBeacon) {
       const beaconColumns = await getTableColumns(BEACON_DEVICE_TABLE);
-      const beaconParams: Array<string> = [];
+      // Always push orgId as $1 for the LEFT JOIN
+      const beaconParams: Array<string | number> = [orgId];
       const beaconWhere: string[] = [];
 
       if (beaconColumns.has("org_id")) {
-        beaconParams.push(orgId);
-        beaconWhere.push(`org_id = $${beaconParams.length}`);
+        beaconWhere.push(`a.org_id = $1`);
       }
 
       if (search) {
@@ -2063,30 +2102,32 @@ app.get("/api/devices", async (req: Request, res: Response) => {
         beaconParams.push(term);
         const marker = `$${beaconParams.length}`;
         beaconWhere.push(`(
-          LOWER(COALESCE(device_id, '')) LIKE ${marker} ESCAPE '\\'
-          OR LOWER(COALESCE(serial_number, '')) LIKE ${marker} ESCAPE '\\'
-          OR LOWER(COALESCE(imei_number, '')) LIKE ${marker} ESCAPE '\\'
-          OR LOWER(COALESCE(sequnce_number, '')) LIKE ${marker} ESCAPE '\\'
+          LOWER(COALESCE(a.device_id, '')) LIKE ${marker} ESCAPE '\\'
+          OR LOWER(COALESCE(a.serial_number, '')) LIKE ${marker} ESCAPE '\\'
+          OR LOWER(COALESCE(a.imei_number, '')) LIKE ${marker} ESCAPE '\\'
+          OR LOWER(COALESCE(a.sequnce_number, '')) LIKE ${marker} ESCAPE '\\'
         )`);
       }
 
       if (statusFilter) {
         beaconParams.push(statusFilter);
-        beaconWhere.push(`LOWER(COALESCE(status, '')) = $${beaconParams.length}`);
+        beaconWhere.push(`LOWER(COALESCE(a.status, '')) = $${beaconParams.length}`);
       }
 
       const beaconQuery = `
         SELECT
-          id,
-          sequnce_number,
-          device_id,
-          serial_number,
-          imei_number,
-          manufacture_date,
-          status
-        FROM ${BEACON_DEVICE_TABLE}
+          a.id,
+          a.sequnce_number,
+          a.device_id,
+          a.serial_number,
+          a.imei_number,
+          a.manufacture_date,
+          a.status,
+          d.first_name || ' ' || d.last_name as assigned_to
+        FROM ${BEACON_DEVICE_TABLE} a
+        LEFT JOIN ${DRIVER_TABLE} d ON (a.device_id = d.beacon_id OR a.imei_number = d.beacon_id) AND d.org_id = $1
         ${beaconWhere.length ? `WHERE ${beaconWhere.join(" AND ")}` : ""}
-        ORDER BY id DESC
+        ORDER BY a.id DESC
       `;
 
       const beaconRows = await pool.query(beaconQuery, beaconParams);
@@ -2101,6 +2142,7 @@ app.get("/api/devices", async (req: Request, res: Response) => {
           imei_number: row.imei_number ? String(row.imei_number) : null,
           manufacture_date: row.manufacture_date ? String(row.manufacture_date) : null,
           status: row.status ? String(row.status) : null,
+          assigned_to: row.assigned_to ? String(row.assigned_to) : null,
         });
       }
     }
@@ -2153,12 +2195,220 @@ app.post("/api/devices/sync-iot", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/gps-device/for/dropdown", (_req: Request, res: Response) => {
-  res.json([]);
+// ═══════════════════════════════════════════════════
+// IoT Assignment & Live Vehicle Endpoints
+// ═══════════════════════════════════════════════════
+
+/** GET /api/iot/vehicles/live — Proxy to IoT GetVehiclesLive */
+app.get("/api/iot/vehicles/live", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  try {
+    const url = `${IOT_BASE_URL}/vehicles/all/live`;
+    console.log(`[IOT] GET vehicles/all/live`);
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      res.status(response.status).json({ success: false, message: `IoT API error: ${errText.substring(0, 200)}` });
+      return;
+    }
+    const data = await response.json();
+    res.json({ success: true, data });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
-app.get("/api/beacon-device/for/dropdown", (_req: Request, res: Response) => {
-  res.json([]);
+/** GET /api/iot/assignments — Fetch IoT device assignments */
+app.get("/api/iot/assignments", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  try {
+    const assignments = await fetchIotAssignments();
+    res.json({ success: true, data: assignments });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+/** POST /api/iot/assign-gps — Assign GPS device to a vehicle */
+app.post("/api/iot/assign-gps", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  const { gpsId, vehicleId } = req.body;
+  if (!gpsId || !vehicleId) {
+    res.status(400).json({ success: false, message: "gpsId and vehicleId are required" });
+    return;
+  }
+
+  try {
+    const result = await iotAssignGpsToVehicle(gpsId, vehicleId);
+    if (!result.ok) {
+      res.status(400).json({ success: false, message: result.error || "Failed to assign GPS" });
+      return;
+    }
+
+    // Also update local DB: set gps_device on the vehicle
+    try {
+      await pool.query(
+        `UPDATE ${VEHICLE_TABLE} SET gps_device = $1 WHERE vehicle_number = $2 AND org_id = $3`,
+        [gpsId, vehicleId, orgId],
+      );
+    } catch (dbErr: any) {
+      console.error(`[IOT] Local DB update for GPS assign failed: ${dbErr.message}`);
+    }
+
+    res.json({ success: true, message: "GPS device assigned to vehicle", data: result.data });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+/** POST /api/iot/assign-beacon — Assign beacon to a driver */
+app.post("/api/iot/assign-beacon", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  const { beaconId, driverId } = req.body;
+  if (!beaconId || !driverId) {
+    res.status(400).json({ success: false, message: "beaconId and driverId are required" });
+    return;
+  }
+
+  try {
+    const result = await iotAssignBeaconToDriver(beaconId, driverId);
+    if (!result.ok) {
+      res.status(400).json({ success: false, message: result.error || "Failed to assign beacon" });
+      return;
+    }
+
+    // Also update local DB: set beacon_id on the driver
+    try {
+      await pool.query(
+        `UPDATE ${DRIVER_TABLE} SET beacon_id = $1 WHERE id = $2 AND org_id = $3`,
+        [beaconId, Number(driverId), orgId],
+      );
+    } catch (dbErr: any) {
+      console.error(`[IOT] Local DB update for beacon assign failed: ${dbErr.message}`);
+    }
+
+    res.json({ success: true, message: "Beacon assigned to driver", data: result.data });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+/** POST /api/iot/unassign-device — Remove device assignment */
+app.post("/api/iot/unassign-device", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  const { deviceId } = req.body;
+  if (!deviceId) {
+    res.status(400).json({ success: false, message: "deviceId is required" });
+    return;
+  }
+
+  try {
+    const result = await iotUnassignDevice(deviceId);
+    if (!result.ok) {
+      res.status(400).json({ success: false, message: result.error || "Failed to unassign device" });
+      return;
+    }
+
+    // Clear local references
+    try {
+      await pool.query(`UPDATE ${VEHICLE_TABLE} SET gps_device = NULL WHERE gps_device = $1 AND org_id = $2`, [deviceId, orgId]);
+      await pool.query(`UPDATE ${DRIVER_TABLE} SET beacon_id = NULL WHERE beacon_id = $1 AND org_id = $2`, [deviceId, orgId]);
+    } catch (dbErr: any) {
+      console.error(`[IOT] Local DB cleanup for unassign failed: ${dbErr.message}`);
+    }
+
+    res.json({ success: true, message: "Device unassigned successfully", data: result.data });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+/** POST /api/iot/allocate-beacon-to-tenant — Allocate a beacon to the organization */
+app.post("/api/iot/allocate-beacon-to-tenant", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) { res.status(401).json({ message: "Unauthorized" }); return; }
+
+  const { beaconId } = req.body;
+  if (!beaconId) {
+    res.status(400).json({ success: false, message: "beaconId is required" });
+    return;
+  }
+
+  try {
+    const result = await iotAllocateBeaconToTenant(beaconId, orgId);
+    if (!result.ok) {
+      res.status(400).json({ success: false, message: result.error || "Failed to allocate beacon" });
+      return;
+    }
+    res.json({ success: true, message: "Beacon allocated to tenant", data: result.data });
+  } catch (e: any) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+app.get("/api/gps-device/for/dropdown", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, device_id, serial_number, imei_number 
+       FROM ${GPS_DEVICE_TABLE} 
+       WHERE org_id = $1 AND (status IS NULL OR LOWER(status) = 'available')
+       ORDER BY id DESC`,
+      [orgId],
+    );
+    res.json(
+      result.rows.map((row: any) => ({
+        id: row.id,
+        label: row.device_id || row.imei_number || row.serial_number || `GPS-${row.id}`,
+      })),
+    );
+  } catch (e: any) {
+    console.error(`[TENANT] GPS dropdown fetch failed: ${e.message}`);
+    res.json([]);
+  }
+});
+
+app.get("/api/beacon-device/for/dropdown", async (req: Request, res: Response) => {
+  const orgId = getOrgIdFromRequest(req);
+  if (!orgId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, device_id, serial_number, imei_number 
+       FROM ${BEACON_DEVICE_TABLE} 
+       WHERE (status IS NULL OR LOWER(status) = 'available')
+       ORDER BY id DESC`,
+    );
+    // Beacons might not have org_id yet in the sync logic so we fetch all available for now
+    // or filter if column exists
+    res.json(
+      result.rows.map((row: any) => ({
+        id: row.id,
+        label: row.device_id || row.serial_number || `BCN-${row.id}`,
+      })),
+    );
+  } catch (e: any) {
+    console.error(`[TENANT] Beacon dropdown fetch failed: ${e.message}`);
+    res.json([]);
+  }
 });
 
 app.get("/api/active-vehicles/for/dropdown", async (req: Request, res: Response) => {

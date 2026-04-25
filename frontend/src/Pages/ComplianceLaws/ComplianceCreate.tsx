@@ -1,39 +1,30 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { 
   Gavel, 
   FileText, 
-  Landmark, 
   Calendar, 
   ShieldCheck, 
-  UploadCloud, 
-  ClipboardCheck, 
   PlusCircle, 
   ArrowLeft, 
   X,
   CheckCircle2,
-  ChevronRight,
   AlertCircle,
   Clock,
-  Navigation
+  Video,
+  StickyNote,
+  Save
 } from "lucide-react";
 import { INITIAL_COMPLIANCE } from "./complianceData";
 
 /* ── Types ─────────────────────────────────── */
 interface Form {
   documentName: string;
-  subLaw: string;
-  regNumber: string;
+  description: string;
   category: string;
-  authority: string;
-  authorityContact: string;
   issueDate: string;
   status: string;
   appliesTo: string[];
-  documentFile: File | null;
-  remarks: string;
-  consent: boolean;
-  consentTimestamp: string;
   videoUrl: string;
 }
 
@@ -42,11 +33,6 @@ type Errs = Partial<Record<keyof Form, string>>;
 const CATEGORIES = [
   "License", "Insurance", "Safety", "Environmental", "Tax & Finance", 
   "Labour", "Vehicle Certification", "Penalty", "Office Policies", "Other"
-];
-
-const AUTHORITIES = [
-  "Regional Transport Office (RTO)", "Traffic Police", "IRDAI", "Fire Department", 
-  "Ministry of Transport", "State Transport Authority", "Labour Department", "Other"
 ];
 
 const APPLIES_TO_OPTIONS = [
@@ -92,13 +78,11 @@ export const ComplianceCreate = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEdit = Boolean(id);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<Form>({
-    documentName: "", subLaw: "", regNumber: "", category: "",
-    authority: "", authorityContact: "", issueDate: "", status: "Compliant",
-    appliesTo: [], documentFile: null, remarks: "", consent: false,
-    consentTimestamp: "", videoUrl: "",
+    documentName: "", description: "", category: "",
+    issueDate: "", status: "Compliant",
+    appliesTo: [], videoUrl: "",
   });
 
   const [errs, setErrs] = useState<Errs>({});
@@ -110,9 +94,12 @@ export const ComplianceCreate = () => {
       const record = INITIAL_COMPLIANCE.find((r) => r.id === id);
       if (record) {
         setForm({
-          ...record,
-          regNumber: record.id,
-          documentFile: null,
+          documentName: record.documentName || "",
+          description: record.remarks || "",
+          category: record.category || "",
+          issueDate: record.issueDate || "",
+          status: record.status || "Compliant",
+          appliesTo: record.appliesTo || [],
           videoUrl: record.videoUrl || "",
         });
       }
@@ -132,27 +119,13 @@ export const ComplianceCreate = () => {
     setErrs(v => ({ ...v, appliesTo: undefined }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    if (file && file.size > 10 * 1024 * 1024) {
-      setErrs(v => ({ ...v, documentFile: "File size exceeds 10MB limit" }));
-      return;
-    }
-    setForm(v => ({ ...v, documentFile: file }));
-    setErrs(v => ({ ...v, documentFile: undefined }));
-  };
-
   const validate = (): boolean => {
     const e: Errs = {};
-    if (!form.documentName.trim()) e.documentName = "Name is required";
-    if (!form.regNumber.trim()) e.regNumber = "Registration number is required";
+    if (!form.documentName.trim()) e.documentName = "Title is required";
     if (!form.category) e.category = "Select a category";
-    if (!form.authority) e.authority = "Select issuing authority";
     if (!form.issueDate) e.issueDate = "Date is required";
     if (!form.status) e.status = "Select status";
     if (form.appliesTo.length === 0) e.appliesTo = "Select at least one option";
-    if (!isEdit && !form.documentFile) e.documentFile = "Upload file is required";
-    if (!form.consent) e.consent = "Verification consent is required";
     
     setErrs(e);
     return Object.keys(e).length === 0;
@@ -177,9 +150,9 @@ export const ComplianceCreate = () => {
            <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner ring-8 ring-emerald-50/50">
               <CheckCircle2 size={48} className="stroke-[2.5]" />
            </div>
-           <h2 className="text-2xl font-900 text-slate-800 uppercase tracking-tight mb-2">Record Registered</h2>
+           <h2 className="text-2xl font-900 text-slate-800 uppercase tracking-tight mb-2">Record Saved</h2>
            <p className="text-xs font-700 text-slate-400 uppercase tracking-widest mb-8 leading-relaxed px-4">
-             Your compliance record for <span className="text-emerald-600 font-900">{form.documentName}</span> has been securely stored in the fleet vault.
+             Your compliance record for <span className="text-emerald-600 font-900">{form.documentName}</span> has been securely stored.
            </p>
            <button 
              onClick={() => navigate("/compliance")}
@@ -200,7 +173,7 @@ export const ComplianceCreate = () => {
            <div className="flex items-center gap-2 text-indigo-600 mb-1">
               <Gavel size={22} className="stroke-[2.5]" />
               <h1 className="text-xl font-900 tracking-wider uppercase">
-                {isEdit ? "Edit Record" : "Add Compliance Record"}
+                {isEdit ? "Edit Compliance Record" : "Add Compliance Record"}
               </h1>
            </div>
            <div className="flex items-center gap-2 text-[11px] font-800 text-muted uppercase tracking-widest px-1">
@@ -208,7 +181,7 @@ export const ComplianceCreate = () => {
              <span className="text-slate-300">/</span>
              <span>Compliance & Laws</span>
              <span className="text-slate-300">/</span>
-             <span className="text-primary-dark">Add Record</span>
+             <span className="text-primary-dark">{isEdit ? "Edit Record" : "Add Record"}</span>
            </div>
         </div>
 
@@ -224,93 +197,74 @@ export const ComplianceCreate = () => {
         <form onSubmit={handleSubmit} className="max-w-[1000px] mx-auto space-y-6 pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Identity Card */}
-            <SectionCard icon={FileText} title="Document / Rule Identity">
+            {/* Title & Description */}
+            <SectionCard icon={FileText} title="Record Details">
               <div className="space-y-5">
                 <div>
-                  <FormLabel required>Document / Rule Name</FormLabel>
+                  <FormLabel required>Title</FormLabel>
                   <input 
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    placeholder="e.g. Office Security Policy"
+                    placeholder="e.g. Office Fire Safety Policy"
                     value={form.documentName}
                     onChange={f("documentName")}
                   />
                   <FormError msg={errs.documentName} />
                 </div>
                 <div>
-                  <FormLabel>Sub-Law / Act Reference</FormLabel>
-                  <input 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none"
-                    placeholder="e.g. Motor Vehicles Act 1988"
-                    value={form.subLaw}
-                    onChange={f("subLaw")}
+                  <FormLabel>Description</FormLabel>
+                  <textarea 
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none h-28 resize-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                    placeholder="Describe the compliance rule, regulation, or policy..."
+                    value={form.description}
+                    onChange={f("description")}
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                   <div>
-                      <FormLabel required>Registration Number</FormLabel>
-                      <input 
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none"
-                        placeholder="e.g. RTO-2024-001"
-                        value={form.regNumber}
-                        onChange={f("regNumber")}
-                      />
-                      <FormError msg={errs.regNumber} />
-                   </div>
-                   <div>
-                      <FormLabel required>Category</FormLabel>
-                      <select 
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none appearance-none"
-                        value={form.category}
-                        onChange={f("category")}
-                      >
-                        <option value="">Select Category</option>
-                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      <FormError msg={errs.category} />
-                   </div>
+                <div>
+                   <FormLabel required>Category</FormLabel>
+                   <select 
+                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                     value={form.category}
+                     onChange={f("category")}
+                   >
+                     <option value="">Select Category</option>
+                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                   </select>
+                   <FormError msg={errs.category} />
                 </div>
               </div>
             </SectionCard>
 
-            {/* Authority & Date */}
+            {/* Date & YouTube Link */}
             <div className="space-y-6">
-              <SectionCard icon={Landmark} title="Issuing Authority">
-                 <div className="space-y-5">
-                    <div>
-                      <FormLabel required>Authority / Issuing Body</FormLabel>
-                      <select 
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none appearance-none"
-                        value={form.authority}
-                        onChange={f("authority")}
-                      >
-                        <option value="">Select Authority</option>
-                        {AUTHORITIES.map(a => <option key={a} value={a}>{a}</option>)}
-                      </select>
-                      <FormError msg={errs.authority} />
-                    </div>
-                    <div>
-                      <FormLabel>Authority Contact / Reference</FormLabel>
-                      <input 
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none"
-                        placeholder="Phone, email or reference ID"
-                        value={form.authorityContact}
-                        onChange={f("authorityContact")}
-                      />
-                    </div>
-                 </div>
-              </SectionCard>
-
-              <SectionCard icon={Calendar} title="Record Date">
+              <SectionCard icon={Calendar} title="Date & Timeline">
                  <div>
                     <FormLabel required>Date Recorded</FormLabel>
                     <input 
                       type="date"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                       value={form.issueDate}
                       onChange={f("issueDate")}
                     />
                     <FormError msg={errs.issueDate} />
+                 </div>
+              </SectionCard>
+
+              <SectionCard icon={Video} title="Reference Video">
+                 <div>
+                    <FormLabel>YouTube Link</FormLabel>
+                    <input 
+                      type="url"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                      placeholder="https://youtube.com/watch?v=..."
+                      value={form.videoUrl}
+                      onChange={f("videoUrl")}
+                    />
+                    {form.videoUrl && (
+                      <div className="mt-3 p-3 bg-rose-50/50 rounded-xl border border-rose-100 flex items-center gap-2">
+                        <Video size={14} className="text-rose-600 shrink-0" />
+                        <span className="text-[10px] font-700 text-rose-600 truncate">{form.videoUrl}</span>
+                      </div>
+                    )}
                  </div>
               </SectionCard>
             </div>
@@ -370,65 +324,6 @@ export const ComplianceCreate = () => {
                </SectionCard>
             </div>
 
-            {/* Upload Zone */}
-            <SectionCard icon={UploadCloud} title="Document Upload">
-               <div 
-                 onClick={() => fileInputRef.current?.click()}
-                 className={`group border-2 border-dashed rounded-[32px] p-10 flex flex-col items-center justify-center transition-all cursor-pointer ${
-                   form.documentFile 
-                   ? 'bg-indigo-50 border-indigo-300' 
-                   : errs.documentFile ? 'bg-rose-50 border-rose-200' : 'bg-slate-50/50 border-slate-200 hover:bg-indigo-50/30 hover:border-indigo-200'
-                 }`}
-               >
-                  <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
-                  <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 transition-all ${
-                    form.documentFile ? 'bg-white text-indigo-600 shadow-lg' : 'bg-white text-slate-300 shadow-sm'
-                  }`}>
-                    <UploadCloud size={28} className={form.documentFile ? "animate-bounce" : ""} />
-                  </div>
-                  <h4 className="text-[11px] font-900 text-slate-700 uppercase tracking-widest">
-                    {form.documentFile ? form.documentFile.name : "Click to Upload Document"}
-                  </h4>
-                  <p className="text-[9px] font-700 text-slate-400 uppercase mt-1 tracking-widest">PDF / JPG / PNG — Max 10 MB</p>
-                  <FormError msg={errs.documentFile} />
-               </div>
-            </SectionCard>
-
-            {/* Consent & Remarks */}
-            <SectionCard icon={ClipboardCheck} title="Consent & Remarks">
-               <div className="space-y-6">
-                  <div 
-                    onClick={() => setForm(v => ({...v, consent: !v.consent}))}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
-                      form.consent ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-slate-50/30 border-slate-100'
-                    }`}
-                  >
-                     <div className={`mt-0.5 shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                       form.consent ? 'bg-emerald-600 border-emerald-600' : 'border-slate-200 bg-white shadow-inner'
-                     }`}>
-                        {form.consent && <X size={12} className="text-white" />}
-                     </div>
-                     <div>
-                        <p className="text-[10px] font-900 text-slate-700 uppercase tracking-tight mb-1">Compliance Certification *</p>
-                        <p className="text-[10px] font-700 text-slate-400 leading-relaxed italic">
-                          "I confirm that all submitted compliance information is accurate, valid, and up-to-date as per the applicable laws and regulations."
-                        </p>
-                     </div>
-                  </div>
-                  <FormError msg={errs.consent} />
-
-                  <div>
-                    <FormLabel>Remarks / Notes</FormLabel>
-                    <textarea 
-                      className="w-full p-4 rounded-2xl border border-slate-200 bg-slate-50/30 text-xs font-700 text-slate-700 focus:border-indigo-500 outline-none h-32 resize-none"
-                      placeholder="Any additional notes or context about this compliance record…"
-                      value={form.remarks}
-                      onChange={f("remarks")}
-                    />
-                  </div>
-               </div>
-            </SectionCard>
-
           </div>
 
           {/* Actions */}
@@ -448,12 +343,12 @@ export const ComplianceCreate = () => {
                {isSubmitting ? (
                  <div className="flex items-center gap-2">
                     <Clock size={16} className="animate-spin" />
-                    Storing...
+                    Saving...
                  </div>
                ) : (
                  <>
-                   <PlusCircle size={18} />
-                   Add Record
+                   {isEdit ? <Save size={18} /> : <PlusCircle size={18} />}
+                   {isEdit ? "Update Record" : "Add Record"}
                  </>
                )}
              </button>

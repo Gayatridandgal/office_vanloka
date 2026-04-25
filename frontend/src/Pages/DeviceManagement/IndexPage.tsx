@@ -11,7 +11,9 @@ import {
   Navigation,
   Radio,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  XCircle,
+  Calendar
 } from "lucide-react";
 
 import EmptyState from "../../Components/UI/EmptyState";
@@ -32,6 +34,7 @@ interface DeviceRow {
   imei_number: string | null;
   manufacture_date: string | null;
   status: string | null;
+  assigned_to?: string | null;
 }
 
 const DeviceManagementIndexPage = () => {
@@ -48,6 +51,9 @@ const DeviceManagementIndexPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [perPage] = useState(15);
+
+  const [selectedDevice, setSelectedDevice] = useState<DeviceRow | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
 
   const fetchDevices = async () => {
     try {
@@ -97,8 +103,12 @@ const DeviceManagementIndexPage = () => {
     void fetchDevices();
   }, [searchQuery, typeFilter, statusFilter, currentPage]);
 
+  const handleViewDetails = (device: DeviceRow) => {
+    setSelectedDevice(device);
+    setShowViewModal(true);
+  };
+
   const statusOptions = useMemo(() => {
-    // If we only have paged data, this might be incomplete, but it's a start
     const unique = Array.from(new Set(devices.map((item) => (item.status || "").toLowerCase()).filter(Boolean)));
     return unique.sort();
   }, [devices]);
@@ -250,7 +260,7 @@ const DeviceManagementIndexPage = () => {
                     <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">S.No</th>
                     <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">Asset Category</th>
                     <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">Hardware ID</th>
-                    <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">Sequence / SN</th>
+                    <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">Assigned To</th>
                     <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest">Global Status</th>
                     <th className="px-6 py-5 text-[10px] font-900 text-slate-400 uppercase tracking-widest text-center">Actions</th>
                   </tr>
@@ -282,8 +292,15 @@ const DeviceManagementIndexPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="space-y-0.5">
-                          <div className="text-xs font-800 text-slate-700">{device.sequnce_number || "N/A"}</div>
-                          <div className="text-[10px] font-600 text-slate-400 uppercase tracking-widest">SN: {device.serial_number || "N/A"}</div>
+                          {device.assigned_to ? (
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <div className="text-xs font-800 text-slate-700 uppercase leading-none">{device.assigned_to}</div>
+                            </div>
+                          ) : (
+                            <div className="text-xs font-700 text-slate-300 italic uppercase leading-none">Unallocated</div>
+                          )}
+                          <div className="text-[10px] font-600 text-slate-400 uppercase tracking-widest mt-1">NODE LOCK</div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -295,18 +312,13 @@ const DeviceManagementIndexPage = () => {
                           {device.status || "UNKNOWN"}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-center items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
-                          <button className="p-2 bg-white hover:bg-slate-50 text-slate-600 rounded-lg shadow-sm border border-slate-100 transition-all hover:-translate-y-0.5">
-                            <Eye size={16} />
-                          </button>
-                          <button className="p-2 bg-white hover:bg-indigo-50 text-indigo-600 rounded-lg shadow-sm border border-slate-100 transition-all hover:-translate-y-0.5">
-                            <Edit3 size={16} />
-                          </button>
-                          <button className="p-2 bg-white hover:bg-rose-50 text-rose-600 rounded-lg shadow-sm border border-slate-100 transition-all hover:-translate-y-0.5">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                      <td className="px-6 py-4 text-center">
+                        <button 
+                          onClick={() => handleViewDetails(device)}
+                          className="p-2 bg-indigo-50 text-indigo-600 rounded-lg shadow-sm border border-indigo-100 transition-all hover:bg-indigo-600 hover:text-white"
+                        >
+                          <Eye size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -326,6 +338,96 @@ const DeviceManagementIndexPage = () => {
           )}
         </div>
       </div>
+
+      {/* View Modal */}
+      {showViewModal && selectedDevice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl overflow-hidden border border-slate-100 animate-slide-up">
+            <div className="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl ${selectedDevice.device_type === 'GPS' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'}`}>
+                  {selectedDevice.device_type === 'GPS' ? <Navigation size={20} /> : <Radio size={20} />}
+                </div>
+                <div>
+                  <h3 className="text-sm font-900 text-slate-800 uppercase tracking-wider">Device Specifications</h3>
+                  <p className="text-[10px] font-700 text-slate-400 uppercase tracking-widest">{selectedDevice.device_type} Asset</p>
+                </div>
+              </div>
+              <button onClick={() => setShowViewModal(false)} className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors">
+                <XCircle size={20} />
+              </button>
+            </div>
+            
+            <div className="p-8 space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-[9px] font-900 text-slate-400 uppercase tracking-widest mb-1.5">Hardware ID</p>
+                  <p className="text-xs font-800 text-slate-700">{selectedDevice.device_id || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-900 text-slate-400 uppercase tracking-widest mb-1.5">Manufacturer Status</p>
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-900 uppercase tracking-tighter ${
+                    (selectedDevice.status?.toLowerCase() === 'active' || selectedDevice.status?.toLowerCase() === 'available') 
+                      ? 'bg-emerald-50 text-emerald-600' 
+                      : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {selectedDevice.status || "UNKNOWN"}
+                  </span>
+                </div>
+              </div>
+
+              {selectedDevice.assigned_to && (
+                <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                   <p className="text-[9px] font-900 text-indigo-400 uppercase tracking-widest mb-1">Current Assignment</p>
+                   <div className="flex items-center gap-2">
+                     <CheckCircle2 size={14} className="text-indigo-500" />
+                     <p className="text-xs font-900 text-indigo-700 uppercase">{selectedDevice.assigned_to}</p>
+                   </div>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 border-dashed">
+                  <p className="text-[9px] font-900 text-slate-400 uppercase tracking-widest mb-2">Technical Identification</p>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-700 text-slate-500">IMEI NUMBER</span>
+                      <span className="text-[11px] font-800 text-slate-700 tabular-nums">{selectedDevice.imei_number || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-700 text-slate-500">SERIAL NUMBER</span>
+                      <span className="text-[11px] font-800 text-slate-700 tabular-nums">{selectedDevice.serial_number || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-700 text-slate-500">SEQUENCE #</span>
+                      <span className="text-[11px] font-800 text-slate-700 tabular-nums">{selectedDevice.sequnce_number || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedDevice.manufacture_date && (
+                  <div>
+                    <p className="text-[9px] font-900 text-slate-400 uppercase tracking-widest mb-1.5">Manufacture Timeline</p>
+                    <div className="flex items-center gap-2 text-xs font-700 text-slate-600">
+                      <Calendar size={14} className="text-slate-300" />
+                      {new Date(selectedDevice.manufacture_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-50">
+              <button 
+                onClick={() => setShowViewModal(false)}
+                className="w-full py-3.5 bg-white border border-slate-200 text-slate-600 rounded-2xl text-[11px] font-900 uppercase tracking-widest hover:bg-slate-50 transition-colors shadow-sm"
+              >
+                Close Registry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

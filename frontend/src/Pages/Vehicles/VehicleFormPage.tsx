@@ -169,7 +169,7 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
   const [permitTypes, setPermitTypes] = useState<FormDropdown[]>([]);
   const [ownershipTypes, setOwnershipTypes] = useState<FormDropdown[]>([]);
   const [statuses, setStatuses] = useState<FormDropdown[]>([]);
-  const [gps, setBeacons] = useState<BeaconDevice[]>([]);
+  const [gps, setGps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const ownershipType = useWatch({ control, name: "ownership_type" });
@@ -191,7 +191,7 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
         setPermitTypes(pt.data || []);
         setOwnershipTypes(ot.data || []);
         setStatuses(st.data || []);
-        setBeacons(gd.data || []);
+        setGps(gd.data || []);
       } catch (error) {
         console.error(error);
         showAlert("Failed to load configuration data.", "error");
@@ -308,7 +308,7 @@ const VehicleFormPage = ({ mode, vehicleId }: VehicleFormPageProps) => {
               {/* Tracking Device */}
               <SectionCard icon={NavigationIcon} title="Tracking Architecture">
                 <div className="grid grid-cols-2 gap-4">
-                  <SelectField label="GPS Module" name="gps_device" register={register} errors={errors} options={gps.map(d => ({ label: `${d.device_id} (${d.imei_number})`, value: d.imei_number }))} />
+                  <SelectField label="GPS Module" name="gps_device" register={register} errors={errors} options={gps.map(d => ({ label: d.label, value: d.label }))} />
                   <InputField label="Install Date" name="gps_installation_date" type="date" register={register} errors={errors} />
                 </div>
               </SectionCard>
